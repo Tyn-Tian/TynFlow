@@ -1,7 +1,6 @@
 "use client"
 
-import * as React from "react"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+import { Line, LineChart, CartesianGrid, XAxis } from "recharts"
 
 import {
   Card,
@@ -22,8 +21,8 @@ import { formatRupiah } from "@/lib/utils"
 export const description = "An interactive area chart"
 
 const chartData = [
-  { date: "2026-01-01", present: 138500000, capital: 138500000 },
-  { date: "2026-02-28", present: 145370031, capital: 144525000 },
+  { month: "Jan", present: 138500000, capital: 138500000 },
+  { month: "Feb", present: 145370031, capital: 144525000 },
 ]
 
 const chartConfig = {
@@ -48,30 +47,16 @@ export function ChartPortfolio() {
           config={chartConfig}
           className="aspect-auto h-62.5 w-full"
         >
-          <AreaChart data={chartData}>
-            <defs>
-              <linearGradient id="fillPresent" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-present)" stopOpacity={0.9} />
-                <stop offset="95%" stopColor="var(--color-present)" stopOpacity={0.06} />
-              </linearGradient>
-              <linearGradient id="fillCapital" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-capital)" stopOpacity={0.9} />
-                <stop offset="95%" stopColor="var(--color-capital)" stopOpacity={0.06} />
-              </linearGradient>
-            </defs>
+          <LineChart data={chartData}>
             <CartesianGrid vertical={false} />
             <XAxis
-              dataKey="date"
+              dataKey="month"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
               minTickGap={32}
               tickFormatter={(value) => {
-                const date = new Date(value)
-                return date.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })
+                return value
               }}
             />
             <ChartTooltip
@@ -79,18 +64,15 @@ export function ChartPortfolio() {
               content={
                 <ChartTooltipContent
                   labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    })
+                    return value
                   }}
                   indicator="dot"
                 />
               }
             />
-            <Area dataKey="capital" type="natural" fill="url(#fillCapital)" stroke="var(--color-capital)" stackId="a" />
-            <Area dataKey="present" type="natural" fill="url(#fillPresent)" stroke="var(--color-present)" stackId="a" />
-          </AreaChart>
+            <Line dataKey="capital" type="natural" stroke="var(--color-capital)" strokeWidth={2} dot={false} />
+            <Line dataKey="present" type="natural" stroke="var(--color-present)" strokeWidth={2} dot={false} />
+          </LineChart>
         </ChartContainer>
       </CardContent>
     </Card>
