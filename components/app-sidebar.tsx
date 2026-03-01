@@ -17,6 +17,7 @@ import {
     IconReport,
     IconSearch,
     IconSettings,
+    IconTarget,
     IconUsers,
     IconWallet,
 } from "@tabler/icons-react"
@@ -61,6 +62,11 @@ const data = {
             title: "Portfolio",
             url: "/portfolio",
             icon: IconLockDollar,
+        },
+        {
+            title: "Goals",
+            url: "/goals",
+            icon: IconTarget
         },
         {
             title: "Analytics",
