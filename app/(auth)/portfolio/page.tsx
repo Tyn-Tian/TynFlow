@@ -2,6 +2,7 @@ import { ChartPortfolio } from "@/components/chart-portfolio"
 import { SiteHeader } from "@/components/site-header"
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { IconEaseInOut, IconShield } from "@tabler/icons-react"
+import { formatRupiah } from "@/lib/utils"
 
 const lowRiskPortfolios = [
     { title: "RD Pasar Uang", desc: "Low risk investment", target: 15, amount: 21713838 + 23843734, icon: IconShield },
@@ -12,10 +13,6 @@ const lowRiskPortfolios = [
     { title: "RD Campuran", desc: "High risk investment", target: 5, amount: 4894837, icon: IconEaseInOut },
     { title: "Bitcoin", desc: "High risk investment", target: 2, amount: 1513939, icon: IconEaseInOut },
 ]
-
-function formatRupiah(v: number) {
-    return `Rp ${v.toLocaleString("id-ID")}`
-}
 
 export default function Page() {
     const totalPortfolio = 145370031;

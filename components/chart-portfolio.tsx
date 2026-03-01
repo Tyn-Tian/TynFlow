@@ -17,6 +17,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
+import { formatRupiah } from "@/lib/utils"
 
 export const description = "An interactive area chart"
 
@@ -29,10 +30,6 @@ const chartConfig = {
   capital: { label: "Investment Capital", color: "#065f46" },
   present: { label: "Present Value", color: "#34d399" },
 } satisfies ChartConfig
-
-function formatRupiah(v: number) {
-  return `Rp ${v.toLocaleString("id-ID")}`
-}
 
 export function ChartPortfolio() {
   return (

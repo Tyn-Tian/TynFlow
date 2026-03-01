@@ -1,4 +1,5 @@
 import { SiteHeader } from "@/components/site-header"
+import { formatRupiah } from "@/lib/utils"
 import {
     Card,
     CardHeader,
@@ -22,10 +23,6 @@ const budgets = [
     { title: "Transport", total: 300000, leftover: 150000 + 42052, icon: IconTir },
     { title: "Others", total: 932138, leftover: 932138, icon: IconFilter },
 ]
-
-function formatRupiah(v: number) {
-    return `Rp ${v.toLocaleString("id-ID")}`
-}
 
 export default function Page() {
     return (

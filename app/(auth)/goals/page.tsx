@@ -1,4 +1,5 @@
 import { SiteHeader } from "@/components/site-header"
+import { formatRupiah } from "@/lib/utils"
 import {
     Card,
     CardHeader,
@@ -21,10 +22,6 @@ const goals = [
     { title: "Macbook Air M4", desc: "Portfolio - RD Pasar Uang", target: 25000000, saved: 0, icon: IconDeviceLaptop },
     { title: "Glasses", desc: "Portfolio - RD Pasar Uang", target: 1000000, saved: 0, icon: IconStereoGlasses }
 ]
-
-function formatRupiah(v: number) {
-    return `Rp ${v.toLocaleString("id-ID")}`
-}
 
 export default function Page() {
     return (
