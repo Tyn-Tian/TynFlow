@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { z } from "zod"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -47,6 +47,10 @@ export function AddWalletDialog() {
     const router = useRouter()
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [mounted, setMounted] = useState(false)
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -177,7 +181,15 @@ export function AddWalletDialog() {
                                 <Field data-invalid={fieldState.invalid}>
                                     <FieldLabel htmlFor="wallet-balance">Balance</FieldLabel>
                                     <Input
-                                        value={field.value ? field.value.toLocaleString("id-ID") : ""}
+                                        value={
+                                            mounted
+                                                ? field.value !== undefined && field.value !== null
+                                                    ? field.value.toLocaleString("id-ID")
+                                                    : ""
+                                                : field.value !== undefined && field.value !== null
+                                                    ? String(field.value)
+                                                    : ""
+                                        }
                                         id="wallet-balance"
                                         type="text"
                                         inputMode="numeric"

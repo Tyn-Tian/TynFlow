@@ -1,12 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { z } from "zod"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { IconPencil } from "@tabler/icons-react"
 
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -15,50 +14,26 @@ import {
     AlertDialog,
     AlertDialogCancel,
     AlertDialogContent,
-    AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-
-const walletTypes = ["Bank", "Bank Digital", "E-Wallet"] as const
+import { IconPlus } from "@tabler/icons-react"
 
 const formSchema = z.object({
     name: z.string().min(3, "Name is required"),
-    type: z.enum(walletTypes, {
-        message: "Type is required",
-    }),
-    balance: z.number().int().min(0, "Balance must be at least 0"),
+    total: z.number().int().min(0, "Total must be at least 0"),
 })
 
 type FormValues = z.infer<typeof formSchema>
 
-type WalletItem = {
-    id?: string | null
-    name: string
-    type: string
-    balance: number
-}
-
-export function EditWalletDialog({
-    wallet,
-    onSuccess,
-}: {
-    wallet: WalletItem
-    onSuccess?: () => void
-}) {
+export function AddBudgetDialog() {
     const supabase = createClient()
     const router = useRouter()
     const [open, setOpen] = useState(false)
-    const [saving, setSaving] = useState(false)
+    const [loading, setLoading] = useState(false)
     const [mounted, setMounted] = useState(false)
     useEffect(() => {
         setMounted(true)
@@ -67,35 +42,33 @@ export function EditWalletDialog({
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: wallet.name,
-            type: wallet.type as FormValues["type"],
-            balance: wallet.balance,
+            name: "",
+            total: 0,
         },
     })
 
-    useEffect(() => {
-        if (open) {
-            form.reset({
-                name: wallet.name,
-                type: wallet.type as FormValues["type"],
-                balance: wallet.balance,
-            })
-        }
-    }, [open, wallet, form])
-
     async function onSubmit(values: FormValues) {
-        if (!wallet.id) return
+        setLoading(true)
 
-        setSaving(true)
         try {
-            const { error } = await supabase
-                .from("wallets")
-                .update({
-                    name: values.name,
-                    type: values.type,
-                    balance: values.balance,
+            const {
+                data: { user },
+            } = await supabase.auth.getUser()
+
+            if (!user) {
+                toast.error("Failed", {
+                    description: "Please login to add a budget.",
+                    duration: 3000,
                 })
-                .eq("id", wallet.id)
+                return
+            }
+
+            const { error } = await supabase.from("budgets").insert({
+                name: values.name,
+                total: values.total,
+                leftover: values.total,
+                user_id: user.id,
+            })
 
             if (error) {
                 toast.error("Failed", {
@@ -106,11 +79,11 @@ export function EditWalletDialog({
             }
 
             toast.success("Success", {
-                description: "Wallet has been updated.",
+                description: "Budget has been added.",
                 duration: 3000,
             })
+            form.reset()
             setOpen(false)
-            onSuccess?.()
             router.refresh()
         } catch (err: Error | unknown) {
             toast.error("Failed", {
@@ -118,30 +91,21 @@ export function EditWalletDialog({
                 duration: 3000,
             })
         } finally {
-            setSaving(false)
+            setLoading(false)
         }
     }
 
     return (
         <AlertDialog open={open} onOpenChange={setOpen}>
-            <Button
-                variant="outline"
-                className="cursor-pointer"
-                onClick={(event) => {
-                    event.stopPropagation()
-                    if (wallet.id) setOpen(true)
-                }}
-                disabled={!wallet.id}
-            >
-                <IconPencil />
-                Edit
-            </Button>
-            <AlertDialogContent onClick={(event) => event.stopPropagation()}>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Edit Wallet</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Update your wallet details.
-                    </AlertDialogDescription>
+            <AlertDialogTrigger asChild>
+                <Button className="cursor-pointer">
+                    <IconPlus />
+                    Add Budget
+                </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader className="gap-0">
+                    <AlertDialogTitle>Add Budget</AlertDialogTitle>
                 </AlertDialogHeader>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                     <FieldGroup className="gap-4">
@@ -150,13 +114,11 @@ export function EditWalletDialog({
                             control={form.control}
                             render={({ field, fieldState }) => (
                                 <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel htmlFor={`wallet-name-${wallet.id ?? "temp"}`}>
-                                        Name
-                                    </FieldLabel>
+                                    <FieldLabel htmlFor="budget-name">Name</FieldLabel>
                                     <Input
                                         {...field}
-                                        id={`wallet-name-${wallet.id ?? "temp"}`}
-                                        placeholder="Example: BCA"
+                                        id="budget-name"
+                                        placeholder="Example: Food & Drink"
                                         aria-invalid={fieldState.invalid}
                                         autoComplete="off"
                                         autoCorrect="off"
@@ -170,36 +132,11 @@ export function EditWalletDialog({
                         />
 
                         <Controller
-                            name="type"
+                            name="total"
                             control={form.control}
                             render={({ field, fieldState }) => (
                                 <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel>Type</FieldLabel>
-                                    <Select value={field.value} onValueChange={field.onChange}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select type" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="Bank">Bank</SelectItem>
-                                            <SelectItem value="Bank Digital">Bank Digital</SelectItem>
-                                            <SelectItem value="E-Wallet">E-Wallet</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    {fieldState.error && (
-                                        <FieldError errors={[fieldState.error]} />
-                                    )}
-                                </Field>
-                            )}
-                        />
-
-                        <Controller
-                            name="balance"
-                            control={form.control}
-                            render={({ field, fieldState }) => (
-                                <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel htmlFor={`wallet-balance-${wallet.id ?? "temp"}`}>
-                                        Balance
-                                    </FieldLabel>
+                                    <FieldLabel htmlFor="budget-total">Total</FieldLabel>
                                     <Input
                                         value={
                                             mounted
@@ -207,10 +144,10 @@ export function EditWalletDialog({
                                                     ? field.value.toLocaleString("id-ID")
                                                     : ""
                                                 : field.value !== undefined && field.value !== null
-                                                ? String(field.value)
-                                                : ""
+                                                    ? String(field.value)
+                                                    : ""
                                         }
-                                        id={`wallet-balance-${wallet.id ?? "temp"}`}
+                                        id="budget-total"
                                         type="text"
                                         inputMode="numeric"
                                         placeholder="0"
@@ -234,8 +171,8 @@ export function EditWalletDialog({
 
                         <AlertDialogFooter>
                             <AlertDialogCancel type="button" className="cursor-pointer">Cancel</AlertDialogCancel>
-                            <Button type="submit" disabled={saving} className="cursor-pointer">
-                                {saving ? "Saving..." : "Save"}
+                            <Button type="submit" disabled={loading} className="cursor-pointer">
+                                {loading ? "Saving..." : "Save"}
                             </Button>
                         </AlertDialogFooter>
                     </FieldGroup>

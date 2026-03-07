@@ -21,38 +21,32 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
 
-const walletTypes = ["Bank", "Bank Digital", "E-Wallet"] as const
-
-const formSchema = z.object({
-    name: z.string().min(3, "Name is required"),
-    type: z.enum(walletTypes, {
-        message: "Type is required",
-    }),
-    balance: z.number().int().min(0, "Balance must be at least 0"),
-})
+const formSchema = z
+    .object({
+        name: z.string().min(3, "Name is required"),
+        total: z.number().int().min(0, "Total must be at least 0"),
+        leftover: z.number().int().min(0, "Leftover must be at least 0"),
+    })
+    .refine((data) => data.leftover <= data.total, {
+        message: "Leftover cannot be greater than total",
+        path: ["leftover"],
+    })
 
 type FormValues = z.infer<typeof formSchema>
 
-type WalletItem = {
+type BudgetItem = {
     id?: string | null
     name: string
-    type: string
-    balance: number
+    total: number
+    leftover?: number
 }
 
-export function EditWalletDialog({
-    wallet,
+export function EditBudgetDialog({
+    budget,
     onSuccess,
 }: {
-    wallet: WalletItem
+    budget: BudgetItem
     onSuccess?: () => void
 }) {
     const supabase = createClient()
@@ -67,35 +61,37 @@ export function EditWalletDialog({
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: wallet.name,
-            type: wallet.type as FormValues["type"],
-            balance: wallet.balance,
+            name: budget.name,
+            total: budget.total,
+            leftover: budget.leftover ?? budget.total,
         },
     })
 
     useEffect(() => {
         if (open) {
             form.reset({
-                name: wallet.name,
-                type: wallet.type as FormValues["type"],
-                balance: wallet.balance,
+                name: budget.name,
+                total: budget.total,
+                leftover: budget.leftover ?? budget.total,
             })
         }
-    }, [open, wallet, form])
+    }, [open, budget, form])
 
     async function onSubmit(values: FormValues) {
-        if (!wallet.id) return
+        if (!budget.id) return
 
         setSaving(true)
         try {
+            const newLeftover = Math.min(values.leftover, values.total)
+
             const { error } = await supabase
-                .from("wallets")
+                .from("budgets")
                 .update({
                     name: values.name,
-                    type: values.type,
-                    balance: values.balance,
+                    total: values.total,
+                    leftover: newLeftover,
                 })
-                .eq("id", wallet.id)
+                .eq("id", budget.id)
 
             if (error) {
                 toast.error("Failed", {
@@ -106,7 +102,7 @@ export function EditWalletDialog({
             }
 
             toast.success("Success", {
-                description: "Wallet has been updated.",
+                description: "Budget has been updated.",
                 duration: 3000,
             })
             setOpen(false)
@@ -129,19 +125,17 @@ export function EditWalletDialog({
                 className="cursor-pointer"
                 onClick={(event) => {
                     event.stopPropagation()
-                    if (wallet.id) setOpen(true)
+                    if (budget.id) setOpen(true)
                 }}
-                disabled={!wallet.id}
+                disabled={!budget.id}
             >
                 <IconPencil />
                 Edit
             </Button>
             <AlertDialogContent onClick={(event) => event.stopPropagation()}>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Edit Wallet</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Update your wallet details.
-                    </AlertDialogDescription>
+                    <AlertDialogTitle>Edit Budget</AlertDialogTitle>
+                    <AlertDialogDescription>Update your budget details.</AlertDialogDescription>
                 </AlertDialogHeader>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                     <FieldGroup className="gap-4">
@@ -150,55 +144,30 @@ export function EditWalletDialog({
                             control={form.control}
                             render={({ field, fieldState }) => (
                                 <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel htmlFor={`wallet-name-${wallet.id ?? "temp"}`}>
+                                    <FieldLabel htmlFor={`budget-name-${budget.id ?? "temp"}`}>
                                         Name
                                     </FieldLabel>
                                     <Input
                                         {...field}
-                                        id={`wallet-name-${wallet.id ?? "temp"}`}
-                                        placeholder="Example: BCA"
+                                        id={`budget-name-${budget.id ?? "temp"}`}
+                                        placeholder="Example: Food & Drink"
                                         aria-invalid={fieldState.invalid}
                                         autoComplete="off"
                                         autoCorrect="off"
                                         autoCapitalize="none"
                                     />
-                                    {fieldState.error && (
-                                        <FieldError errors={[fieldState.error]} />
-                                    )}
+                                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
                                 </Field>
                             )}
                         />
 
                         <Controller
-                            name="type"
+                            name="total"
                             control={form.control}
                             render={({ field, fieldState }) => (
                                 <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel>Type</FieldLabel>
-                                    <Select value={field.value} onValueChange={field.onChange}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select type" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="Bank">Bank</SelectItem>
-                                            <SelectItem value="Bank Digital">Bank Digital</SelectItem>
-                                            <SelectItem value="E-Wallet">E-Wallet</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    {fieldState.error && (
-                                        <FieldError errors={[fieldState.error]} />
-                                    )}
-                                </Field>
-                            )}
-                        />
-
-                        <Controller
-                            name="balance"
-                            control={form.control}
-                            render={({ field, fieldState }) => (
-                                <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel htmlFor={`wallet-balance-${wallet.id ?? "temp"}`}>
-                                        Balance
+                                    <FieldLabel htmlFor={`budget-total-${budget.id ?? "temp"}`}>
+                                        Total
                                     </FieldLabel>
                                     <Input
                                         value={
@@ -210,7 +179,7 @@ export function EditWalletDialog({
                                                 ? String(field.value)
                                                 : ""
                                         }
-                                        id={`wallet-balance-${wallet.id ?? "temp"}`}
+                                        id={`budget-total-${budget.id ?? "temp"}`}
                                         type="text"
                                         inputMode="numeric"
                                         placeholder="0"
@@ -219,15 +188,43 @@ export function EditWalletDialog({
                                         autoComplete="off"
                                         autoCorrect="off"
                                         autoCapitalize="none"
-                                        onChange={(event) =>
-                                            field.onChange(
-                                                Number(event.target.value.replace(/\D/g, ""))
-                                            )
-                                        }
+                                        onChange={(event) => field.onChange(Number(event.target.value.replace(/\D/g, "")))}
                                     />
-                                    {fieldState.error && (
-                                        <FieldError errors={[fieldState.error]} />
-                                    )}
+                                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                                </Field>
+                            )}
+                        />
+
+                        <Controller
+                            name="leftover"
+                            control={form.control}
+                            render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                    <FieldLabel htmlFor={`budget-leftover-${budget.id ?? "temp"}`}>
+                                        Leftover
+                                    </FieldLabel>
+                                    <Input
+                                        value={
+                                            mounted
+                                                ? field.value !== undefined && field.value !== null
+                                                    ? field.value.toLocaleString("id-ID")
+                                                    : ""
+                                                : field.value !== undefined && field.value !== null
+                                                ? String(field.value)
+                                                : ""
+                                        }
+                                        id={`budget-leftover-${budget.id ?? "temp"}`}
+                                        type="text"
+                                        inputMode="numeric"
+                                        placeholder="0"
+                                        aria-invalid={fieldState.invalid}
+                                        required
+                                        autoComplete="off"
+                                        autoCorrect="off"
+                                        autoCapitalize="none"
+                                        onChange={(event) => field.onChange(Number(event.target.value.replace(/\D/g, "")))}
+                                    />
+                                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
                                 </Field>
                             )}
                         />
