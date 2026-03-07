@@ -56,12 +56,12 @@ const data = {
         {
             title: "Budget",
             url: "/budget",
-            icon: IconChartPie,
+            icon: IconLockDollar,
         },
         {
             title: "Portfolio",
             url: "/portfolio",
-            icon: IconLockDollar,
+            icon: IconChartPie,
         },
         {
             title: "Goals",

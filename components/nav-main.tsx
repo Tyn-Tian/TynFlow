@@ -78,8 +78,8 @@ export function NavMain({
                 </AlertDialogDescription>
               </AlertDialogHeader>  
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleLogout}>Continue</AlertDialogAction>
+                <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleLogout} className="cursor-pointer">Continue</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

@@ -29,6 +29,7 @@ export async function middleware(req: NextRequest) {
 
   const isLoginPage = req.nextUrl.pathname === "/login";
   const isDashboard = req.nextUrl.pathname.startsWith("/dashboard");
+  const isWallet = req.nextUrl.pathname.startsWith("/wallet");
   const isRoot = req.nextUrl.pathname === "/";
 
   if (isRoot) {
@@ -36,7 +37,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  if (!user && isDashboard) {
+  if (!user && (isDashboard || isWallet)) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
@@ -48,5 +49,12 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/dashboard", "/login"],
+  matcher: [
+    "/",
+    "/dashboard",
+    "/dashboard/:path*",
+    "/wallet",
+    "/wallet/:path*",
+    "/login",
+  ],
 };
