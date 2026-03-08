@@ -29,7 +29,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 
-const walletTypes = ["Bank", "Bank Digital", "E-Wallet"] as const
+const walletTypes = ["Bank", "Bank Digital", "E-Wallet", "Cash"] as const
 
 const formSchema = z.object({
     name: z.string().min(3, "Name is required"),
@@ -183,6 +183,7 @@ export function EditWalletDialog({
                                             <SelectItem value="Bank">Bank</SelectItem>
                                             <SelectItem value="Bank Digital">Bank Digital</SelectItem>
                                             <SelectItem value="E-Wallet">E-Wallet</SelectItem>
+                                            <SelectItem value="Cash">Cash</SelectItem>
                                         </SelectContent>
                                     </Select>
                                     {fieldState.error && (

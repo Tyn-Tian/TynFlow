@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { IconBuildingBank, IconDeviceMobile, IconWallet } from "@tabler/icons-react"
+import { IconBuildingBank, IconCash, IconDeviceMobile, IconWallet } from "@tabler/icons-react"
 
 import {
     Card,
@@ -25,6 +25,7 @@ const iconByType = {
     Bank: IconBuildingBank,
     "Bank Digital": IconDeviceMobile,
     "E-Wallet": IconWallet,
+    Cash: IconCash
 } as const
 
 export function WalletList({ wallets }: { wallets: WalletItem[] }) {

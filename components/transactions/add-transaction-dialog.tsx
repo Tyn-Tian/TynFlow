@@ -208,6 +208,7 @@ export function AddTransactionDialog() {
                                             value={field.value}
                                             placeholder="dd/mm/yyyy"
                                             onChange={(e) => field.onChange(format(e.target.value))}
+                                            autoComplete="off"
                                         />
                                         {fieldState.error && <FieldError errors={[fieldState.error]} />}
                                     </Field>
