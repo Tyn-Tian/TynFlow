@@ -32,7 +32,7 @@ export function WalletList({ wallets }: { wallets: WalletItem[] }) {
     const [openId, setOpenId] = useState<string | null>(null)
 
     return (
-        <>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
             {wallets.map((wallet) => {
                 const Icon =
                     iconByType[wallet.type as keyof typeof iconByType] ?? IconWallet
@@ -42,7 +42,7 @@ export function WalletList({ wallets }: { wallets: WalletItem[] }) {
                 return (
                     <Card
                         key={key}
-                        className="@container/card cursor-pointer transition-shadow hover:shadow-md gap-4 self-start"
+                        className="@container/card cursor-pointer transition-shadow hover:shadow-md gap-4 self-start py-4"
                         onClick={() => setOpenId(isOpen ? null : key)}
                         role="button"
                         tabIndex={0}
@@ -53,7 +53,7 @@ export function WalletList({ wallets }: { wallets: WalletItem[] }) {
                             }
                         }}
                     >
-                        <CardHeader className="gap-0 flex items-center justify-between">
+                        <CardHeader className="gap-0 flex items-center justify-between px-4">
                             <div className="flex items-center gap-3">
                                 <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-emerald-500/10">
                                     <Icon size={20} className="text-emerald-400" />
@@ -63,13 +63,13 @@ export function WalletList({ wallets }: { wallets: WalletItem[] }) {
                                     <CardDescription>{wallet.type}</CardDescription>
                                 </div>
                             </div>
-                            <CardAction className="text-sm font-bold tabular-nums">
+                            <CardAction className="text-sm font-bold tabular-nums self-center">
                                 Rp {wallet.balance.toLocaleString("id-ID")}
                             </CardAction>
                         </CardHeader>
 
                         {isOpen && (
-                            <CardContent>
+                            <CardContent className="px-4">
                                 <div className="flex items-center justify-end gap-2">
                                     <EditWalletDialog
                                         wallet={{
@@ -87,6 +87,6 @@ export function WalletList({ wallets }: { wallets: WalletItem[] }) {
                     </Card>
                 )
             })}
-        </>
+        </div>
     )
 }

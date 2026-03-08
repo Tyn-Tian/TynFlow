@@ -28,28 +28,27 @@ export default async function Page() {
         <>
             <SiteHeader title="Budget" />
             <section className="p-6">
-                <div className="mx-auto max-w-7xl">
-                    <div className="grid grid-cols-3 gap-4 items-start">
-                        <div className="col-span-3 flex justify-end">
-                            <AddBudgetDialog />
-                        </div>
-                        <div className="col-span-3 flex items-center justify-between rounded-xl border bg-card px-4 py-3">
-                            <div className="flex items-center gap-2 text-sm font-medium">
-                                <span className="inline-flex size-7 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                                    <IconCalendarDollar className="size-4" />
-                                </span>
-                                <div>
-                                    <p className="text-sm font-medium">Monthly Budget</p>
-                                    <p className="text-xs text-muted-foreground">March 2026</p>
-                                </div>
-                            </div>
-                            <p className="text-sm font-bold tabular-nums text-foreground">
-                                Rp {budgets.reduce((total, b) => total + b.leftover, 0).toLocaleString("id-ID")}
-                            </p>
-                        </div>
-
-                        <BudgetList budgets={budgets} />
+                <div className="mx-auto max-w-7xl space-y-4">
+                    <div className="col-span-3 flex justify-end">
+                        <AddBudgetDialog />
                     </div>
+
+                    <div className="col-span-3 flex items-center justify-between rounded-xl border bg-card px-4 py-3">
+                        <div className="flex items-center gap-2 text-sm font-medium">
+                            <span className="inline-flex size-7 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                                <IconCalendarDollar className="size-4" />
+                            </span>
+                            <div>
+                                <p className="text-sm font-medium">Monthly Budget</p>
+                                <p className="text-xs text-muted-foreground">March 2026</p>
+                            </div>
+                        </div>
+                        <p className="text-sm font-bold tabular-nums text-foreground">
+                            Rp {budgets.reduce((total, b) => total + b.leftover, 0).toLocaleString("id-ID")}
+                        </p>
+                    </div>
+
+                    <BudgetList budgets={budgets} />
                 </div>
             </section>
         </>

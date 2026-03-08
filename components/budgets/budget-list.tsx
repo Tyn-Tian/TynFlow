@@ -14,17 +14,17 @@ import { EditBudgetDialog } from "@/components/budgets/edit-budget-dialog"
 import { DeleteBudgetDialog } from "@/components/budgets/delete-budget-dialog"
 import { formatRupiah } from "@/lib/utils"
 
-type WalletItem = {
+type BudgetItem = {
     id?: string | null
     name: string
     total: number
     leftover: number
 }
 
-export function BudgetList({ budgets }: { budgets: WalletItem[] }) {
+export function BudgetList({ budgets }: { budgets: BudgetItem[] }) {
     const [openId, setOpenId] = useState<string | null>(null)
     return (
-        <>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
             {budgets.map((b) => {
                 const leftover = Math.max(0, b.leftover)
                 const used = Math.max(0, b.total - leftover)
@@ -63,7 +63,7 @@ export function BudgetList({ budgets }: { budgets: WalletItem[] }) {
                                 </span>
                                 <CardTitle>{b.name}</CardTitle>
                             </div>
-                            <CardAction className="text-sm font-bold tabular-nums">{formatRupiah(leftover)}</CardAction>
+                            <CardAction className="text-sm font-bold tabular-nums self-center">{formatRupiah(leftover)}</CardAction>
                         </CardHeader>
                         <CardContent>
                             <div className="my-2 space-y-2">
@@ -98,6 +98,6 @@ export function BudgetList({ budgets }: { budgets: WalletItem[] }) {
                     </Card>
                 )
             })}
-        </>
+        </div>
     )
 }

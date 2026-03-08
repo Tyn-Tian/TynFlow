@@ -28,32 +28,31 @@ export default async function Page() {
         <>
             <SiteHeader title="Wallet" />
             <section className="p-6">
-                <div className="mx-auto max-w-7xl">
-                    <div className=" grid grid-cols-3 gap-4 items-start">
-                        <div className="col-span-3 flex justify-end">
-                            <AddWalletDialog />
-                        </div>
-                        <div className="col-span-3 flex items-center justify-between rounded-xl border bg-card px-4 py-3">
-                            <div className="flex items-center gap-2 text-sm font-medium">
-                                <span className="inline-flex size-7 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                                    <IconPigMoney className="size-4" />
-                                </span>
-                                <div>
-                                    <p className="text-sm font-medium">
-                                        Balance & Savings
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                        March 2026
-                                    </p>
-                                </div>
-                            </div>
-                            <p className="text-sm font-bold tabular-nums">
-                                Rp {wallets.reduce((total, wallet) => total + wallet.balance, 0).toLocaleString("id-ID")}
-                            </p>
-                        </div>
-
-                        <WalletList wallets={wallets} />
+                <div className="mx-auto max-w-7xl space-y-4">
+                    <div className="flex justify-end">
+                        <AddWalletDialog />
                     </div>
+
+                    <div className="col-span-3 flex items-center justify-between rounded-xl border bg-card px-4 py-3">
+                        <div className="flex items-center gap-2 text-sm font-medium">
+                            <span className="inline-flex size-7 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                                <IconPigMoney className="size-4" />
+                            </span>
+                            <div>
+                                <p className="text-sm font-medium">
+                                    Balance & Savings
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    March 2026
+                                </p>
+                            </div>
+                        </div>
+                        <p className="text-sm font-bold tabular-nums">
+                            Rp {wallets.reduce((total, wallet) => total + wallet.balance, 0).toLocaleString("id-ID")}
+                        </p>
+                    </div>
+
+                    <WalletList wallets={wallets} />
                 </div>
             </section>
         </>
