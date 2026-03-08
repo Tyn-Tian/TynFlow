@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/site-header"
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { IconEaseInOut, IconShield } from "@tabler/icons-react"
 import { formatRupiah } from "@/lib/utils"
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 
 const lowRiskPortfolios = [
     { title: "RD Pasar Uang", desc: "Low risk investment", target: 15, amount: 21713838 + 23843734, icon: IconShield },
@@ -20,7 +21,17 @@ export default function Page() {
     return (
         <>
             <SiteHeader title="Portfolio" />
-            <section className="p-6">
+            <div className="min-h-screen flex items-center justify-center p-6">
+                <Empty>
+                    <EmptyHeader>
+                        <EmptyTitle>Coming Soon</EmptyTitle>
+                        <EmptyDescription>
+                            We are working hard to bring you this feature. Stay tuned!
+                        </EmptyDescription>
+                    </EmptyHeader>
+                </Empty>
+            </div>
+            {/* <section className="p-6">
                 <ChartPortfolio />
 
                 <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -77,7 +88,7 @@ export default function Page() {
                         )
                     })}
                 </div>
-            </section>
+            </section> */}
         </>
     )
 }

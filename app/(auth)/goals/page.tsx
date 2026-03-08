@@ -15,6 +15,7 @@ import {
     IconStereoGlasses,
     IconTarget,
 } from "@tabler/icons-react"
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 
 const goals = [
     { title: "Emergency Fund", desc: "Portfolio - RD Pasar Uang", target: 22155134, saved: 45557572, icon: IconShield },
@@ -27,7 +28,17 @@ export default function Page() {
     return (
         <>
             <SiteHeader title="Goals" />
-            <section className="p-6">
+            <div className="min-h-screen flex items-center justify-center p-6">
+                <Empty>
+                    <EmptyHeader>
+                        <EmptyTitle>Coming Soon</EmptyTitle>
+                        <EmptyDescription>
+                            We are working hard to bring you this feature. Stay tuned!
+                        </EmptyDescription>
+                    </EmptyHeader>
+                </Empty>
+            </div>
+            {/* <section className="p-6">
                 <div className="mx-auto max-w-7xl">
                     <div className="col-span-3 rounded-xl border bg-card px-4 py-3">
                         <div className="flex items-center gap-2 text-sm font-medium">
@@ -94,7 +105,7 @@ export default function Page() {
                         })}
                     </div>
                 </div>
-            </section>
+            </section> */}
         </>
     )
 }

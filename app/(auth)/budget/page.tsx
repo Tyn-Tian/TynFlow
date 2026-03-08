@@ -23,6 +23,7 @@ export default async function Page() {
         .order("name", { ascending: true })
 
     const budgets = data ?? []
+    const monthYear = new Date().toLocaleString("en-US", { month: "long", year: "numeric" })
 
     return (
         <>
@@ -40,7 +41,7 @@ export default async function Page() {
                             </span>
                             <div>
                                 <p className="text-sm font-medium">Monthly Budget</p>
-                                <p className="text-xs text-muted-foreground">March 2026</p>
+                                <p className="text-xs text-muted-foreground">{monthYear}</p>
                             </div>
                         </div>
                         <p className="text-sm font-bold tabular-nums text-foreground">
