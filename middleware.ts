@@ -30,6 +30,8 @@ export async function middleware(req: NextRequest) {
   const isLoginPage = req.nextUrl.pathname === "/login";
   const isDashboard = req.nextUrl.pathname.startsWith("/dashboard");
   const isWallet = req.nextUrl.pathname.startsWith("/wallet");
+  const isBudget = req.nextUrl.pathname.startsWith("/budget");
+  const isTransaction = req.nextUrl.pathname.startsWith("/transaction");
   const isRoot = req.nextUrl.pathname === "/";
 
   if (isRoot) {
@@ -37,7 +39,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  if (!user && (isDashboard || isWallet)) {
+  if (!user && (isDashboard || isWallet || isBudget || isTransaction)) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
@@ -55,6 +57,10 @@ export const config = {
     "/dashboard/:path*",
     "/wallet",
     "/wallet/:path*",
+    "/budget",
+    "/budget/:path*",
+    "/transaction",
+    "/transaction/:path*",
     "/login",
   ],
 };
