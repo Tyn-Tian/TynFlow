@@ -2,6 +2,8 @@
 
 import { IconWallet } from "@tabler/icons-react"
 import { Card, CardAction, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState } from "react"
+import { EditTransactionDialog } from "./edit-transaction-dialog"
 
 type TxItem = {
     id: number | string
@@ -12,12 +14,13 @@ type TxItem = {
 }
 
 export function TransactionList({ transactions }: { transactions: TxItem[] }) {
+    const [editTx, setEditTx] = useState<TxItem | null>(null)
     const groups = transactions.reduce<Record<string, TxItem[]>>((acc, t) => {
         const d = new Date(t.date)
         const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
             d.getDate()
         ).padStart(2, "0")}`
-        ;(acc[dateKey] ??= []).push(t)
+            ; (acc[dateKey] ??= []).push(t)
         return acc
     }, {})
 
@@ -40,6 +43,7 @@ export function TransactionList({ transactions }: { transactions: TxItem[] }) {
                             <Card
                                 key={tx.id}
                                 className="@container/card cursor-pointer transition-shadow hover:shadow-md gap-4 self-start py-4"
+                                onClick={() => setEditTx(tx)}
                             >
                                 <CardHeader className="gap-0 flex items-center justify-between px-4">
                                     <div className="flex items-center gap-3">
@@ -60,6 +64,8 @@ export function TransactionList({ transactions }: { transactions: TxItem[] }) {
                     </div>
                 </div>
             ))}
+
+            {editTx && <EditTransactionDialog tx={editTx} onClose={() => setEditTx(null)} />}
         </div>
     )
 }

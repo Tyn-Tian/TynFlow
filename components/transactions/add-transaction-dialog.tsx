@@ -173,7 +173,7 @@ export function AddTransactionDialog() {
                             render={({ field, fieldState }) => (
                                 <Field data-invalid={fieldState.invalid}>
                                     <FieldLabel htmlFor="transaction-name">Name</FieldLabel>
-                                    <Input {...field} id="transaction-name" placeholder="Example: Tomoro" />
+                                    <Input {...field} id="transaction-name" placeholder="Example: Tomoro" autoComplete="off" />
                                     {fieldState.error && <FieldError errors={[fieldState.error]} />}
                                 </Field>
                             )}
