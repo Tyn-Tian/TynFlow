@@ -11,6 +11,8 @@ type TxItem = {
     date: string
     amount: number
     budgetName?: string | null
+    walletName?: string | null
+    type: "Income" | "Expense"
 }
 
 export function TransactionList({ transactions }: { transactions: TxItem[] }) {
@@ -52,11 +54,11 @@ export function TransactionList({ transactions }: { transactions: TxItem[] }) {
                                         </span>
                                         <div className="flex flex-col">
                                             <CardTitle>{tx.name}</CardTitle>
-                                            <CardDescription>{tx.budgetName ?? "-"}</CardDescription>
+                                            <CardDescription>{tx.type === "Income" ? (tx.walletName ?? "-") : (tx.budgetName ?? "-")}</CardDescription>
                                         </div>
                                     </div>
                                     <CardAction className="self-center text-sm font-bold tabular-nums">
-                                        - Rp {tx.amount.toLocaleString("id-ID")}
+                                        {tx.type === "Income" ? "+" : "-"} Rp {Math.abs(tx.amount).toLocaleString("id-ID")}
                                     </CardAction>
                                 </CardHeader>
                             </Card>

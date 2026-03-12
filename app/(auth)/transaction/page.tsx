@@ -11,6 +11,9 @@ type TransactionRow = {
     amount: number
     budget_id?: string | null
     budgets?: { name?: string } | { name?: string }[] | null
+    wallet_id?: string | null
+    wallets?: { name?: string } | { name?: string }[] | null
+    type: "Income" | "Expense"
 }
 
 type Transaction = {
@@ -19,6 +22,8 @@ type Transaction = {
     date: string
     amount: number
     budgetName?: string
+    walletName?: string
+    type: "Income" | "Expense"
 }
 
 export default async function Page() {
@@ -34,7 +39,7 @@ export default async function Page() {
 
     const { data: txData } = await supabase
         .from("transactions")
-        .select("id, name, date, amount, budget_id, budgets(name)")
+        .select("id, name, date, amount, type, budget_id, budgets(name), wallet_id, wallets(name)")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
 
@@ -44,6 +49,8 @@ export default async function Page() {
         date: t.date,
         amount: t.amount,
         budgetName: t.budgets ? (Array.isArray(t.budgets) ? t.budgets[0]?.name : t.budgets?.name) : undefined,
+        walletName: t.wallets ? (Array.isArray(t.wallets) ? t.wallets[0]?.name : t.wallets?.name) : undefined,
+        type: t.type
     }))
 
     return (
