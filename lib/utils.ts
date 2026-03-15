@@ -6,5 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatRupiah(v: number) {
-  return `Rp ${v.toLocaleString("id-ID")}`
+  const abs = Math.abs(v)
+  const formatted = abs.toLocaleString("id-ID")
+  return v < 0 ? `-Rp ${formatted}` : `Rp ${formatted}`
 }
