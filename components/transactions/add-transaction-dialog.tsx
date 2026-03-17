@@ -25,11 +25,13 @@ import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const formSchema = z.object({
-    name: z.string().min(1, "Name is required"),
+    name: z.string().optional(),
     date: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/, "Date must be in dd/mm/yyyy"),
     amount: z.number().int().min(0, "Amount must be at least 0"),
     budget_id: z.string().optional(),
-    wallet_id: z.string().min(1, "Wallet is required"),
+    wallet_id: z.string().optional(),
+    transfer_id: z.string().optional(),
+    admin_fee: z.number().int().min(0).optional(),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -47,7 +49,7 @@ export function AddTransactionDialog() {
     const [calcExpr, setCalcExpr] = useState<string>("0")
     const [budgets, setBudgets] = useState<BudgetOption[]>([])
     const [wallets, setWallets] = useState<WalletOption[]>([])
-    const [tab, setTab] = useState<"Expense" | "Income">("Expense")
+    const [tab, setTab] = useState<"Expense" | "Income" | "Transfer">("Expense")
 
     useEffect(() => setMounted(true), [])
 
@@ -78,7 +80,7 @@ export function AddTransactionDialog() {
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
-        defaultValues: { name: "", date: defaultDate, amount: 0, budget_id: undefined, wallet_id: undefined },
+        defaultValues: { name: "", date: defaultDate, amount: 0, budget_id: undefined, wallet_id: undefined, transfer_id: undefined, admin_fee: 0 },
     })
 
     const pressCalc = (v: string) => {
@@ -166,14 +168,21 @@ export function AddTransactionDialog() {
 
             const isoDate = toIsoDate(values.date)
 
+            if (tab !== "Transfer" && (!values.name || !values.name.trim())) {
+                toast.error("Name is required.", { duration: 3000 })
+                return
+            }
+
             const { error: insertError } = await supabase.from("transactions").insert({
-                name: values.name,
+                name: tab === "Transfer" ? "Transfer" : (values.name ?? ""),
                 date: isoDate,
                 amount: values.amount,
                 type: tab,
                 budget_id: values.budget_id ?? null,
                 wallet_id: values.wallet_id ?? null,
                 user_id: user.id,
+                transfer_id: values.transfer_id ?? null,
+                admin_fee: values.admin_fee ?? 0,
             })
 
             if (insertError) {
@@ -194,17 +203,54 @@ export function AddTransactionDialog() {
                 }
             }
 
-            if (values.wallet_id) {
+            if (tab === "Transfer") {
+                const fromId = values.wallet_id
+                const toId = values.transfer_id
+                const admin = values.admin_fee ?? 0
+
+                if (!fromId || !toId) {
+                    toast.error("Please select both source and destination wallets.", { duration: 3000 })
+                    return
+                }
+
+                if (fromId === toId) {
+                    toast.error("Source and destination wallets must be different.", { duration: 3000 })
+                    return
+                }
+
                 try {
-                    const { data: wData, error: wErr } = await supabase.from("wallets").select("balance").eq("id", values.wallet_id).single()
-                    if (!wErr) {
-                        const currentBalance = wData?.balance ?? 0
-                        const delta = tab === "Income" ? values.amount : -values.amount
-                        const newBalance = currentBalance + delta
-                        await supabase.from("wallets").update({ balance: newBalance }).eq("id", values.wallet_id)
+                    const [{ data: fromData, error: fromErr }, { data: toData, error: toErr }] = await Promise.all([
+                        supabase.from("wallets").select("balance").eq("id", fromId).single(),
+                        supabase.from("wallets").select("balance").eq("id", toId).single(),
+                    ])
+
+                    if (!fromErr) {
+                        const currentFrom = fromData?.balance ?? 0
+                        const newFrom = currentFrom - (values.amount + admin)
+                        await supabase.from("wallets").update({ balance: newFrom }).eq("id", fromId)
+                    }
+
+                    if (!toErr) {
+                        const currentTo = toData?.balance ?? 0
+                        const newTo = currentTo + values.amount
+                        await supabase.from("wallets").update({ balance: newTo }).eq("id", toId)
                     }
                 } catch (err) {
                     toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error.", duration: 3000 })
+                }
+            } else {
+                if (values.wallet_id) {
+                    try {
+                        const { data: wData, error: wErr } = await supabase.from("wallets").select("balance").eq("id", values.wallet_id).single()
+                        if (!wErr) {
+                            const currentBalance = wData?.balance ?? 0
+                            const delta = tab === "Income" ? values.amount : -values.amount
+                            const newBalance = currentBalance + delta
+                            await supabase.from("wallets").update({ balance: newBalance }).eq("id", values.wallet_id)
+                        }
+                    } catch (err) {
+                        toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error.", duration: 3000 })
+                    }
                 }
             }
 
@@ -234,24 +280,27 @@ export function AddTransactionDialog() {
                 </AlertDialogHeader>
 
                 <form onSubmit={form.handleSubmit(onSubmit)}>
-                    <Tabs value={tab} onValueChange={(v) => setTab(v as "Expense" | "Income")} className="mb-6">
+                    <Tabs value={tab} onValueChange={(v) => setTab(v as "Expense" | "Income" | "Transfer")} className="mb-6">
                         <TabsList className="mx-auto">
                             <TabsTrigger value="Expense" className="cursor-pointer">Expense</TabsTrigger>
                             <TabsTrigger value="Income" className="cursor-pointer">Income</TabsTrigger>
+                            <TabsTrigger value="Transfer" className="cursor-pointer">Transfer</TabsTrigger>
                         </TabsList>
                     </Tabs>
                     <FieldGroup className="gap-6">
-                        <Controller
-                            name="name"
-                            control={form.control}
-                            render={({ field, fieldState }) => (
-                                <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel htmlFor="transaction-name">Name</FieldLabel>
-                                    <Input {...field} id="transaction-name" placeholder="Example: Tomoro" autoComplete="off" />
-                                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                                </Field>
-                            )}
-                        />
+                        {tab !== "Transfer" && (
+                            <Controller
+                                name="name"
+                                control={form.control}
+                                render={({ field, fieldState }) => (
+                                    <Field data-invalid={fieldState.invalid}>
+                                        <FieldLabel htmlFor="transaction-name">Name</FieldLabel>
+                                        <Input {...field} id="transaction-name" placeholder="Example: Tomoro" autoComplete="off" />
+                                        {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                                    </Field>
+                                )}
+                            />
+                        )}
 
                         <Controller
                             name="date"
@@ -396,28 +445,97 @@ export function AddTransactionDialog() {
                             />
                         )}
 
-                        <Controller
-                            name="wallet_id"
-                            control={form.control}
-                            render={({ field, fieldState }) => (
-                                <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel>Wallet</FieldLabel>
-                                    <Select value={field.value ?? ""} onValueChange={(v) => field.onChange(v || undefined)}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select wallet" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {wallets.map((w) => (
-                                                <SelectItem key={w.id} value={w.id}>
-                                                    {w.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                                </Field>
-                            )}
-                        />
+                        {tab === "Transfer" ? (
+                            <>
+                                <Controller
+                                    name="wallet_id"
+                                    control={form.control}
+                                    render={({ field, fieldState }) => (
+                                        <Field data-invalid={fieldState.invalid}>
+                                            <FieldLabel>From Wallet</FieldLabel>
+                                            <Select value={field.value ?? ""} onValueChange={(v) => field.onChange(v || undefined)}>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select source wallet" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {wallets.map((w) => (
+                                                        <SelectItem key={w.id} value={w.id}>
+                                                            {w.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                                        </Field>
+                                    )}
+                                />
+
+                                <Controller
+                                    name="transfer_id"
+                                    control={form.control}
+                                    render={({ field, fieldState }) => (
+                                        <Field data-invalid={fieldState.invalid}>
+                                            <FieldLabel>To Wallet</FieldLabel>
+                                            <Select value={field.value ?? ""} onValueChange={(v) => field.onChange(v || undefined)}>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select destination wallet" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {wallets.map((w) => (
+                                                        <SelectItem key={w.id} value={w.id}>
+                                                            {w.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                                        </Field>
+                                    )}
+                                />
+
+                                <Controller
+                                    name="admin_fee"
+                                    control={form.control}
+                                    render={({ field, fieldState }) => (
+                                        <Field data-invalid={fieldState.invalid}>
+                                            <FieldLabel htmlFor="transaction-admin-fee">Admin Fee (optional)</FieldLabel>
+                                            <Input
+                                                id="transaction-admin-fee"
+                                                type="text"
+                                                inputMode="numeric"
+                                                placeholder="0"
+                                                value={mounted ? (field.value ?? 0).toLocaleString("id-ID") : String(field.value ?? 0)}
+                                                onChange={(e) => field.onChange(Number(e.target.value.replace(/\D/g, "")))}
+                                            />
+                                            {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                                        </Field>
+                                    )}
+                                />
+                            </>
+                        ) : (
+                            <Controller
+                                name="wallet_id"
+                                control={form.control}
+                                render={({ field, fieldState }) => (
+                                    <Field data-invalid={fieldState.invalid}>
+                                        <FieldLabel>Wallet</FieldLabel>
+                                        <Select value={field.value ?? ""} onValueChange={(v) => field.onChange(v || undefined)}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select wallet" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {wallets.map((w) => (
+                                                    <SelectItem key={w.id} value={w.id}>
+                                                        {w.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                                    </Field>
+                                )}
+                            />
+                        )}
 
                         <AlertDialogFooter>
                             <AlertDialogCancel type="button" className="cursor-pointer">Cancel</AlertDialogCancel>
