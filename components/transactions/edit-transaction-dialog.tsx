@@ -6,6 +6,7 @@ import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { IconCalculator } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -97,6 +98,63 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
             wallet_id: tx?.wallet_id ?? undefined,
         },
     })
+
+    const [calcOpen, setCalcOpen] = useState(false)
+    const [calcExpr, setCalcExpr] = useState<string>("0")
+
+    const pressCalc = (v: string) => {
+        if (v === "C") return setCalcExpr("0")
+        if (v === "DEL") return setCalcExpr((s) => (s.length <= 1 ? "0" : s.slice(0, -1)))
+        setCalcExpr((s) => (s === "0" ? v : s + v))
+    }
+    const evalCalc = () => {
+        try {
+            const res = Function(`"use strict";return (${calcExpr})`)()
+            setCalcExpr(String(Number.isFinite(res) ? res : 0))
+        } catch {
+            setCalcExpr("0")
+        }
+    }
+    const insertCalc = () => {
+        try {
+            const res = Function(`"use strict";return (${calcExpr})`)()
+            const val = Math.max(0, Math.round(Number.isFinite(res) ? Number(res) : 0))
+            form.setValue("amount", val, { shouldValidate: true, shouldDirty: true })
+        } catch {
+            form.setValue("amount", 0, { shouldValidate: true, shouldDirty: true })
+        } finally {
+            setCalcOpen(false)
+            setCalcExpr("0")
+        }
+    }
+
+    const formatExprForDisplay = (expr: string) => {
+        return expr.replace(/\d+(?:\.\d+)?/g, (m) => {
+            try {
+                const n = Number(m)
+                if (Number.isNaN(n)) return m
+                return n.toLocaleString("id-ID")
+            } catch {
+                return m
+            }
+        })
+    }
+
+    const calcResultValue = () => {
+        try {
+            let expr = String(calcExpr)
+            while (expr.length && /[+\-*/\.]$/.test(expr)) expr = expr.slice(0, -1)
+            if (!expr) return 0
+            const res = Function(`"use strict";return (${expr})`)()
+            return Math.max(0, Math.round(Number.isFinite(res) ? Number(res) : 0))
+        } catch {
+            return 0
+        }
+    }
+
+    const formatCalcResult = () => {
+        return calcResultValue().toLocaleString("id-ID")
+    }
 
     useEffect(() => {
         if (!tx) return
@@ -299,22 +357,76 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                                 render={({ field, fieldState }) => (
                                     <Field data-invalid={fieldState.invalid}>
                                         <FieldLabel htmlFor="transaction-amount">Amount</FieldLabel>
-                                        <Input
-                                            value={
-                                                mounted
-                                                    ? field.value !== undefined && field.value !== null
-                                                        ? field.value.toLocaleString("id-ID")
-                                                        : ""
-                                                    : field.value !== undefined && field.value !== null
-                                                        ? String(field.value)
-                                                        : ""
-                                            }
-                                            id="transaction-amount"
-                                            type="text"
-                                            inputMode="numeric"
-                                            placeholder="0"
-                                            onChange={(event) => field.onChange(Number(event.target.value.replace(/\D/g, "")))}
-                                        />
+                                        <div className="flex items-center gap-2">
+                                            <Input
+                                                value={
+                                                    mounted
+                                                        ? field.value !== undefined && field.value !== null
+                                                            ? field.value.toLocaleString("id-ID")
+                                                            : ""
+                                                        : field.value !== undefined && field.value !== null
+                                                            ? String(field.value)
+                                                            : ""
+                                                }
+                                                id="transaction-amount"
+                                                type="text"
+                                                inputMode="numeric"
+                                                placeholder="0"
+                                                onChange={(event) => field.onChange(Number(event.target.value.replace(/\D/g, "")))}
+                                                className="flex-1"
+                                            />
+
+                                            <Button
+                                                type="button"
+                                                aria-label="Open calculator"
+                                                onClick={() => {
+                                                    setCalcExpr(String(field.value ?? 0))
+                                                    setCalcOpen(true)
+                                                }}
+                                                className="w-9 h-10 flex items-center justify-center cursor-pointer"
+                                            >
+                                                <IconCalculator />
+                                            </Button>
+
+                                            <AlertDialog open={calcOpen} onOpenChange={(v) => {
+                                                setCalcOpen(v)
+                                                if (v) setCalcExpr(String(field.value ?? 0))
+                                            }}>
+                                                <AlertDialogContent className="w-96">
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Calculator</AlertDialogTitle>
+                                                    </AlertDialogHeader>
+
+                                                    <div className="mb-4 text-right text-2xl font-medium">{formatExprForDisplay(calcExpr)}</div>
+
+                                                    <div className="grid grid-cols-4 gap-2">
+                                                        {[
+                                                            "C", "DEL", "/", "*",
+                                                            "7", "8", "9", "-",
+                                                            "4", "5", "6", "+",
+                                                            "1", "2", "3", "=",
+                                                            "0",
+                                                        ].map((k) => (
+                                                            <Button key={k} type="button" onClick={() => {
+                                                                if (k === "DEL") pressCalc("DEL")
+                                                                else if (k === "C") pressCalc("C")
+                                                                else if (k === "+") pressCalc("+")
+                                                                else if (k === "=") evalCalc()
+                                                                else pressCalc(k)
+                                                            }}
+                                                                className={k === "C" ? "bg-rose-500 text-white hover:bg-rose-500 hover:text-white" : ""}
+                                                            >{k}</Button>
+                                                        ))}
+                                                        <Button className="col-span-3 cursor-pointer" onClick={() => insertCalc()}>Rp {formatCalcResult()}</Button>
+                                                    </div>
+
+                                                    <div className="mt-4 flex justify-end gap-2">
+                                                        <AlertDialogCancel onClick={() => setCalcOpen(false)} className="cursor-pointer">Close</AlertDialogCancel>
+                                                        <Button onClick={() => { insertCalc(); }} className="cursor-pointer">Insert</Button>
+                                                    </div>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </div>
                                         {fieldState.error && <FieldError errors={[fieldState.error]} />}
                                     </Field>
                                 )}
