@@ -135,6 +135,13 @@ export function AddTransactionDialog() {
         return calcResultValue().toLocaleString("id-ID")
     }
 
+    useEffect(() => {
+        if (!open) {
+            form.reset()
+            setCalcExpr("0")
+        }
+    }, [open, form])
+
     async function onSubmit(values: FormValues) {
         setLoading(true)
         try {
@@ -346,7 +353,7 @@ export function AddTransactionDialog() {
                                                             else if (k === "=") evalCalc()
                                                             else pressCalc(k)
                                                         }}
-                                                        className={k === "C" ? "bg-rose-500 text-white hover:bg-rose-500 hover:text-white" : ""}
+                                                            className={k === "C" ? "bg-rose-500 text-white hover:bg-rose-500 hover:text-white" : ""}
                                                         >{k}</Button>
                                                     ))}
                                                     <Button className="col-span-3 cursor-pointer" onClick={() => insertCalc()}>Rp {formatCalcResult()}</Button>
