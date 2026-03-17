@@ -24,11 +24,14 @@ import { createClient } from "@/lib/supabase/client"
 import { DeleteTransactionDialog } from "./delete-transaction-dialog"
 
 const formSchema = z.object({
-    name: z.string().min(1),
+    name: z.string().optional(),
+    type: z.enum(["Expense", "Income", "Transfer"]),
     date: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/),
     amount: z.number().int().min(1),
     budget_id: z.string().optional().nullable(),
     wallet_id: z.string().optional().nullable(),
+    transfer_id: z.string().optional().nullable(),
+    admin_fee: z.number().int().min(0).optional(),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -40,6 +43,9 @@ type TxItem = {
     amount: number
     budget_id?: string | null
     wallet_id?: string | null
+    transfer_id?: string | null
+    type?: "Income" | "Expense" | "Transfer"
+    admin_fee?: number | null
 }
 
 type Props = { tx?: TxItem | null; onClose?: () => void }
@@ -92,12 +98,17 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: tx?.name ?? "",
+            type: (tx?.type as "Expense" | "Income" | "Transfer") ?? "Expense",
             date: defaultDateStr,
             amount: tx?.amount ?? 0,
             budget_id: tx?.budget_id ?? undefined,
             wallet_id: tx?.wallet_id ?? undefined,
+            transfer_id: tx?.transfer_id ?? undefined,
+            admin_fee: tx?.admin_fee ?? 0,
         },
     })
+    const type = form.watch("type")
+    
 
     const [calcOpen, setCalcOpen] = useState(false)
     const [calcExpr, setCalcExpr] = useState<string>("0")
@@ -162,37 +173,46 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
             try {
                 const { data, error } = await supabase
                     .from("transactions")
-                    .select("id, name, date, amount, budget_id, wallet_id")
+                    .select("id, name, date, amount, type, budget_id, wallet_id, transfer_id, admin_fee")
                     .eq("id", tx.id)
                     .single()
 
                 if (error) {
                     form.reset({
                         name: tx.name,
+                        type: (tx?.type as "Expense" | "Income" | "Transfer") ?? "Expense",
                         date: defaultDateStr,
                         amount: tx.amount,
                         budget_id: tx?.budget_id ?? undefined,
                         wallet_id: tx?.wallet_id ?? undefined,
+                        transfer_id: tx?.transfer_id ?? undefined,
+                        admin_fee: tx?.admin_fee ?? 0,
                     })
                 } else {
                     const d = new Date(data.date)
                     const dateStr = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`
                     form.reset({
                         name: data.name,
+                        type: data.type ?? "Expense",
                         date: dateStr,
                         amount: data.amount,
                         budget_id: data.budget_id ?? undefined,
                         wallet_id: data.wallet_id ?? undefined,
+                        transfer_id: data.transfer_id ?? undefined,
+                        admin_fee: data.admin_fee ?? 0,
                     })
                 }
             } catch (err) {
                 toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
                 form.reset({
                     name: tx.name,
+                    type: (tx?.type as "Expense" | "Income" | "Transfer") ?? "Expense",
                     date: defaultDateStr,
                     amount: tx.amount,
                     budget_id: tx?.budget_id ?? undefined,
                     wallet_id: tx?.wallet_id ?? undefined,
+                    transfer_id: tx?.transfer_id ?? undefined,
+                    admin_fee: tx?.admin_fee ?? 0,
                 })
             } finally {
                 setOpen(true)
@@ -204,12 +224,15 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
         if (!tx) return
         setLoading(true)
         try {
-            const { data: prevData, error: prevErr } = await supabase.from("transactions").select("amount, budget_id, wallet_id").eq("id", tx.id).single()
+            const { data: prevData, error: prevErr } = await supabase.from("transactions").select("amount, budget_id, wallet_id, transfer_id, type, admin_fee").eq("id", tx.id).single()
             if (prevErr) throw prevErr
 
             const prevAmount = prevData?.amount ?? 0
             const prevBudgetId = prevData?.budget_id ?? null
             const prevWalletId = prevData?.wallet_id ?? null
+            const prevTransferId = prevData?.transfer_id ?? null
+            const prevType = prevData?.type ?? "Expense"
+            const prevAdmin = prevData?.admin_fee ?? 0
 
             const isoDate = toIsoDate(values.date)
             const { error } = await supabase.from("transactions").update({
@@ -225,55 +248,139 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                 return
             }
 
-            if (prevBudgetId) {
-                try {
-                    const { data: bData, error: bErr } = await supabase.from("budgets").select("leftover").eq("id", prevBudgetId).single()
-                    if (!bErr) {
-                        const currentLeftover = bData?.leftover ?? 0
-                        const newLeftover = currentLeftover + prevAmount
-                        await supabase.from("budgets").update({ leftover: newLeftover }).eq("id", prevBudgetId)
+            if (prevType === "Expense") {
+                if (prevBudgetId) {
+                    try {
+                        const { data: bData, error: bErr } = await supabase.from("budgets").select("leftover").eq("id", prevBudgetId).single()
+                        if (!bErr) {
+                            const currentLeftover = bData?.leftover ?? 0
+                            const newLeftover = currentLeftover + prevAmount
+                            await supabase.from("budgets").update({ leftover: newLeftover }).eq("id", prevBudgetId)
+                        }
+                    } catch (err) {
+                        toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
                     }
-                } catch (err) {
-                    toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
+                }
+                if (prevWalletId) {
+                    try {
+                        const { data: wData, error: wErr } = await supabase.from("wallets").select("balance").eq("id", prevWalletId).single()
+                        if (!wErr) {
+                            const currentBalance = wData?.balance ?? 0
+                            const newBalance = currentBalance + prevAmount
+                            await supabase.from("wallets").update({ balance: newBalance }).eq("id", prevWalletId)
+                        }
+                    } catch (err) {
+                        toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
+                    }
+                }
+            } else if (prevType === "Income") {
+                if (prevWalletId) {
+                    try {
+                        const { data: wData, error: wErr } = await supabase.from("wallets").select("balance").eq("id", prevWalletId).single()
+                        if (!wErr) {
+                            const currentBalance = wData?.balance ?? 0
+                            const newBalance = currentBalance - prevAmount
+                            await supabase.from("wallets").update({ balance: newBalance }).eq("id", prevWalletId)
+                        }
+                    } catch (err) {
+                        toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
+                    }
+                }
+            } else if (prevType === "Transfer") {
+                // revert transfer: add back to source (amount + admin) and subtract from dest (amount)
+                if (prevWalletId) {
+                    try {
+                        const { data: wData, error: wErr } = await supabase.from("wallets").select("balance").eq("id", prevWalletId).single()
+                        if (!wErr) {
+                            const currentBalance = wData?.balance ?? 0
+                            const newBalance = currentBalance + prevAmount + (prevAdmin ?? 0)
+                            await supabase.from("wallets").update({ balance: newBalance }).eq("id", prevWalletId)
+                        }
+                    } catch (err) {
+                        toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
+                    }
+                }
+                if (prevTransferId) {
+                    try {
+                        const { data: wData, error: wErr } = await supabase.from("wallets").select("balance").eq("id", prevTransferId).single()
+                        if (!wErr) {
+                            const currentBalance = wData?.balance ?? 0
+                            const newBalance = currentBalance - prevAmount
+                            await supabase.from("wallets").update({ balance: newBalance }).eq("id", prevTransferId)
+                        }
+                    } catch (err) {
+                        toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
+                    }
                 }
             }
 
-            if (prevWalletId) {
-                try {
-                    const { data: wData, error: wErr } = await supabase.from("wallets").select("balance").eq("id", prevWalletId).single()
-                    if (!wErr) {
-                        const currentBalance = wData?.balance ?? 0
-                        const newBalance = currentBalance + prevAmount
-                        await supabase.from("wallets").update({ balance: newBalance }).eq("id", prevWalletId)
+            // Apply new effects based on selected type
+            if (values.type === "Expense") {
+                if (values.budget_id) {
+                    try {
+                        const { data: bData, error: bErr } = await supabase.from("budgets").select("leftover").eq("id", values.budget_id).single()
+                        if (!bErr) {
+                            const currentLeftover = bData?.leftover ?? 0
+                            const newLeftover = Math.max(0, currentLeftover - values.amount)
+                            await supabase.from("budgets").update({ leftover: newLeftover }).eq("id", values.budget_id)
+                        }
+                    } catch (err) {
+                        toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
                     }
-                } catch (err) {
-                    toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
                 }
             }
-
-            if (values.budget_id) {
-                try {
-                    const { data: bData, error: bErr } = await supabase.from("budgets").select("leftover").eq("id", values.budget_id).single()
-                    if (!bErr) {
-                        const currentLeftover = bData?.leftover ?? 0
-                        const newLeftover = Math.max(0, currentLeftover - values.amount)
-                        await supabase.from("budgets").update({ leftover: newLeftover }).eq("id", values.budget_id)
+            if (values.type === "Income") {
+                if (values.wallet_id) {
+                    try {
+                        const { data: wData, error: wErr } = await supabase.from("wallets").select("balance").eq("id", values.wallet_id).single()
+                        if (!wErr) {
+                            const currentBalance = wData?.balance ?? 0
+                            const newBalance = currentBalance + values.amount
+                            await supabase.from("wallets").update({ balance: newBalance }).eq("id", values.wallet_id)
+                        }
+                    } catch (err) {
+                        toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
                     }
-                } catch (err) {
-                    toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
                 }
-            }
-
-            if (values.wallet_id) {
-                try {
-                    const { data: wData, error: wErr } = await supabase.from("wallets").select("balance").eq("id", values.wallet_id).single()
-                    if (!wErr) {
-                        const currentBalance = wData?.balance ?? 0
-                        const newBalance = currentBalance - values.amount
-                        await supabase.from("wallets").update({ balance: newBalance }).eq("id", values.wallet_id)
+            } else if (values.type === "Expense") {
+                if (values.wallet_id) {
+                    try {
+                        const { data: wData, error: wErr } = await supabase.from("wallets").select("balance").eq("id", values.wallet_id).single()
+                        if (!wErr) {
+                            const currentBalance = wData?.balance ?? 0
+                            const newBalance = currentBalance - values.amount
+                            await supabase.from("wallets").update({ balance: newBalance }).eq("id", values.wallet_id)
+                        }
+                    } catch (err) {
+                        toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
                     }
-                } catch (err) {
-                    toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
+                }
+            } else if (values.type === "Transfer") {
+                const admin = values.admin_fee ?? 0
+                if (values.wallet_id) {
+                    try {
+                        const { data: wData, error: wErr } = await supabase.from("wallets").select("balance").eq("id", values.wallet_id).single()
+                        if (!wErr) {
+                            const currentBalance = wData?.balance ?? 0
+                            const newBalance = currentBalance - (values.amount + admin)
+                            await supabase.from("wallets").update({ balance: newBalance }).eq("id", values.wallet_id)
+                        }
+                    } catch (err) {
+                        toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
+                    }
+                }
+
+                if (values.transfer_id) {
+                    try {
+                        const { data: wData, error: wErr } = await supabase.from("wallets").select("balance").eq("id", values.transfer_id).single()
+                        if (!wErr) {
+                            const currentBalance = wData?.balance ?? 0
+                            const newBalance = currentBalance + values.amount
+                            await supabase.from("wallets").update({ balance: newBalance }).eq("id", values.transfer_id)
+                        }
+                    } catch (err) {
+                        toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
+                    }
                 }
             }
 
@@ -302,17 +409,19 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
 
                     <form onSubmit={form.handleSubmit(onSubmit)}>
                         <FieldGroup className="gap-4">
-                            <Controller
-                                name="name"
-                                control={form.control}
-                                render={({ field, fieldState }) => (
-                                    <Field data-invalid={fieldState.invalid}>
-                                        <FieldLabel htmlFor="transaction-name">Name</FieldLabel>
-                                        <Input {...field} id="transaction-name" placeholder="Example: Tomoro" />
-                                        {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                                    </Field>
-                                )}
-                            />
+                            {type !== "Transfer" && (
+                                <Controller
+                                    name="name"
+                                    control={form.control}
+                                    render={({ field, fieldState }) => (
+                                        <Field data-invalid={fieldState.invalid}>
+                                            <FieldLabel htmlFor="transaction-name">Name</FieldLabel>
+                                            <Input {...field} id="transaction-name" placeholder="Example: Tomoro" />
+                                            {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                                        </Field>
+                                    )}
+                                />
+                            )}
 
                             <Controller
                                 name="date"
@@ -432,51 +541,122 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                                 )}
                             />
 
-                            <Controller
-                                name="budget_id"
-                                control={form.control}
-                                render={({ field, fieldState }) => (
-                                    <Field data-invalid={fieldState.invalid}>
-                                        <FieldLabel>Budget</FieldLabel>
-                                        <Select value={field.value ?? ""} onValueChange={(v) => field.onChange(v || undefined)}>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select budget" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {budgets.map((b) => (
-                                                    <SelectItem key={b.id} value={b.id}>
-                                                        {b.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                                    </Field>
-                                )}
-                            />
+                            {type === "Expense" && (
+                                <Controller
+                                    name="budget_id"
+                                    control={form.control}
+                                    render={({ field, fieldState }) => (
+                                        <Field data-invalid={fieldState.invalid}>
+                                            <FieldLabel>Budget</FieldLabel>
+                                            <Select value={field.value ?? ""} onValueChange={(v) => field.onChange(v || undefined)}>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select budget" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {budgets.map((b) => (
+                                                        <SelectItem key={b.id} value={b.id}>
+                                                            {b.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                                        </Field>
+                                    )}
+                                />
+                            )}
 
-                            <Controller
-                                name="wallet_id"
-                                control={form.control}
-                                render={({ field, fieldState }) => (
-                                    <Field data-invalid={fieldState.invalid}>
-                                        <FieldLabel>Wallet</FieldLabel>
-                                        <Select value={field.value ?? ""} onValueChange={(v) => field.onChange(v || undefined)}>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select wallet" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {wallets.map((w) => (
-                                                    <SelectItem key={w.id} value={w.id}>
-                                                        {w.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                                    </Field>
-                                )}
-                            />
+                            {type === "Transfer" ? (
+                                <>
+                                    <Controller
+                                        name="wallet_id"
+                                        control={form.control}
+                                        render={({ field, fieldState }) => (
+                                            <Field data-invalid={fieldState.invalid}>
+                                                <FieldLabel>From Wallet</FieldLabel>
+                                                <Select value={field.value ?? ""} onValueChange={(v) => field.onChange(v || undefined)}>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select source wallet" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {wallets.map((w) => (
+                                                            <SelectItem key={w.id} value={w.id}>
+                                                                {w.name}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                                            </Field>
+                                        )}
+                                    />
+
+                                    <Controller
+                                        name="transfer_id"
+                                        control={form.control}
+                                        render={({ field, fieldState }) => (
+                                            <Field data-invalid={fieldState.invalid}>
+                                                <FieldLabel>To Wallet</FieldLabel>
+                                                <Select value={field.value ?? ""} onValueChange={(v) => field.onChange(v || undefined)}>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select destination wallet" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {wallets.map((w) => (
+                                                            <SelectItem key={w.id} value={w.id}>
+                                                                {w.name}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                                            </Field>
+                                        )}
+                                    />
+
+                                    <Controller
+                                        name="admin_fee"
+                                        control={form.control}
+                                        render={({ field, fieldState }) => (
+                                            <Field data-invalid={fieldState.invalid}>
+                                                <FieldLabel htmlFor="transaction-admin-fee">Admin Fee (optional)</FieldLabel>
+                                                <Input
+                                                    id="transaction-admin-fee"
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    placeholder="0"
+                                                    value={mounted ? (field.value ?? 0).toLocaleString("id-ID") : String(field.value ?? 0)}
+                                                    onChange={(e) => field.onChange(Number(e.target.value.replace(/\D/g, "")))}
+                                                />
+                                                {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                                            </Field>
+                                        )}
+                                    />
+                                </>
+                            ) : (
+                                <Controller
+                                    name="wallet_id"
+                                    control={form.control}
+                                    render={({ field, fieldState }) => (
+                                        <Field data-invalid={fieldState.invalid}>
+                                            <FieldLabel>Wallet</FieldLabel>
+                                            <Select value={field.value ?? ""} onValueChange={(v) => field.onChange(v || undefined)}>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select wallet" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {wallets.map((w) => (
+                                                        <SelectItem key={w.id} value={w.id}>
+                                                            {w.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                                        </Field>
+                                    )}
+                                />
+                            )}
 
                             <AlertDialogFooter>
                                 <AlertDialogCancel type="button" className="cursor-pointer">Cancel</AlertDialogCancel>

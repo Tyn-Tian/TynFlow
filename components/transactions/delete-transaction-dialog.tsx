@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { createClient } from "@/lib/supabase/client"
 
-type TxItem = { id: number | string; amount: number; budget_id?: string | null; wallet_id?: string | null }
+type TxItem = { id: number | string; amount: number; budget_id?: string | null; wallet_id?: string | null; transfer_id?: string | null }
 
 export function DeleteTransactionDialog({ tx, onDeleted, onClose }: { tx?: TxItem | null; onDeleted?: () => void; onClose?: () => void }) {
     const supabase = createClient()
@@ -33,38 +33,81 @@ export function DeleteTransactionDialog({ tx, onDeleted, onClose }: { tx?: TxIte
         setLoading(true)
         try {
             // fetch transaction details to revert budget/wallet changes
-            const { data: trData, error: trErr } = await supabase.from("transactions").select("id, amount, budget_id, wallet_id").eq("id", tx.id).single()
+            const { data: trData, error: trErr } = await supabase.from("transactions").select("id, amount, budget_id, wallet_id, transfer_id, type, admin_fee").eq("id", tx.id).single()
             if (trErr) throw trErr
 
             const amount = trData?.amount ?? 0
             const budgetId = trData?.budget_id ?? null
             const walletId = trData?.wallet_id ?? null
+            const transferId = trData?.transfer_id ?? null
+            const type = trData?.type ?? "Expense"
+            const admin = trData?.admin_fee ?? 0
 
-            // revert budget leftover (increase by amount)
-            if (budgetId) {
-                try {
-                    const { data: bData, error: bErr } = await supabase.from("budgets").select("leftover").eq("id", budgetId).single()
-                    if (!bErr) {
-                        const currentLeftover = bData?.leftover ?? 0
-                        const newLeftover = currentLeftover + amount
-                        await supabase.from("budgets").update({ leftover: newLeftover }).eq("id", budgetId)
+            if (type === "Expense") {
+                if (budgetId) {
+                    try {
+                        const { data: bData, error: bErr } = await supabase.from("budgets").select("leftover").eq("id", budgetId).single()
+                        if (!bErr) {
+                            const currentLeftover = bData?.leftover ?? 0
+                            const newLeftover = currentLeftover + amount
+                            await supabase.from("budgets").update({ leftover: newLeftover }).eq("id", budgetId)
+                        }
+                    } catch (err) {
+                        toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
                     }
-                } catch (err) {
-                    toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
                 }
-            }
 
-            // revert wallet balance (increase by amount)
-            if (walletId) {
-                try {
-                    const { data: wData, error: wErr } = await supabase.from("wallets").select("balance").eq("id", walletId).single()
-                    if (!wErr) {
-                        const currentBalance = wData?.balance ?? 0
-                        const newBalance = currentBalance + amount
-                        await supabase.from("wallets").update({ balance: newBalance }).eq("id", walletId)
+                if (walletId) {
+                    try {
+                        const { data: wData, error: wErr } = await supabase.from("wallets").select("balance").eq("id", walletId).single()
+                        if (!wErr) {
+                            const currentBalance = wData?.balance ?? 0
+                            const newBalance = currentBalance + amount
+                            await supabase.from("wallets").update({ balance: newBalance }).eq("id", walletId)
+                        }
+                    } catch (err) {
+                        toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
                     }
-                } catch (err) {
-                    toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
+                }
+            } else if (type === "Income") {
+                if (walletId) {
+                    try {
+                        const { data: wData, error: wErr } = await supabase.from("wallets").select("balance").eq("id", walletId).single()
+                        if (!wErr) {
+                            const currentBalance = wData?.balance ?? 0
+                            const newBalance = currentBalance - amount
+                            await supabase.from("wallets").update({ balance: newBalance }).eq("id", walletId)
+                        }
+                    } catch (err) {
+                        toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
+                    }
+                }
+            } else if (type === "Transfer") {
+                // revert transfer: add back to source (amount + admin) and subtract from dest (amount)
+                if (walletId) {
+                    try {
+                        const { data: wData, error: wErr } = await supabase.from("wallets").select("balance").eq("id", walletId).single()
+                        if (!wErr) {
+                            const currentBalance = wData?.balance ?? 0
+                            const newBalance = currentBalance + amount + (admin ?? 0)
+                            await supabase.from("wallets").update({ balance: newBalance }).eq("id", walletId)
+                        }
+                    } catch (err) {
+                        toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
+                    }
+                }
+
+                if (transferId) {
+                    try {
+                        const { data: wData, error: wErr } = await supabase.from("wallets").select("balance").eq("id", transferId).single()
+                        if (!wErr) {
+                            const currentBalance = wData?.balance ?? 0
+                            const newBalance = currentBalance - amount
+                            await supabase.from("wallets").update({ balance: newBalance }).eq("id", transferId)
+                        }
+                    } catch (err) {
+                        toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
+                    }
                 }
             }
 
