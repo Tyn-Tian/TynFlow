@@ -9,6 +9,7 @@ import { toast } from "sonner"
 import { IconCalculator } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Calendar } from "@/components/ui/calendar"
 import {
     AlertDialog,
     AlertDialogCancel,
@@ -58,8 +59,27 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
     const [mounted, setMounted] = useState(false)
     const [budgets, setBudgets] = useState<{ id: string; name: string }[]>([])
     const [wallets, setWallets] = useState<{ id: string; name: string }[]>([])
+    const [showDatePicker, setShowDatePicker] = useState(false)
+    const datePickerRef = React.useRef<HTMLDivElement | null>(null)
 
     useEffect(() => setMounted(true), [])
+
+    useEffect(() => {
+        function onClick(e: MouseEvent) {
+            if (!datePickerRef.current) return
+            const target = e.target as Node
+            if (showDatePicker && !datePickerRef.current.contains(target)) setShowDatePicker(false)
+        }
+        function onKey(e: KeyboardEvent) {
+            if (e.key === "Escape") setShowDatePicker(false)
+        }
+        document.addEventListener("mousedown", onClick)
+        document.addEventListener("keydown", onKey)
+        return () => {
+            document.removeEventListener("mousedown", onClick)
+            document.removeEventListener("keydown", onKey)
+        }
+    }, [showDatePicker])
 
     useEffect(() => {
         if (!open) return
@@ -447,13 +467,56 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                                     return (
                                         <Field data-invalid={fieldState.invalid}>
                                             <FieldLabel htmlFor="transaction-date">Date</FieldLabel>
-                                            <Input
-                                                id="transaction-date"
-                                                value={field.value}
-                                                placeholder="dd/mm/yyyy"
-                                                onChange={(e) => field.onChange(format(e.target.value))}
-                                                autoComplete="off"
-                                            />
+                                            <div className="relative" ref={datePickerRef}>
+                                                <div className="flex items-center">
+                                                    <Input
+                                                        id="transaction-date"
+                                                        value={field.value}
+                                                        placeholder="dd/mm/yyyy"
+                                                        onChange={(e) => field.onChange(format(e.target.value))}
+                                                        autoComplete="off"
+                                                        className="flex-1"
+                                                    />
+
+                                                    <button
+                                                        type="button"
+                                                        aria-label="Open date picker"
+                                                        onClick={() => setShowDatePicker(true)}
+                                                        className="w-9 h-10 flex items-center justify-center ml-2 cursor-pointer"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"/></svg>
+                                                    </button>
+                                                </div>
+
+                                                {showDatePicker && (
+                                                    <div className="absolute z-50 mt-2">
+                                                        <Calendar
+                                                            mode="single"
+                                                            selected={(() => {
+                                                                try {
+                                                                    const [dd, mm, yyyy] = String(field.value || defaultDateStr).split("/")
+                                                                    const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd))
+                                                                    return Number.isNaN(d.getTime()) ? undefined : d
+                                                                } catch {
+                                                                    return undefined
+                                                                }
+                                                            })()}
+                                                            onSelect={(d) => {
+                                                                if (!d) return
+                                                                const day = Array.isArray(d) ? d[0] : d
+                                                                const dd = String(day.getDate()).padStart(2, "0")
+                                                                const mm = String(day.getMonth() + 1).padStart(2, "0")
+                                                                const yyyy = String(day.getFullYear())
+                                                                field.onChange(`${dd}/${mm}/${yyyy}`)
+                                                                setShowDatePicker(false)
+                                                            }}
+                                                            className="rounded-lg border"
+                                                            captionLayout="dropdown"
+                                                        />
+                                                    </div>
+                                                )}
+
+                                            </div>
                                             {fieldState.error && <FieldError errors={[fieldState.error]} />}
                                         </Field>
                                     )
