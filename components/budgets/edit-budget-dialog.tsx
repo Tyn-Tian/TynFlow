@@ -108,6 +108,7 @@ export function EditBudgetDialog({
             setOpen(false)
             onSuccess?.()
             router.refresh()
+            if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("budgets:changed"))
         } catch (err: Error | unknown) {
             toast.error("Failed", {
                 description: err instanceof Error ? err.message : "Unexpected error.",

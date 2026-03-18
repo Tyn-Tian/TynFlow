@@ -45,6 +45,7 @@ export function DeleteBudgetDialog({ budgetId }: { budgetId?: string | null }) {
             })
             setOpen(false)
             router.refresh()
+            if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("budgets:changed"))
         } catch (err: Error | unknown) {
             toast.error("Failed", {
                 description: err instanceof Error ? err.message : "Unexpected error.",

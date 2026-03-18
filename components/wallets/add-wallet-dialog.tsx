@@ -99,6 +99,7 @@ export function AddWalletDialog() {
             form.reset()
             setOpen(false)
             router.refresh()
+            if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("wallets:changed"))
         } catch (err: Error | unknown) {
             toast.error("Failed", {
                 description: err instanceof Error ? err.message : "Unexpected error.",

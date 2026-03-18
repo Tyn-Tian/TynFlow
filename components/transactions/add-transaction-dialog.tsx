@@ -280,6 +280,7 @@ export function AddTransactionDialog() {
             setTab("Expense")
             setOpen(false)
             router.refresh()
+            if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("transactions:changed"))
         } catch (err: Error | unknown) {
             toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error.", duration: 3000 })
         } finally {

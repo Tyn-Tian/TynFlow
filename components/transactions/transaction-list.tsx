@@ -1,9 +1,10 @@
 "use client"
 
-import { IconWallet } from "@tabler/icons-react"
+import { useEffect, useState } from "react"
+import { IconWallet, IconLoader } from "@tabler/icons-react"
 import { Card, CardAction, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useState } from "react"
 import { EditTransactionDialog } from "./edit-transaction-dialog"
+import { createClient } from "@/lib/supabase/client"
 
 type TxItem = {
     id: number | string
@@ -19,14 +20,102 @@ type TxItem = {
     type: "Income" | "Expense" | "Transfer"
 }
 
-export function TransactionList({ transactions }: { transactions: TxItem[] }) {
+export function TransactionList() {
+    const supabase = createClient()
     const [editTx, setEditTx] = useState<TxItem | null>(null)
+    const [transactions, setTransactions] = useState<TxItem[] | null>(null)
+    const [loading, setLoading] = useState(true)
+
+    const fetchTransactions = async () => {
+        setLoading(true)
+        try {
+            const { data: userData } = await supabase.auth.getUser()
+            const user = userData?.user
+            if (!user) {
+                setTransactions([])
+                return
+            }
+
+            const { data: txData, error: txError } = await supabase
+                .from("transactions")
+                .select("id, name, date, amount, type, budget_id, wallet_id, transfer_id")
+                .eq("user_id", user.id)
+                .order("created_at", { ascending: false })
+
+            if (txError) throw txError
+
+            type RawTx = { id: string; name: string; date: string; amount: number; budget_id?: string | null; wallet_id?: string | null; transfer_id?: string | null; type: string }
+            const rows = (txData ?? []) as RawTx[]
+
+            const walletIds = Array.from(new Set(rows.flatMap((r) => [r.wallet_id, r.transfer_id].filter(Boolean) as string[])))
+            let walletMap: Record<string, string> = {}
+            if (walletIds.length) {
+                const { data: walletsData, error: walletsError } = await supabase
+                    .from("wallets")
+                    .select("id, name")
+                    .in("id", walletIds)
+                if (!walletsError && walletsData) walletMap = Object.fromEntries((walletsData as { id: string; name?: string }[]).map((w) => [w.id, w.name ?? ""]))
+            }
+
+            const budgetIds = Array.from(new Set(rows.map((r) => r.budget_id).filter(Boolean) as string[]))
+            let budgetMap: Record<string, string> = {}
+            if (budgetIds.length) {
+                const { data: budgetsData, error: budgetsError } = await supabase
+                    .from("budgets")
+                    .select("id, name")
+                    .in("id", budgetIds)
+                if (!budgetsError && budgetsData) budgetMap = Object.fromEntries((budgetsData as { id: string; name?: string }[]).map((b) => [b.id, b.name ?? ""]))
+            }
+
+            const txs: TxItem[] = rows.map((t) => ({
+                id: t.id,
+                name: t.name,
+                date: t.date,
+                amount: t.amount,
+                budgetName: t.budget_id ? budgetMap[t.budget_id] : undefined,
+                walletName: t.wallet_id ? walletMap[t.wallet_id] : undefined,
+                transferName: t.transfer_id ? walletMap[t.transfer_id] : undefined,
+                budget_id: t.budget_id ?? undefined,
+                wallet_id: t.wallet_id ?? undefined,
+                transfer_id: t.transfer_id ?? undefined,
+                type: t.type as "Income" | "Expense" | "Transfer",
+            }))
+
+            setTransactions(txs)
+        } catch (err) {
+            console.error(err)
+            setTransactions([])
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        let mounted = true
+        void (async () => {
+            if (!mounted) return
+            await fetchTransactions()
+        })()
+
+        const handler = () => void fetchTransactions()
+        window.addEventListener("transactions:changed", handler)
+
+        return () => {
+            mounted = false
+            window.removeEventListener("transactions:changed", handler)
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [supabase])
+
+    if (loading) return <div className="flex items-center justify-center"><IconLoader className="animate-spin" /></div>
+    if (!transactions || transactions.length === 0) return <div className="text-sm text-center text-muted-foreground">No transactions yet.</div>
+
     const groups = transactions.reduce<Record<string, TxItem[]>>((acc, t) => {
         const d = new Date(t.date)
         const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
             d.getDate()
         ).padStart(2, "0")}`
-            ; (acc[dateKey] ??= []).push(t)
+        ;(acc[dateKey] ??= []).push(t)
         return acc
     }, {})
 

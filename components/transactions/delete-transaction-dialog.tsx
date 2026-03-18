@@ -120,6 +120,7 @@ export function DeleteTransactionDialog({ tx, onDeleted, onClose }: { tx?: TxIte
             toast.success("Deleted", { description: "Transaction deleted." })
             setOpen(false)
             router.refresh()
+            if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("transactions:changed"))
             onDeleted?.()
         } catch (err) {
             toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })

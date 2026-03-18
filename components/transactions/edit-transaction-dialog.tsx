@@ -407,7 +407,8 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
             toast.success("Success", { description: "Transaction updated." })
             setOpen(false)
             onClose?.()
-            router.refresh()
+                router.refresh()
+                if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("transactions:changed"))
         } catch (err) {
             toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
         } finally {
