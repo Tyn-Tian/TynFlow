@@ -70,7 +70,7 @@ export function EditGoalDialog({ goal, onSuccess }: { goal: GoalItem; onSuccess?
 
         setSaving(true)
         try {
-            const newSaved = Math.min(goal.saved ?? 0, values.target)
+            const newSaved = Math.min(values.saved ?? 0, values.target)
 
             const { error } = await supabase
                 .from("goals")
