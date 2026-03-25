@@ -1,15 +1,5 @@
-"use client"
-
 import * as React from "react"
-import {
-    IconCalendarDollar,
-    IconChartPie,
-    IconDashboard,
-    IconInnerShadowTop,
-    IconLockDollar,
-    IconTarget,
-    IconWallet,
-} from "@tabler/icons-react"
+import { IconInnerShadowTop } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
@@ -22,6 +12,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { createClient } from "@/lib/supabase/server"
 
 const data = {
     user: {
@@ -33,37 +24,61 @@ const data = {
         {
             title: "Dashboard",
             url: "/",
-            icon: IconDashboard,
+            icon: "dashboard",
         },
         {
             title: "Wallet",
             url: "/wallet",
-            icon: IconWallet,
+            icon: "wallet",
         },
         {
             title: "Transaction",
             url: "/transaction",
-            icon: IconCalendarDollar,
+            icon: "transaction",
         },
         {
             title: "Budget",
             url: "/budget",
-            icon: IconLockDollar,
+            icon: "budget",
         },
         {
             title: "Portfolio",
             url: "/portfolio",
-            icon: IconChartPie,
+            icon: "portfolio",
         },
         {
             title: "Goals",
             url: "/goals",
-            icon: IconTarget
+            icon: "goals",
         },
     ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+    const supabase = await createClient()
+
+    const { data: userData } = await supabase.auth.getUser()
+    let displayName = userData?.user?.user_metadata?.full_name ?? "Unknown User"
+    const userId = userData?.user?.id
+
+    if (userId) {
+        const { data: profile, error } = await supabase
+            .from("profiles")
+            .select("name")
+            .eq("user_id", userId)
+            .single()
+
+        if (!error && profile?.name) {
+            displayName = profile.name
+        }
+    }
+
+    const user = {
+        name: displayName,
+        email: userData?.user?.email ?? "",
+        avatar: "/avatars/default.png",
+    }
+
     return (
         <Sidebar collapsible="offcanvas" {...props}>
             <SidebarHeader>
@@ -85,7 +100,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <NavMain items={data.navMain} />
             </SidebarContent>
             <SidebarFooter>
-                <NavUser user={data.user} />
+                <NavUser user={user} />
             </SidebarFooter>
         </Sidebar>
     )

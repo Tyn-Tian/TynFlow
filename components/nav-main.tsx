@@ -1,6 +1,15 @@
 "use client"
 
-import { IconLogout, type Icon } from "@tabler/icons-react"
+import {
+  IconLogout,
+  IconDashboard,
+  IconWallet,
+  IconCalendarDollar,
+  IconLockDollar,
+  IconChartPie,
+  IconTarget,
+  Icon,
+} from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 
@@ -30,7 +39,7 @@ export function NavMain({
   items: {
     title: string
     url: string
-    icon?: Icon
+    icon?: string
   }[]
 }) {
   const router = useRouter()
@@ -49,7 +58,18 @@ export function NavMain({
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton tooltip={item.title} className="cursor-pointer" asChild>
                 <a href={item.url}>
-                  {item.icon && <item.icon />}
+                  {(() => {
+                    const IconMap: Record<string, Icon> = {
+                      dashboard: IconDashboard,
+                      wallet: IconWallet,
+                      transaction: IconCalendarDollar,
+                      budget: IconLockDollar,
+                      portfolio: IconChartPie,
+                      goals: IconTarget,
+                    }
+                    const Icon = item.icon ? IconMap[item.icon] : null
+                    return Icon ? <Icon /> : null
+                  })()}
                   <span>{item.title}</span>
                 </a>
               </SidebarMenuButton>
