@@ -5,7 +5,6 @@ import {
   IconDotsVertical,
   IconLogout,
   IconNotification,
-  IconUserCircle,
 } from "@tabler/icons-react"
 
 import {
@@ -27,6 +26,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { EditProfileDialog } from "@/components/nav-user/edit-profile-dialog"
 
 export function NavUser({
   user,
@@ -92,10 +92,7 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <IconUserCircle />
-                Account
-              </DropdownMenuItem>
+              <EditProfileDialog user={user} />
               <DropdownMenuItem>
                 <IconCreditCard />
                 Billing
