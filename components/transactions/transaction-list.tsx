@@ -104,7 +104,7 @@ export function TransactionList() {
             mounted = false
             window.removeEventListener("transactions:changed", handler)
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [supabase])
 
     if (loading) return <div className="flex items-center justify-center"><IconLoader className="animate-spin" /></div>
@@ -115,24 +115,50 @@ export function TransactionList() {
         const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
             d.getDate()
         ).padStart(2, "0")}`
-        ;(acc[dateKey] ??= []).push(t)
+            ; (acc[dateKey] ??= []).push(t)
         return acc
     }, {})
 
     const sortedDates = Object.keys(groups).sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
 
+    const dailyTotals: Record<string, number> = Object.fromEntries(
+        sortedDates.map((date) => [
+            date,
+            groups[date].reduce((acc, t) => {
+                if (t.type === "Income") return acc + Math.abs(t.amount)
+                if (t.type === "Expense") return acc - Math.abs(t.amount)
+                return acc
+            }, 0),
+        ])
+    )
+
+    const getDailyTotalInfo = (date: string) => {
+        const total = dailyTotals[date] ?? 0
+        return {
+            total,
+            isPositive: total > 0,
+            isNegative: total < 0,
+            formatted: Math.abs(total).toLocaleString("id-ID"),
+        }
+    }
+
     return (
         <div>
             {sortedDates.map((date) => (
                 <div key={date} className="mb-6">
-                    <h3 className="mb-2 text-sm font-semibold text-muted-foreground">
-                        {new Date(date).toLocaleDateString("id-ID", {
-                            weekday: "long",
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                        })}
-                    </h3>
+                    <div className="flex justify-between items-center">
+                        <h3 className="mb-2 text-sm font-semibold text-muted-foreground">
+                            {new Date(date).toLocaleDateString("id-ID", {
+                                weekday: "long",
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                            })}
+                        </h3>
+                        <p className={`text-xs font-semibold ${getDailyTotalInfo(date).isPositive ? "text-emerald-500" : getDailyTotalInfo(date).isNegative ? "text-rose-500" : "text-muted-foreground"}`}>
+                            {getDailyTotalInfo(date).isPositive ? "+" : getDailyTotalInfo(date).isNegative ? "-" : ""} Rp {getDailyTotalInfo(date).formatted}
+                        </p>
+                    </div>
                     <div className="space-y-3">
                         {groups[date].map((tx) => (
                             <Card
