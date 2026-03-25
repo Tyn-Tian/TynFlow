@@ -67,6 +67,7 @@ export function EditProfileDialog({ user }: { user: { name: string; email: strin
                     e.stopPropagation()
                     setOpen(true)
                 }}
+                className="cursor-pointer"
             >
                 <IconUserCircle />
                 Account

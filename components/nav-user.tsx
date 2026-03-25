@@ -1,5 +1,6 @@
 "use client"
 
+import React, { useState } from "react"
 import {
   IconCreditCard,
   IconDotsVertical,
@@ -21,6 +22,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog"
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
+import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -37,6 +50,9 @@ export function NavUser({
     avatar: string
   }
 }) {
+  const router = useRouter()
+  const supabase = createClient()
+  const [logoutOpen, setLogoutOpen] = useState(false)
   const { isMobile } = useSidebar()
 
   const getInitials = (name: string) => {
@@ -103,10 +119,40 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <IconLogout />
-              Log out
+            <DropdownMenuItem
+              onPointerDown={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setLogoutOpen(true)
+              }}
+              className="cursor-pointer"
+            >
+              <IconLogout className="text-rose-500" />
+              <span className="text-rose-500">Log out</span>
             </DropdownMenuItem>
+
+            <AlertDialog open={logoutOpen} onOpenChange={setLogoutOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action will log you out of your account.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={async () => {
+                      await supabase.auth.signOut()
+                      router.push("/login")
+                    }}
+                    className="cursor-pointer"
+                  >
+                    Continue
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
