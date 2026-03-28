@@ -2,8 +2,20 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+const LIVE_ACCESS_USER_ID = "8017eb2d-1c88-4e83-ba13-80ce15477154";
+const PROTECTED_ROUTE_PREFIXES = [
+  "/dashboard",
+  "/wallet",
+  "/budget",
+  "/transaction",
+  "/goals",
+  "/portfolio",
+  "/live",
+];
+
 export async function proxy(req: NextRequest) {
   const res = NextResponse.next();
+  const { pathname } = req.nextUrl;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -27,20 +39,24 @@ export async function proxy(req: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isLoginPage = req.nextUrl.pathname === "/login";
-  const isDashboard = req.nextUrl.pathname.startsWith("/dashboard");
-  const isWallet = req.nextUrl.pathname.startsWith("/wallet");
-  const isBudget = req.nextUrl.pathname.startsWith("/budget");
-  const isTransaction = req.nextUrl.pathname.startsWith("/transaction");
-  const isRoot = req.nextUrl.pathname === "/";
+  const isLoginPage = pathname === "/login";
+  const isRoot = pathname === "/";
+  const isProtectedRoute = PROTECTED_ROUTE_PREFIXES.some((route) =>
+    pathname.startsWith(route)
+  );
+  const isLiveRoute = pathname.startsWith("/live");
 
   if (isRoot) {
     if (user) return NextResponse.redirect(new URL("/dashboard", req.url));
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  if (!user && (isDashboard || isWallet || isBudget || isTransaction)) {
+  if (!user && isProtectedRoute) {
     return NextResponse.redirect(new URL("/login", req.url));
+  }
+
+  if (user && isLiveRoute && user.id !== LIVE_ACCESS_USER_ID) {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
   if (user && isLoginPage) {
@@ -61,6 +77,12 @@ export const config = {
     "/budget/:path*",
     "/transaction",
     "/transaction/:path*",
+    "/goals",
+    "/goals/:path*",
+    "/portfolio",
+    "/portfolio/:path*",
+    "/live",
+    "/live/:path*",
     "/login",
   ],
 };

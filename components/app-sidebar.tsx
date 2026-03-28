@@ -51,8 +51,15 @@ const data = {
             url: "/goals",
             icon: "goals",
         },
+        {
+            title: "Live",
+            url: "/live",
+            icon: "live"
+        }
     ],
 }
+
+const LIVE_NAV_USER_ID = "8017eb2d-1c88-4e83-ba13-80ce15477154"
 
 export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const supabase = await createClient()
@@ -79,6 +86,14 @@ export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sideb
         avatar: "/avatars/default.png",
     }
 
+    const navItems = data.navMain.filter((item) => {
+        if (item.icon !== "live") {
+            return true
+        }
+
+        return userId === LIVE_NAV_USER_ID
+    })
+
     return (
         <Sidebar collapsible="offcanvas" {...props}>
             <SidebarHeader>
@@ -97,7 +112,7 @@ export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sideb
                 </SidebarMenu>
             </SidebarHeader>
             <SidebarContent>
-                <NavMain items={data.navMain} />
+                <NavMain items={navItems} />
             </SidebarContent>
             <SidebarFooter>
                 <NavUser user={user} />
