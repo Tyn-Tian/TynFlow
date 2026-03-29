@@ -1,10 +1,19 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { IconBolt, IconMoodEmpty, IconReceiptRupee, IconTrendingUp } from "@tabler/icons-react"
+import {
+    IconBolt,
+    IconCheck,
+    IconCopy,
+    IconMoodEmpty,
+    IconReceiptRupee,
+    IconTrendingUp,
+} from "@tabler/icons-react"
+import { toast } from "sonner"
 
 import { DeleteLiveDialog } from "./delete-live-dialog"
 import { EditLiveDialog } from "./edit-live-dialog"
+import { Button } from "@/components/ui/button"
 import {
     Card,
     CardAction,
@@ -23,6 +32,7 @@ import { formatRupiah } from "@/lib/utils"
 import {
     getLiveSalesRate,
     hydrateLiveItems,
+    type HydratedLiveItem,
     type LiveItem,
 } from "@/components/live/live-data"
 
@@ -32,7 +42,22 @@ type LiveListProps = {
 
 export function LiveList({ lives }: LiveListProps) {
     const [openId, setOpenId] = useState<string | null>(null)
+    const [copiedMonth, setCopiedMonth] = useState<string | null>(null)
     const transactions = useMemo(() => hydrateLiveItems(lives), [lives])
+    const groupedMonths = useMemo(() => {
+        const groups = transactions.reduce<Record<string, HydratedLiveItem[]>>((acc, item) => {
+            const date = new Date(item.date)
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`
+            ;(acc[monthKey] ??= []).push(item)
+            return acc
+        }, {})
+
+        const sortedMonths = Object.keys(groups).sort(
+            (a, b) => new Date(`${b}-01`).getTime() - new Date(`${a}-01`).getTime()
+        )
+
+        return { groups, sortedMonths }
+    }, [transactions])
 
     if (transactions.length === 0) {
         return (
@@ -50,27 +75,86 @@ export function LiveList({ lives }: LiveListProps) {
         )
     }
 
-    const groups = transactions.reduce<Record<string, typeof transactions>>((acc, item) => {
-        const date = new Date(item.date)
-        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`
-        ;(acc[monthKey] ??= []).push(item)
-        return acc
-    }, {})
+    async function writeTextToClipboard(text: string) {
+        if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(text)
+            return
+        }
 
-    const sortedMonths = Object.keys(groups).sort(
-        (a, b) => new Date(`${b}-01`).getTime() - new Date(`${a}-01`).getTime()
-    )
+        const textArea = document.createElement("textarea")
+        textArea.value = text
+        textArea.setAttribute("readonly", "")
+        textArea.style.position = "fixed"
+        textArea.style.opacity = "0"
+        document.body.appendChild(textArea)
+        textArea.select()
+
+        const copied = document.execCommand("copy")
+        document.body.removeChild(textArea)
+
+        if (!copied) {
+            throw new Error("Clipboard unavailable")
+        }
+    }
+
+    async function copyMonthData(monthKey: string, monthItems: HydratedLiveItem[]) {
+        const text = monthItems
+            .slice()
+            .sort((a, b) => {
+                const dateDiff = new Date(a.date).getTime() - new Date(b.date).getTime()
+                if (dateDiff !== 0) return dateDiff
+                if (a.type === b.type) return a.id.localeCompare(b.id)
+                return a.type === "Biasa" ? -1 : 1
+            })
+            .map((item) => {
+                const liveDate = new Date(item.date)
+                const day = String(liveDate.getDate()).padStart(2, "0")
+                const monthLabel = liveDate
+                    .toLocaleDateString("id-ID", { month: "long" })
+                    .toLowerCase()
+
+                return `${day} ${monthLabel} (${item.type}): ${item.sales} pcs`
+            })
+            .join("\n")
+
+        if (!text) {
+            toast.error("Gagal menyalin", {
+                description: "Data live bulan ini tidak tersedia.",
+                duration: 3000,
+            })
+            return
+        }
+
+        try {
+            await writeTextToClipboard(text)
+            setCopiedMonth(monthKey)
+            toast.success("Berhasil disalin", {
+                description: "Data live per bulan sudah masuk ke clipboard.",
+                duration: 3000,
+            })
+
+            window.setTimeout(() => {
+                setCopiedMonth((currentMonth) => (currentMonth === monthKey ? null : currentMonth))
+            }, 2000)
+        } catch {
+            toast.error("Gagal menyalin", {
+                description: "Clipboard tidak bisa diakses di browser ini.",
+                duration: 3000,
+            })
+        }
+    }
 
     return (
         <div className="space-y-6">
-            {sortedMonths.map((monthKey) => {
-                const monthItems = groups[monthKey]
+            {groupedMonths.sortedMonths.map((monthKey) => {
+                const monthItems = groupedMonths.groups[monthKey]
                 const monthDate = new Date(`${monthKey}-01`)
                 const monthLabel = monthDate.toLocaleDateString("id-ID", {
                     month: "long",
                     year: "numeric",
                 })
                 const monthTotal = monthItems.reduce((sum, item) => sum + item.total, 0)
+                const isCopied = copiedMonth === monthKey
 
                 return (
                     <div key={monthKey} className="space-y-4">
@@ -84,7 +168,21 @@ export function LiveList({ lives }: LiveListProps) {
                                     <p className="text-xs text-muted-foreground capitalize">{monthLabel}</p>
                                 </div>
                             </div>
-                            <p className="text-sm font-bold tabular-nums">{formatRupiah(monthTotal)}</p>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="cursor-pointer"
+                                    onClick={() => copyMonthData(monthKey, monthItems)}
+                                    aria-label={`Copy data live bulan ${monthLabel}`}
+                                    title={`Copy data live bulan ${monthLabel}`}
+                                >
+                                    {isCopied ? <IconCheck className="size-4" /> : <IconCopy className="size-4" />}
+                                    {isCopied ? "Tersalin" : "Copy"}
+                                </Button>
+                                <p className="text-sm font-bold tabular-nums">{formatRupiah(monthTotal)}</p>
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
