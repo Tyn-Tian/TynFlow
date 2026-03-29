@@ -109,11 +109,10 @@ export function LiveList({ lives }: LiveListProps) {
             .map((item) => {
                 const liveDate = new Date(item.date)
                 const day = String(liveDate.getDate()).padStart(2, "0")
-                const monthLabel = liveDate
-                    .toLocaleDateString("id-ID", { month: "long" })
-                    .toLowerCase()
+                const monthLabel = liveDate.toLocaleDateString("id-ID", { month: "long" })
+                const typeLabel = item.type === "Lembur" ? ` (${item.type})` : ""
 
-                return `${day} ${monthLabel} (${item.type}): ${item.sales} pcs`
+                return `${day} ${monthLabel}${typeLabel}: ${item.sales} pcs`
             })
             .join("\n")
 
