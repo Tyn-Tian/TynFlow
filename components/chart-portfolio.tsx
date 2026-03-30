@@ -23,6 +23,7 @@ export const description = "An interactive area chart"
 const chartData = [
   { month: "Jan", present: 138500000, capital: 138500000 },
   { month: "Feb", present: 145370031, capital: 144525000 },
+  { month: "Mar", present: 143895000, capital: 148400000 },
 ]
 
 const chartConfig = {
