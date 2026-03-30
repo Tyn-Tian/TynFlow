@@ -8,7 +8,6 @@ const PROTECTED_ROUTE_PREFIXES = [
   "/wallet",
   "/budget",
   "/transaction",
-  "/goals",
   "/portfolio",
   "/live",
 ];
@@ -42,7 +41,7 @@ export async function proxy(req: NextRequest) {
   const isLoginPage = pathname === "/login";
   const isRoot = pathname === "/";
   const isProtectedRoute = PROTECTED_ROUTE_PREFIXES.some((route) =>
-    pathname.startsWith(route)
+    pathname.startsWith(route),
   );
   const isLiveRoute = pathname.startsWith("/live");
 
@@ -77,8 +76,6 @@ export const config = {
     "/budget/:path*",
     "/transaction",
     "/transaction/:path*",
-    "/goals",
-    "/goals/:path*",
     "/portfolio",
     "/portfolio/:path*",
     "/live",

@@ -7,7 +7,6 @@ import {
   IconCalendarDollar,
   IconLockDollar,
   IconChartPie,
-  IconTarget,
   Icon,
   IconLivePhoto,
 } from "@tabler/icons-react"
@@ -66,7 +65,6 @@ export function NavMain({
                       transaction: IconCalendarDollar,
                       budget: IconLockDollar,
                       portfolio: IconChartPie,
-                      goals: IconTarget,
                       live: IconLivePhoto
                     }
                     const Icon = item.icon ? IconMap[item.icon] : null
@@ -98,7 +96,7 @@ export function NavMain({
                 <AlertDialogDescription>
                   This action cannot be undone. This will log you out of your account.
                 </AlertDialogDescription>
-              </AlertDialogHeader>  
+              </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
                 <AlertDialogAction onClick={handleLogout} className="cursor-pointer">Continue</AlertDialogAction>

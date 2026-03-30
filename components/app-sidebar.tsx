@@ -47,11 +47,6 @@ const data = {
             icon: "portfolio",
         },
         {
-            title: "Goals",
-            url: "/goals",
-            icon: "goals",
-        },
-        {
             title: "Live",
             url: "/live",
             icon: "live"

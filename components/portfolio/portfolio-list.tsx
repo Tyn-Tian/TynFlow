@@ -93,12 +93,15 @@ export function PortfolioList() {
 
     const summary = useMemo(() => {
         const items = portfolios ?? []
-        const totalTarget = items.reduce((sum, item) => sum + item.target, 0)
+        const totalInvested = items.reduce((sum, item) => sum + item.invested, 0)
         const totalCurrentValue = items.reduce((sum, item) => sum + item.currentValue, 0)
+        const totalProfitLoss = totalCurrentValue - totalInvested
 
         return {
+            totalInvested,
             totalCurrentValue,
-            progress: totalTarget > 0 ? Math.round((totalCurrentValue / totalTarget) * 100) : 0,
+            totalProfitLoss,
+            totalProfitLossPct: totalInvested > 0 ? (totalProfitLoss / totalInvested) * 100 : 0,
         }
     }, [portfolios])
 
@@ -128,6 +131,13 @@ export function PortfolioList() {
         )
     }
 
+    const summaryProfitLossColor =
+        summary.totalProfitLoss >= 0
+            ? "text-emerald-600 dark:text-emerald-400"
+            : "text-rose-600 dark:text-rose-400"
+
+    const summaryProfitLossLabel = `${summary.totalProfitLossPct >= 0 ? "+" : ""}${summary.totalProfitLossPct.toFixed(1)}%`
+
     return (
         <>
             <div className="col-span-3 flex items-center justify-between rounded-xl border bg-card px-4 py-3">
@@ -144,7 +154,9 @@ export function PortfolioList() {
                     <p className="text-sm font-bold tabular-nums text-foreground">
                         {formatRupiah(summary.totalCurrentValue)}
                     </p>
-                    <p className="text-xs text-muted-foreground">{summary.progress}% of target</p>
+                    <p className={`text-xs font-medium ${summaryProfitLossColor}`}>
+                        {formatRupiah(summary.totalProfitLoss)} ({summaryProfitLossLabel})
+                    </p>
                 </div>
             </div>
 
