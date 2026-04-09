@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { IconTrash } from "@tabler/icons-react"
 
@@ -16,11 +15,9 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { createClient } from "@/lib/supabase/client"
+import { removeWalletAction } from "@/actions/wallet-actions"
 
 export function DeleteWalletDialog({ walletId }: { walletId?: string | null }) {
-    const supabase = createClient()
-    const router = useRouter()
     const [open, setOpen] = useState(false)
     const [deleting, setDeleting] = useState(false)
 
@@ -29,22 +26,13 @@ export function DeleteWalletDialog({ walletId }: { walletId?: string | null }) {
 
         setDeleting(true)
         try {
-            const { error } = await supabase.from("wallets").delete().eq("id", walletId)
-
-            if (error) {
-                toast.error("Failed", {
-                    description: error.message,
-                    duration: 3000,
-                })
-                return
-            }
+            await removeWalletAction(walletId)
 
             toast.success("Deleted", {
                 description: "Wallet has been deleted.",
                 duration: 3000,
             })
             setOpen(false)
-            router.refresh()
             if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("wallets:changed"))
         } catch (err: Error | unknown) {
             toast.error("Failed", {

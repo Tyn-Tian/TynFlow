@@ -4,11 +4,10 @@ import { useEffect, useState } from "react"
 import { z } from "zod"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { IconPencil } from "@tabler/icons-react"
 
-import { createClient } from "@/lib/supabase/client"
+import { editWalletAction } from "@/actions/wallet-actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -55,8 +54,6 @@ export function EditWalletDialog({
     wallet: WalletItem
     onSuccess?: () => void
 }) {
-    const supabase = createClient()
-    const router = useRouter()
     const [open, setOpen] = useState(false)
     const [saving, setSaving] = useState(false)
     const [mounted, setMounted] = useState(false)
@@ -88,22 +85,11 @@ export function EditWalletDialog({
 
         setSaving(true)
         try {
-            const { error } = await supabase
-                .from("wallets")
-                .update({
-                    name: values.name,
-                    type: values.type,
-                    balance: values.balance,
-                })
-                .eq("id", wallet.id)
-
-            if (error) {
-                toast.error("Failed", {
-                    description: error.message,
-                    duration: 3000,
-                })
-                return
-            }
+            await editWalletAction(wallet.id, {
+                name: values.name,
+                type: values.type,
+                balance: values.balance,
+            })
 
             toast.success("Success", {
                 description: "Wallet has been updated.",
@@ -111,7 +97,6 @@ export function EditWalletDialog({
             })
             setOpen(false)
             onSuccess?.()
-            router.refresh()
             if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("wallets:changed"))
         } catch (err: Error | unknown) {
             toast.error("Failed", {

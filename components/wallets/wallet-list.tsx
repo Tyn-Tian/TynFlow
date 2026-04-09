@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card"
 import { EditWalletDialog } from "@/components/wallets/edit-wallet-dialog"
 import { DeleteWalletDialog } from "@/components/wallets/delete-wallet-dialog"
-import { createClient } from "@/lib/supabase/client"
+import { getWalletsAction } from "@/actions/wallet-actions"
 
 type WalletItem = {
     id?: string | null
@@ -30,7 +30,6 @@ const iconByType = {
 } as const
 
 export function WalletList() {
-    const supabase = createClient()
     const [openId, setOpenId] = useState<string | null>(null)
     const [wallets, setWallets] = useState<WalletItem[] | null>(null)
     const [loading, setLoading] = useState(true)
@@ -38,21 +37,8 @@ export function WalletList() {
     const fetchWallets = async () => {
         setLoading(true)
         try {
-            const { data: userData } = await supabase.auth.getUser()
-            const user = userData?.user
-            if (!user) {
-                setWallets([])
-                return
-            }
-
-            const { data, error } = await supabase
-                .from("wallets")
-                .select("id, name, type, balance")
-                .eq("user_id", user.id)
-                .order("name", { ascending: true })
-
-            if (error) throw error
-            setWallets((data ?? []) as WalletItem[])
+            const data = await getWalletsAction()
+            setWallets(data as WalletItem[])
         } catch (err) {
             console.error(err)
             setWallets([])
@@ -75,8 +61,7 @@ export function WalletList() {
             mounted = false
             window.removeEventListener("wallets:changed", handler)
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [supabase])
+    }, [])
 
     const monthYear = new Date().toLocaleString("en-US", { month: "long", year: "numeric" })
 
