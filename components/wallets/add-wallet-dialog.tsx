@@ -4,10 +4,9 @@ import React, { useEffect, useState } from "react"
 import { z } from "zod"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
-import { createClient } from "@/lib/supabase/client"
+import { addWalletAction } from "@/actions/wallet-actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -43,8 +42,6 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>
 
 export function AddWalletDialog() {
-    const supabase = createClient()
-    const router = useRouter()
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const [mounted, setMounted] = useState(false)
@@ -65,32 +62,11 @@ export function AddWalletDialog() {
         setLoading(true)
 
         try {
-            const {
-                data: { user },
-            } = await supabase.auth.getUser()
-
-            if (!user) {
-                toast.error("Failed", {
-                    description: "Please login to add a wallet.",
-                    duration: 3000,
-                })
-                return
-            }
-
-            const { error } = await supabase.from("wallets").insert({
+            await addWalletAction({
                 name: values.name,
                 type: values.type,
                 balance: values.balance,
-                user_id: user.id,
             })
-
-            if (error) {
-                toast.error("Failed", {
-                    description: error.message,
-                    duration: 3000,
-                })
-                return
-            }
 
             toast.success("Success", {
                 description: "Wallet has been added.",
@@ -98,7 +74,6 @@ export function AddWalletDialog() {
             })
             form.reset()
             setOpen(false)
-            router.refresh()
             if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("wallets:changed"))
         } catch (err: Error | unknown) {
             toast.error("Failed", {
