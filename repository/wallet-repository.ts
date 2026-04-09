@@ -16,6 +16,14 @@ export async function getWalletsByUserId(supabase: SupabaseClient, userId: strin
     .order("name", { ascending: true })
 }
 
+export async function getWalletById(supabase: SupabaseClient, id: string) {
+  return supabase
+    .from("wallets")
+    .select("id, name, type, balance")
+    .eq("id", id)
+    .single()
+}
+
 export async function createWallet(supabase: SupabaseClient, wallet: Wallet) {
   return supabase.from("wallets").insert(wallet)
 }
