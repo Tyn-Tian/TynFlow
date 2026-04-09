@@ -8,7 +8,9 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { IconPlus, IconCalculator, IconCalendar } from "@tabler/icons-react"
 
-import { createClient } from "@/lib/supabase/client"
+import { addTransactionAction } from "@/actions/transaction-actions"
+import { getBudgetsAction } from "@/actions/budget-actions"
+import { getWalletsAction } from "@/actions/wallet-actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Calendar } from "@/components/ui/calendar"
@@ -41,7 +43,6 @@ type BudgetOption = { id: string; name: string }
 type WalletOption = { id: string; name: string; balance?: number }
 
 export function AddTransactionDialog() {
-    const supabase = createClient()
     const router = useRouter()
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -77,22 +78,18 @@ export function AddTransactionDialog() {
         if (!open) return
         void (async () => {
             try {
-                const { data: userData } = await supabase.auth.getUser()
-                const user = userData?.user
-                if (!user) return
-
-                const [{ data: budgetsData }, { data: walletsData }] = await Promise.all([
-                    supabase.from("budgets").select("id, name").eq("user_id", user.id).order("name", { ascending: true }),
-                    supabase.from("wallets").select("id, name, balance").eq("user_id", user.id).order("name", { ascending: true }),
+                const [budgetsData, walletsData] = await Promise.all([
+                    getBudgetsAction(),
+                    getWalletsAction(),
                 ])
 
-                setBudgets((budgetsData ?? []) as BudgetOption[])
-                setWallets((walletsData ?? []) as WalletOption[])
+                setBudgets(budgetsData as BudgetOption[])
+                setWallets(walletsData as WalletOption[])
             } catch (err) {
                 toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error.", duration: 3000 })
             }
         })()
-    }, [open, supabase])
+    }, [open])
 
     const pad = (n: number) => String(n).padStart(2, "0")
     const today = new Date()
@@ -168,13 +165,6 @@ export function AddTransactionDialog() {
     async function onSubmit(values: FormValues) {
         setLoading(true)
         try {
-            const { data: userData } = await supabase.auth.getUser()
-            const user = userData?.user
-            if (!user) {
-                toast.error("Failed", { description: "Please login.", duration: 3000 })
-                return
-            }
-
             const toIsoDate = (d: string) => {
                 const [dd, mm, yyyy] = d.split("/")
                 const day = Number(dd)
@@ -194,86 +184,28 @@ export function AddTransactionDialog() {
                 return
             }
 
-            const { error: insertError } = await supabase.from("transactions").insert({
+            if (tab === "Transfer") {
+                if (!values.wallet_id || !values.transfer_id) {
+                    toast.error("Please select both source and destination wallets.", { duration: 3000 })
+                    return
+                }
+
+                if (values.wallet_id === values.transfer_id) {
+                    toast.error("Source and destination wallets must be different.", { duration: 3000 })
+                    return
+                }
+            }
+
+            await addTransactionAction({
                 name: tab === "Transfer" ? "Transfer" : (values.name ?? ""),
                 date: isoDate,
                 amount: values.amount,
                 type: tab,
                 budget_id: values.budget_id ?? null,
                 wallet_id: values.wallet_id ?? null,
-                user_id: user.id,
                 transfer_id: values.transfer_id ?? null,
                 admin_fee: values.admin_fee ?? 0,
             })
-
-            if (insertError) {
-                toast.error("Failed", { description: insertError.message, duration: 3000 })
-                return
-            }
-
-            if (values.budget_id && tab === "Expense") {
-                try {
-                    const { data: bData, error: bErr } = await supabase.from("budgets").select("leftover").eq("id", values.budget_id).single()
-                    if (!bErr) {
-                        const currentLeftover = bData?.leftover ?? 0
-                        const newLeftover = Math.max(0, currentLeftover - values.amount)
-                        await supabase.from("budgets").update({ leftover: newLeftover }).eq("id", values.budget_id)
-                    }
-                } catch (err) {
-                    toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error.", duration: 3000 })
-                }
-            }
-
-            if (tab === "Transfer") {
-                const fromId = values.wallet_id
-                const toId = values.transfer_id
-                const admin = values.admin_fee ?? 0
-
-                if (!fromId || !toId) {
-                    toast.error("Please select both source and destination wallets.", { duration: 3000 })
-                    return
-                }
-
-                if (fromId === toId) {
-                    toast.error("Source and destination wallets must be different.", { duration: 3000 })
-                    return
-                }
-
-                try {
-                    const [{ data: fromData, error: fromErr }, { data: toData, error: toErr }] = await Promise.all([
-                        supabase.from("wallets").select("balance").eq("id", fromId).single(),
-                        supabase.from("wallets").select("balance").eq("id", toId).single(),
-                    ])
-
-                    if (!fromErr) {
-                        const currentFrom = fromData?.balance ?? 0
-                        const newFrom = currentFrom - (values.amount + admin)
-                        await supabase.from("wallets").update({ balance: newFrom }).eq("id", fromId)
-                    }
-
-                    if (!toErr) {
-                        const currentTo = toData?.balance ?? 0
-                        const newTo = currentTo + values.amount
-                        await supabase.from("wallets").update({ balance: newTo }).eq("id", toId)
-                    }
-                } catch (err) {
-                    toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error.", duration: 3000 })
-                }
-            } else {
-                if (values.wallet_id) {
-                    try {
-                        const { data: wData, error: wErr } = await supabase.from("wallets").select("balance").eq("id", values.wallet_id).single()
-                        if (!wErr) {
-                            const currentBalance = wData?.balance ?? 0
-                            const delta = tab === "Income" ? values.amount : -values.amount
-                            const newBalance = currentBalance + delta
-                            await supabase.from("wallets").update({ balance: newBalance }).eq("id", values.wallet_id)
-                        }
-                    } catch (err) {
-                        toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error.", duration: 3000 })
-                    }
-                }
-            }
 
             toast.success("Success", { description: "Transaction added.", duration: 3000 })
             form.reset()
