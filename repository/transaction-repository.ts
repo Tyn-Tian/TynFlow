@@ -48,3 +48,10 @@ export async function deleteTransactionById(supabase: SupabaseClient, id: string
     .delete()
     .eq("id", id)
 }
+
+export async function clearBudgetIdFromTransactions(supabase: SupabaseClient, budgetId: string) {
+  return supabase
+    .from("transactions")
+    .update({ budget_id: null })
+    .eq("budget_id", budgetId)
+}

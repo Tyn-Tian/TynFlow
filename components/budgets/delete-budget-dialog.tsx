@@ -16,10 +16,9 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { createClient } from "@/lib/supabase/client"
+import { removeBudgetAction } from "@/actions/budget-actions"
 
 export function DeleteBudgetDialog({ budgetId }: { budgetId?: string | null }) {
-    const supabase = createClient()
     const router = useRouter()
     const [open, setOpen] = useState(false)
     const [deleting, setDeleting] = useState(false)
@@ -29,15 +28,7 @@ export function DeleteBudgetDialog({ budgetId }: { budgetId?: string | null }) {
 
         setDeleting(true)
         try {
-            const { error } = await supabase.from("budgets").delete().eq("id", budgetId)
-
-            if (error) {
-                toast.error("Failed", {
-                    description: error.message,
-                    duration: 3000,
-                })
-                return
-            }
+            await removeBudgetAction(budgetId)
 
             toast.success("Deleted", {
                 description: "Budget has been deleted.",

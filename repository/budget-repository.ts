@@ -3,6 +3,7 @@ import { SupabaseClient } from "@supabase/supabase-js"
 export type Budget = {
   id: string
   name: string
+  total: number
   leftover: number
   user_id?: string
 }
@@ -10,7 +11,7 @@ export type Budget = {
 export async function getBudgetsByUserId(supabase: SupabaseClient, userId: string) {
   return supabase
     .from("budgets")
-    .select("id, name, leftover")
+    .select("id, name, total, leftover")
     .eq("user_id", userId)
     .order("name", { ascending: true })
 }
@@ -18,7 +19,7 @@ export async function getBudgetsByUserId(supabase: SupabaseClient, userId: strin
 export async function getBudgetById(supabase: SupabaseClient, id: string) {
   return supabase
     .from("budgets")
-    .select("id, name, leftover")
+    .select("id, name, total, leftover")
     .eq("id", id)
     .single()
 }
@@ -27,5 +28,25 @@ export async function updateBudgetLeftover(supabase: SupabaseClient, id: string,
   return supabase
     .from("budgets")
     .update({ leftover })
+    .eq("id", id)
+}
+
+export async function createBudget(supabase: SupabaseClient, budget: Omit<Budget, "id">) {
+  return supabase
+    .from("budgets")
+    .insert(budget)
+}
+
+export async function updateBudget(supabase: SupabaseClient, id: string, budget: Partial<Omit<Budget, "id" | "user_id">>) {
+  return supabase
+    .from("budgets")
+    .update(budget)
+    .eq("id", id)
+}
+
+export async function deleteBudget(supabase: SupabaseClient, id: string) {
+  return supabase
+    .from("budgets")
+    .delete()
     .eq("id", id)
 }
