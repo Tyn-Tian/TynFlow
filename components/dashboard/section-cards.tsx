@@ -124,7 +124,7 @@ export async function SectionCards() {
         : "Cash flow stable"
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 px-6">
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 px-4 lg:px-6">
       <Card className="@container/card gap-2">
         <CardHeader>
           <CardDescription>Total Income</CardDescription>
