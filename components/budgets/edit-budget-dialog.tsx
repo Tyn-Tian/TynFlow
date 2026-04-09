@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { IconPencil } from "@tabler/icons-react"
 
-import { createClient } from "@/lib/supabase/client"
+import { editBudgetAction } from "@/actions/budget-actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -49,7 +49,6 @@ export function EditBudgetDialog({
     budget: BudgetItem
     onSuccess?: () => void
 }) {
-    const supabase = createClient()
     const router = useRouter()
     const [open, setOpen] = useState(false)
     const [saving, setSaving] = useState(false)
@@ -82,24 +81,11 @@ export function EditBudgetDialog({
 
         setSaving(true)
         try {
-            const newLeftover = Math.min(values.leftover, values.total)
-
-            const { error } = await supabase
-                .from("budgets")
-                .update({
-                    name: values.name,
-                    total: values.total,
-                    leftover: newLeftover,
-                })
-                .eq("id", budget.id)
-
-            if (error) {
-                toast.error("Failed", {
-                    description: error.message,
-                    duration: 3000,
-                })
-                return
-            }
+            await editBudgetAction(budget.id, {
+                name: values.name,
+                total: values.total,
+                leftover: Math.min(values.leftover, values.total),
+            })
 
             toast.success("Success", {
                 description: "Budget has been updated.",

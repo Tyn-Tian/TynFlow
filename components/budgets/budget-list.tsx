@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { createClient } from "@/lib/supabase/client"
+import { getBudgetsAction } from "@/actions/budget-actions"
 import { IconCalendarDollar, IconLoader } from "@tabler/icons-react"
 import { IconLockDollar } from "@tabler/icons-react"
 
@@ -24,7 +24,6 @@ type BudgetItem = {
 }
 
 export function BudgetList() {
-    const supabase = createClient()
     const [openId, setOpenId] = useState<string | null>(null)
     const [budgets, setBudgets] = useState<BudgetItem[] | null>(null)
     const [loading, setLoading] = useState(true)
@@ -32,21 +31,8 @@ export function BudgetList() {
     const fetchBudgets = async () => {
         setLoading(true)
         try {
-            const { data: userData } = await supabase.auth.getUser()
-            const user = userData?.user
-            if (!user) {
-                setBudgets([])
-                return
-            }
-
-            const { data, error } = await supabase
-                .from("budgets")
-                .select("id, name, total, leftover")
-                .eq("user_id", user.id)
-                .order("name", { ascending: true })
-
-            if (error) throw error
-            setBudgets((data ?? []) as BudgetItem[])
+            const data = await getBudgetsAction()
+            setBudgets(data as BudgetItem[])
         } catch (err) {
             console.error(err)
             setBudgets([])
@@ -71,8 +57,7 @@ export function BudgetList() {
             mounted = false
             window.removeEventListener("budgets:changed", handler)
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [supabase])
+    }, [])
 
     const monthYear = new Date().toLocaleString("en-US", { month: "long", year: "numeric" })
 
