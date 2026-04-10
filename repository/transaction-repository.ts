@@ -21,6 +21,25 @@ export async function findTransactionsByUserId(supabase: SupabaseClient, userId:
     .order("created_at", { ascending: false })
 }
 
+export async function findTransactions(supabase: SupabaseClient, filters: { userId: string, type?: "Income" | "Expense" | "Transfer", startDate?: string, endDate?: string }) {
+  let query = supabase
+    .from("transactions")
+    .select("id, name, date, amount, type, budget_id, wallet_id, transfer_id, admin_fee")
+    .eq("user_id", filters.userId)
+
+  if (filters.type) {
+    query = query.eq("type", filters.type)
+  }
+  if (filters.startDate) {
+    query = query.gte("date", filters.startDate)
+  }
+  if (filters.endDate) {
+    query = query.lte("date", filters.endDate)
+  }
+
+  return query.order("date", { ascending: false })
+}
+
 export async function findTransactionById(supabase: SupabaseClient, id: string | number) {
   return supabase
     .from("transactions")

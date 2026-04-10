@@ -11,14 +11,10 @@ import {
 } from "@/components/ui/card"
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
 
-export const description = "A pie chart with a legend"
-
 import React, { useEffect, useState } from "react"
-import { createClient as createBrowserClient } from "@/lib/supabase/client"
+import { getExpenseChartDataAction } from "@/actions/dashboard-actions"
 
 type BudgetSlice = Record<string, string | number> & { name: string; value: number; fill: string; __key: string }
-type TxRow = { amount?: number | string; budget_id?: string | null }
-type Budget = { id: string; name: string }
 
 export function useExpenseChartData() {
     const [chartData, setChartData] = useState<BudgetSlice[]>([])
@@ -28,83 +24,23 @@ export function useExpenseChartData() {
 
     useEffect(() => {
         let mounted = true
-
             ; (async () => {
                 try {
-                    const supabase = createBrowserClient()
-
-                    const { data: userData } = await supabase.auth.getUser()
-                    const userId = userData?.user?.id
-
-                    let startDate: string | undefined
-                    let endDate: string | undefined
-                    if (userId) {
-                        const { data: profile } = await supabase
-                            .from("profiles")
-                            .select("start_date, end_date")
-                            .eq("user_id", userId)
-                            .single()
-
-                        if (profile) {
-                            startDate = profile.start_date as unknown as string | undefined
-                            endDate = profile.end_date as unknown as string | undefined
-                            const fmt = (s?: string) => {
-                                if (!s) return null
-                                const d = new Date(s)
-                                if (isNaN(d.getTime())) return null
-                                return d.toLocaleString("en-US", { day: "2-digit", month: "long", year: "numeric" })
-                            }
-                            setStartLabel(fmt(startDate))
-                            setEndLabel(fmt(endDate))
-                        }
-                    }
-
-                    let txQuery = supabase.from("transactions").select("amount, budget_id").eq("type", "Expense")
-                    if (userId) txQuery = txQuery.eq("user_id", userId)
-                    if (startDate) txQuery = txQuery.gte("date", startDate)
-                    if (endDate) txQuery = txQuery.lte("date", endDate)
-
-                    const { data: txs } = await txQuery
-
-                    const txData = (txs ?? []) as TxRow[]
-                    const budgetIds = Array.from(new Set(txData.map((t: TxRow) => t.budget_id).filter(Boolean)))
-
-                    const budgetsMap = new Map<string, string>()
-                    if (budgetIds.length) {
-                        const { data: budgets } = await supabase.from("budgets").select("id, name").in("id", budgetIds)
-                            ; (budgets ?? []).forEach((b: Budget) => budgetsMap.set(b.id, b.name))
-                    }
-
-                    const grouped = txData.reduce<Record<string, number>>((acc, t: TxRow) => {
-                        const bid = t.budget_id ?? "__uncategorized__"
-                        const name = budgetsMap.get(bid) ?? (bid === "__uncategorized__" ? "Uncategorized" : "Unknown")
-                        acc[name] = (acc[name] ?? 0) + (typeof t.amount === "number" ? t.amount : Number(t.amount || 0))
-                        return acc
-                    }, {})
-
-                    const paletteSize = 5
-                    const entries = Object.entries(grouped)
-
-                    const data = entries.map(([name, value], idx) => {
-                        const key = `b_${idx}`
-                        return {
-                            name,
-                            value,
-                            fill: `var(--color-${key})`,
-                            [key]: name,
-                            __key: key,
-                        }
-                    })
-
-                    const config: ChartConfig = { value: { label: "Amount" } }
-                    data.forEach((d, idx) => {
-                        const key = d.__key
-                        config[key] = { label: d.name, color: `var(--chart-${(idx % paletteSize) + 1})` }
-                    })
+                    const data = await getExpenseChartDataAction()
 
                     if (!mounted) return
-                    setChartData(data)
-                    setChartConfig(config)
+
+                    const fmt = (s?: string) => {
+                        if (!s) return null
+                        const d = new Date(s)
+                        if (isNaN(d.getTime())) return null
+                        return d.toLocaleString("en-US", { day: "2-digit", month: "long", year: "numeric" })
+                    }
+
+                    setChartData(data.chartData as BudgetSlice[])
+                    setChartConfig(data.chartConfig)
+                    setStartLabel(fmt(data.startDate))
+                    setEndLabel(fmt(data.endDate))
                 } catch (err) {
                     console.error(err)
                 }

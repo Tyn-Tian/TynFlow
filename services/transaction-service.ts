@@ -37,6 +37,13 @@ export async function getTransactions(supabase: SupabaseClient, userId: string) 
   }))
 }
 
+export async function getFilteredTransactions(supabase: SupabaseClient, filters: { userId: string, type?: "Income" | "Expense" | "Transfer", startDate?: string, endDate?: string }) {
+  const { data, error } = await transactionRepository.findTransactions(supabase, filters)
+  if (error) throw new Error(error.message)
+  return data ?? []
+}
+
+
 export async function getTransaction(supabase: SupabaseClient, id: string | number) {
   const { data, error } = await transactionRepository.findTransactionById(supabase, id)
   if (error) throw new Error(error.message)
