@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation"
 import { IconCalculator, IconPencil } from "@tabler/icons-react"
 import { toast } from "sonner"
 
-import { createClient } from "@/lib/supabase/client"
+import { editPortfolioAction } from "@/actions/portfolio-actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -52,7 +52,6 @@ export function EditPortfolioDialog({
     portfolio: PortfolioDialogItem
     onSuccess?: () => void
 }) {
-    const supabase = createClient()
     const router = useRouter()
     const [open, setOpen] = useState(false)
     const [saving, setSaving] = useState(false)
@@ -154,37 +153,13 @@ export function EditPortfolioDialog({
         setSaving(true)
 
         try {
-            const {
-                data: { user },
-            } = await supabase.auth.getUser()
-
-            if (!user) {
-                toast.error("Failed", {
-                    description: "Please login to edit a portfolio.",
-                    duration: 3000,
-                })
-                return
-            }
-
-            const { error } = await supabase
-                .from("portfolios")
-                .update({
-                    name: values.name,
-                    type: values.type,
-                    target: values.target,
-                    invested: values.invested,
-                    current_value: values.currentValue,
-                })
-                .eq("id", portfolio.id)
-                .eq("user_id", user.id)
-
-            if (error) {
-                toast.error("Failed", {
-                    description: error.message,
-                    duration: 3000,
-                })
-                return
-            }
+            await editPortfolioAction(portfolio.id, {
+                name: values.name,
+                type: values.type,
+                target: values.target,
+                invested: values.invested,
+                current_value: values.currentValue,
+            })
 
             toast.success("Success", {
                 description: "Portfolio has been updated.",
