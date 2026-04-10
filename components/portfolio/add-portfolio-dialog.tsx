@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation"
 import { IconCalculator, IconPlus } from "@tabler/icons-react"
 import { toast } from "sonner"
 
-import { createClient } from "@/lib/supabase/client"
+import { addPortfolioAction } from "@/actions/portfolio-actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -37,7 +37,6 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>
 
 export function AddPortfolioDialog() {
-    const supabase = createClient()
     const router = useRouter()
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -137,34 +136,13 @@ export function AddPortfolioDialog() {
         setLoading(true)
 
         try {
-            const {
-                data: { user },
-            } = await supabase.auth.getUser()
-
-            if (!user) {
-                toast.error("Failed", {
-                    description: "Please login to add a portfolio.",
-                    duration: 3000,
-                })
-                return
-            }
-
-            const { error } = await supabase.from("portfolios").insert({
+            await addPortfolioAction({
                 name: values.name,
                 type: values.type,
                 target: values.target,
                 invested: values.invested,
                 current_value: values.currentValue,
-                user_id: user.id,
             })
-
-            if (error) {
-                toast.error("Failed", {
-                    description: error.message,
-                    duration: 3000,
-                })
-                return
-            }
 
             toast.success("Success", {
                 description: "Portfolio has been added.",

@@ -5,16 +5,9 @@ import {
     IconDiamond,
 } from "@tabler/icons-react"
 
-export type PortfolioType = "Reksadana" | "Saham" | "Crypto" | "Emas"
+import { type PortfolioType } from "@/repository/portfolio-repository"
 
-export type PortfolioItem = {
-    id: string
-    name: string
-    type: PortfolioType
-    target: number
-    invested: number
-    currentValue: number
-}
+export { type PortfolioType }
 
 export const portfolioTypeConfig: Record<
     PortfolioType,
@@ -44,43 +37,6 @@ export const portfolioTypeConfig: Record<
         iconClassName: "text-yellow-500",
         badgeClassName: "border-yellow-500/20 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400",
     },
-}
-
-export function getPortfolioType(value: string | null | undefined): PortfolioType {
-    if (value === "Saham" || value === "Crypto" || value === "Emas") {
-        return value
-    }
-
-    return "Reksadana"
-}
-
-function getPortfolioNumber(value: number | string | null | undefined) {
-    const amount = Number(value)
-    return Number.isFinite(amount) ? amount : 0
-}
-
-function getPortfolioText(value: string | null | undefined) {
-    return value?.trim() ?? ""
-}
-
-export function normalizePortfolioItems(
-    items: Array<{
-        id: string | number | null
-        name: string | null
-        type: string | null
-        target: number | string | null
-        invested: number | string | null
-        current_value: number | string | null
-    }>
-): PortfolioItem[] {
-    return items.map((item, index) => ({
-        id: String(item.id ?? `portfolio-${index}`),
-        name: getPortfolioText(item.name),
-        type: getPortfolioType(item.type),
-        target: getPortfolioNumber(item.target),
-        invested: getPortfolioNumber(item.invested),
-        currentValue: getPortfolioNumber(item.current_value),
-    }))
 }
 
 export function getProgressWidthClass(value: number) {

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { IconLoader, IconMoodEmpty, IconTargetArrow } from "@tabler/icons-react"
 import { toast } from "sonner"
 
-import { createClient } from "@/lib/supabase/client"
+import { getPortfoliosAction } from "@/actions/portfolio-actions"
 import { DeletePortfolioDialog } from "@/components/portfolio/delete-portfolio-dialog"
 import { EditPortfolioDialog } from "@/components/portfolio/edit-portfolio-dialog"
 import { Badge } from "@/components/ui/badge"
@@ -25,13 +25,11 @@ import {
 import { formatRupiah } from "@/lib/utils"
 import {
     getProgressWidthClass,
-    normalizePortfolioItems,
     portfolioTypeConfig,
-    type PortfolioItem,
 } from "@/components/portfolio/portfolio-data"
+import { type PortfolioItem } from "@/services/portfolio-service"
 
 export function PortfolioList() {
-    const supabase = useMemo(() => createClient(), [])
     const [openId, setOpenId] = useState<string | null>(null)
     const [portfolios, setPortfolios] = useState<PortfolioItem[] | null>(null)
     const [loading, setLoading] = useState(true)
@@ -40,26 +38,8 @@ export function PortfolioList() {
         setLoading(true)
 
         try {
-            const {
-                data: { user },
-            } = await supabase.auth.getUser()
-
-            if (!user) {
-                setPortfolios([])
-                return
-            }
-
-            const { data, error } = await supabase
-                .from("portfolios")
-                .select("id, name, type, target, invested, current_value")
-                .eq("user_id", user.id)
-                .order("name", { ascending: true })
-
-            if (error) {
-                throw error
-            }
-
-            setPortfolios(normalizePortfolioItems(data ?? []))
+            const data = await getPortfoliosAction()
+            setPortfolios(data)
         } catch (error) {
             setPortfolios([])
             toast.error("Failed", {
@@ -69,7 +49,7 @@ export function PortfolioList() {
         } finally {
             setLoading(false)
         }
-    }, [supabase])
+    }, [])
 
     useEffect(() => {
         let mounted = true

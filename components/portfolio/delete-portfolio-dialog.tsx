@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { IconTrash } from "@tabler/icons-react"
 import { toast } from "sonner"
 
-import { createClient } from "@/lib/supabase/client"
+import { removePortfolioAction } from "@/actions/portfolio-actions"
 import { Button } from "@/components/ui/button"
 import {
     AlertDialog,
@@ -23,7 +23,6 @@ type DeletePortfolioDialogProps = {
 }
 
 export function DeletePortfolioDialog({ portfolioId }: DeletePortfolioDialogProps) {
-    const supabase = createClient()
     const router = useRouter()
     const [open, setOpen] = useState(false)
     const [deleting, setDeleting] = useState(false)
@@ -33,31 +32,7 @@ export function DeletePortfolioDialog({ portfolioId }: DeletePortfolioDialogProp
 
         setDeleting(true)
         try {
-            const {
-                data: { user },
-            } = await supabase.auth.getUser()
-
-            if (!user) {
-                toast.error("Failed", {
-                    description: "Please login to delete a portfolio.",
-                    duration: 3000,
-                })
-                return
-            }
-
-            const { error } = await supabase
-                .from("portfolios")
-                .delete()
-                .eq("id", portfolioId)
-                .eq("user_id", user.id)
-
-            if (error) {
-                toast.error("Failed", {
-                    description: error.message,
-                    duration: 3000,
-                })
-                return
-            }
+            await removePortfolioAction(portfolioId)
 
             toast.success("Deleted", {
                 description: "Portfolio has been deleted.",
