@@ -29,3 +29,12 @@ export async function getExpenseChartDataAction() {
 
     return dashboardService.getExpenseChartData(supabase, user.id)
 }
+
+export async function getBarChartDataAction() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) throw new Error("Unauthorized")
+
+    return dashboardService.getBarChartData(supabase, user.id)
+}

@@ -171,3 +171,65 @@ export async function getExpenseChartData(supabase: SupabaseClient, userId: stri
 
     return { chartData, chartConfig, startDate, endDate }
 }
+
+interface MonthData {
+    year: number
+    month: number
+    label: string
+    income: number
+    expense: number
+}
+
+export async function getBarChartData(supabase: SupabaseClient, userId: string) {
+    const now = new Date()
+    const months: MonthData[] = []
+    for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+        months.push({
+            year: d.getFullYear(),
+            month: d.getMonth(),
+            label: d.toLocaleString("en-US", { month: "long" }),
+            income: 0,
+            expense: 0,
+        })
+    }
+
+    const startDate = new Date(months[0].year, months[0].month, 1).toISOString()
+    const endDate = new Date(months[5].year, months[5].month + 1, 0, 23, 59, 59).toISOString()
+
+    const txs = await transactionService.getFilteredTransactions(supabase, {
+        userId,
+        startDate,
+        endDate,
+    })
+
+    txs.forEach((t) => {
+        const d = new Date(t.date)
+        const year = d.getFullYear()
+        const month = d.getMonth()
+        const found = months.find((m) => m.year === year && m.month === month)
+        if (found) {
+            if (t.type === "Income") found.income += Number(t.amount) || 0
+            if (t.type === "Expense") found.expense += Number(t.amount) || 0
+        }
+    })
+
+    const chartData = months.map((m) => ({
+        month: m.label,
+        income: m.income,
+        expense: m.expense,
+    }))
+
+    const chartConfig: ChartConfig = {
+        income: {
+            label: "Income",
+            color: "var(--chart-2)",
+        },
+        expense: {
+            label: "Expense",
+            color: "var(--chart-5)",
+        },
+    }
+
+    return { chartData, chartConfig }
+}
