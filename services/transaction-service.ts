@@ -2,6 +2,7 @@ import { SupabaseClient } from "@supabase/supabase-js"
 import * as transactionRepository from "@/repository/transaction-repository"
 import * as walletService from "@/services/wallet-service"
 import * as budgetService from "@/services/budget-service"
+import { subDays, format, differenceInDays } from "date-fns"
 
 export async function getTransactions(supabase: SupabaseClient, userId: string) {
   const { data: txData, error: txError } = await transactionRepository.findTransactionsByUserId(supabase, userId)
@@ -37,10 +38,69 @@ export async function getTransactions(supabase: SupabaseClient, userId: string) 
   }))
 }
 
-export async function getFilteredTransactions(supabase: SupabaseClient, filters: { userId: string, type?: "Income" | "Expense" | "Transfer", startDate?: string, endDate?: string }) {
+export async function getFilteredTransactions(supabase: SupabaseClient, filters: { userId: string, type?: "Income" | "Expense" | "Transfer", startDate?: string, endDate?: string, walletId?: string, budgetId?: string, dates?: string[] }) {
   const { data, error } = await transactionRepository.findTransactions(supabase, filters)
   if (error) throw new Error(error.message)
   return data ?? []
+}
+
+export async function getPaginatedTransactions(
+  supabase: SupabaseClient, 
+  params: { userId: string, page: number, walletId?: string, budgetId?: string }
+) {
+  const { page, userId, walletId, budgetId } = params
+
+  // 1. Get all dates matching filters
+  const { data: dateRows, error: dateError } = await transactionRepository.findTransactionDates(supabase, { userId, walletId, budgetId })
+  if (dateError) throw new Error(dateError.message)
+
+  // 2. Get unique dates in descending order (transactionRepository already orders them, but Set removes duplicates)
+  // ensure we have unique dates
+  const allUniqueDates = Array.from(new Set((dateRows ?? []).map(r => r.date)))
+
+  // 3. Slice dates for the current page (10 unique dates per page)
+  const pageDates = allUniqueDates.slice((page - 1) * 10, page * 10)
+
+  if (pageDates.length === 0) return []
+
+  const rows = await getFilteredTransactions(supabase, {
+    userId,
+    walletId,
+    budgetId,
+    dates: pageDates
+  })
+
+  // Enrich data with wallet and budget names
+  const walletIds = Array.from(new Set(rows.flatMap((r) => [r.wallet_id, r.transfer_id].filter(Boolean) as string[])))
+  let walletMap: Record<string, string> = {}
+  if (walletIds.length) {
+    const { data: walletsData } = await supabase.from("wallets").select("id, name").in("id", walletIds)
+    if (walletsData) walletMap = Object.fromEntries(walletsData.map((w) => [w.id, w.name ?? ""]))
+  }
+
+  const budgetIds = Array.from(new Set(rows.map((r) => r.budget_id).filter(Boolean) as string[]))
+  let budgetMap: Record<string, string> = {}
+  if (budgetIds.length) {
+    const { data: budgetsData } = await supabase.from("budgets").select("id, name").in("id", budgetIds)
+    if (budgetsData) budgetMap = Object.fromEntries(budgetsData.map((b) => [b.id, b.name ?? ""]))
+  }
+
+  return rows.map((t) => ({
+    ...t,
+    budgetName: t.budget_id ? budgetMap[t.budget_id] : undefined,
+    walletName: t.wallet_id ? walletMap[t.wallet_id] : undefined,
+    transferName: t.transfer_id ? walletMap[t.transfer_id] : undefined,
+  }))
+}
+
+export async function getTransactionPaginationMetadata(supabase: SupabaseClient, params: { userId: string, walletId?: string, budgetId?: string }) {
+  const { data: dateRows, error: dateError } = await transactionRepository.findTransactionDates(supabase, params)
+  if (dateError || !dateRows) return { totalPages: 1 }
+
+  const allUniqueDates = Array.from(new Set(dateRows.map(r => r.date)))
+  const totalPages = Math.ceil(allUniqueDates.length / 10)
+
+  return { totalPages: Math.max(1, totalPages) }
 }
 
 

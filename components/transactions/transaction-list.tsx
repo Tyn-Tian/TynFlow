@@ -20,10 +20,22 @@ type TxItem = {
     type: "Income" | "Expense" | "Transfer"
 }
 
-export function TransactionList() {
+interface TransactionListProps {
+    initialTransactions?: TxItem[]
+}
+
+export function TransactionList({ initialTransactions }: TransactionListProps) {
     const [editTx, setEditTx] = useState<TxItem | null>(null)
-    const [transactions, setTransactions] = useState<TxItem[] | null>(null)
-    const [loading, setLoading] = useState(true)
+    const [transactions, setTransactions] = useState<TxItem[] | null>(initialTransactions ?? null)
+    const [loading, setLoading] = useState(!initialTransactions)
+
+    // Update state when initialTransactions changes
+    useEffect(() => {
+        if (initialTransactions) {
+            setTransactions(initialTransactions)
+            setLoading(false)
+        }
+    }, [initialTransactions])
 
     const fetchTransactions = async () => {
         setLoading(true)
@@ -40,10 +52,12 @@ export function TransactionList() {
 
     useEffect(() => {
         let mounted = true
-        void (async () => {
-            if (!mounted) return
-            await fetchTransactions()
-        })()
+        if (!initialTransactions) {
+            void (async () => {
+                if (!mounted) return
+                await fetchTransactions()
+            })()
+        }
 
         const handler = () => void fetchTransactions()
         window.addEventListener("transactions:changed", handler)
@@ -52,7 +66,7 @@ export function TransactionList() {
             mounted = false
             window.removeEventListener("transactions:changed", handler)
         }
-    }, [])
+    }, [initialTransactions])
 
     if (loading) return <div className="flex items-center justify-center"><IconLoader className="animate-spin" /></div>
     if (!transactions || transactions.length === 0) return <div className="text-sm text-center text-muted-foreground">No transactions yet.</div>

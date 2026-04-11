@@ -21,7 +21,7 @@ export async function findTransactionsByUserId(supabase: SupabaseClient, userId:
     .order("created_at", { ascending: false })
 }
 
-export async function findTransactions(supabase: SupabaseClient, filters: { userId: string, type?: "Income" | "Expense" | "Transfer", startDate?: string, endDate?: string }) {
+export async function findTransactions(supabase: SupabaseClient, filters: { userId: string, type?: "Income" | "Expense" | "Transfer", startDate?: string, endDate?: string, walletId?: string, budgetId?: string, dates?: string[] }) {
   let query = supabase
     .from("transactions")
     .select("id, name, date, amount, type, budget_id, wallet_id, transfer_id, admin_fee")
@@ -36,8 +36,43 @@ export async function findTransactions(supabase: SupabaseClient, filters: { user
   if (filters.endDate) {
     query = query.lte("date", filters.endDate)
   }
+  if (filters.walletId) {
+    query = query.or(`wallet_id.eq.${filters.walletId},transfer_id.eq.${filters.walletId}`)
+  }
+  if (filters.budgetId) {
+    query = query.eq("budget_id", filters.budgetId)
+  }
+  if (filters.dates && filters.dates.length > 0) {
+    query = query.in("date", filters.dates)
+  }
 
   return query.order("date", { ascending: false })
+}
+
+export async function findTransactionDates(supabase: SupabaseClient, filters: { userId: string, walletId?: string, budgetId?: string }) {
+  let query = supabase
+    .from("transactions")
+    .select("date")
+    .eq("user_id", filters.userId)
+
+  if (filters.walletId) {
+    query = query.or(`wallet_id.eq.${filters.walletId},transfer_id.eq.${filters.walletId}`)
+  }
+  if (filters.budgetId) {
+    query = query.eq("budget_id", filters.budgetId)
+  }
+
+  return query.order("date", { ascending: false })
+}
+
+export async function findEarliestTransactionDate(supabase: SupabaseClient, userId: string) {
+  return supabase
+    .from("transactions")
+    .select("date")
+    .eq("user_id", userId)
+    .order("date", { ascending: true })
+    .limit(1)
+    .single()
 }
 
 export async function findTransactionById(supabase: SupabaseClient, id: string | number) {

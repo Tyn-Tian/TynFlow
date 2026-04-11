@@ -58,3 +58,16 @@ export async function removeTransactionAction(id: string | number) {
   revalidatePath("/")
   revalidatePath("/wallet")
 }
+export async function getPaginatedTransactionsAction(params: { page: number, walletId?: string, budgetId?: string }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) throw new Error("Unauthorized")
+
+  const [data, metadata] = await Promise.all([
+    transactionService.getPaginatedTransactions(supabase, { ...params, userId: user.id }),
+    transactionService.getTransactionPaginationMetadata(supabase, { ...params, userId: user.id })
+  ])
+
+  return { data, metadata }
+}
