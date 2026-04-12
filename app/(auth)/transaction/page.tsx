@@ -53,7 +53,7 @@ export default async function Page({ searchParams }: PageProps) {
                     </div>
 
                     <TransactionFilters wallets={wallets} budgets={budgets} />
-                    <TransactionList initialTransactions={transactions as any} />
+                    <TransactionList initialTransactions={transactions} />
 
                     <TransactionPaginationNav
                         totalPages={metadata.totalPages}
