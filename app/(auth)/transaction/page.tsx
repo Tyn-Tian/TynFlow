@@ -48,7 +48,7 @@ export default async function Page({ searchParams }: PageProps) {
             <SiteHeader title="Transaction" />
             <section className="p-6">
                 <div className="mx-auto max-w-7xl">
-                    <div className="flex flex-col md:flex-row md:items-center justify-end">
+                    <div className="col-span-3 flex justify-end">
                         <AddTransactionDialog />
                     </div>
 

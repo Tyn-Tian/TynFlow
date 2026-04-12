@@ -32,38 +32,34 @@ export function TransactionFilters({ wallets, budgets }: TransactionFiltersProps
   }
 
   return (
-    <div className="flex flex-wrap items-end gap-2 mb-4">
-      <div className="space-y-1.5">
-        <Select value={walletId || "all"} onValueChange={(v) => updateFilter("walletId", v)}>
-          <SelectTrigger id="wallet-filter">
-            <SelectValue placeholder="All Wallets" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Wallets</SelectItem>
-            {wallets.map((w) => (
-              <SelectItem key={w.id} value={w.id}>
-                {w.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+    <div className="flex items-end gap-2 my-4">
+      <Select value={walletId || "all"} onValueChange={(v) => updateFilter("walletId", v)}>
+        <SelectTrigger id="wallet-filter" className="w-full sm:w-fit">
+          <SelectValue placeholder="All Wallets" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Wallets</SelectItem>
+          {wallets.map((w) => (
+            <SelectItem key={w.id} value={w.id}>
+              {w.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
-      <div className="space-y-1.5">
-        <Select value={budgetId || "all"} onValueChange={(v) => updateFilter("budgetId", v)}>
-          <SelectTrigger id="budget-filter">
-            <SelectValue placeholder="All Budgets" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Budgets</SelectItem>
-            {budgets.map((b) => (
-              <SelectItem key={b.id} value={b.id}>
-                {b.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <Select value={budgetId || "all"} onValueChange={(v) => updateFilter("budgetId", v)}>
+        <SelectTrigger id="budget-filter" className="w-full sm:w-fit">
+          <SelectValue placeholder="All Budgets" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Budgets</SelectItem>
+          {budgets.map((b) => (
+            <SelectItem key={b.id} value={b.id}>
+              {b.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   )
 }
