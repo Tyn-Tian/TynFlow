@@ -1,10 +1,18 @@
 export type LiveType = "Lembur" | "Biasa"
 
+export const LIVE_PLATFORMS = [
+    { id: "tiktok", label: "Tiktok" },
+    { id: "shopee", label: "Shopee" },
+] as const
+
+export type LivePlatform = (typeof LIVE_PLATFORMS)[number]["id"]
+
 export type LiveItem = {
     id: string
     date: string
     type: LiveType
-    sales: number
+    tiktok: number
+    shopee: number
 }
 
 export type HydratedLiveItem = LiveItem & {
@@ -38,10 +46,9 @@ function getLiveDate(value: string | null | undefined) {
         : new Date().toISOString().slice(0, 10)
 }
 
-function getLiveSales(value: number | string | null | undefined) {
-    const sales = Number(value)
-
-    return Number.isFinite(sales) ? sales : 0
+function getNumericValue(value: number | string | null | undefined) {
+    const val = Number(value)
+    return Number.isFinite(val) ? val : 0
 }
 
 export function normalizeLiveItems(
@@ -49,14 +56,16 @@ export function normalizeLiveItems(
         id: string | number
         date: string | null
         type: string | null
-        sales: number | string | null
+        tiktok?: number | string | null
+        shopee?: number | string | null
     }>
 ): LiveItem[] {
     return items.map((item) => ({
         id: String(item.id),
         date: getLiveDate(item.date),
         type: getLiveType(item.type),
-        sales: getLiveSales(item.sales),
+        tiktok: getNumericValue(item.tiktok),
+        shopee: getNumericValue(item.shopee),
     }))
 }
 
@@ -64,7 +73,8 @@ export function hydrateLiveItems(items: LiveItem[]): HydratedLiveItem[] {
     return items.map((item) => {
         const baseRate = getLiveBaseRate(item.type)
         const baseTotal = baseRate * LIVE_SESSION_COUNT
-        const salesBonus = item.sales * LIVE_SALES_RATE
+        const totalSales = item.tiktok + item.shopee
+        const salesBonus = totalSales * LIVE_SALES_RATE
 
         return {
             ...item,
