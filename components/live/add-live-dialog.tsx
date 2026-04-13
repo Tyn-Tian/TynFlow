@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { IconCalendar, IconPlus } from "@tabler/icons-react"
 
+import { LIVE_PLATFORMS } from "@/components/live/live-data"
 import { addLiveAction } from "@/actions/live-actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,7 +28,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 const formSchema = z.object({
     date: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/, "Date must be in dd/mm/yyyy"),
     type: z.enum(["Lembur", "Biasa"]),
-    sales: z.number().int().min(0, "Sales must be at least 0"),
+    tiktok: z.number().int().min(0, "Sales must be at least 0"),
+    shopee: z.number().int().min(0, "Sales must be at least 0"),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -77,7 +79,8 @@ export function AddLiveDialog() {
         defaultValues: {
             date: defaultDate,
             type: "Biasa",
-            sales: 0,
+            tiktok: 0,
+            shopee: 0,
         },
     })
 
@@ -86,7 +89,8 @@ export function AddLiveDialog() {
             form.reset({
                 date: defaultDate,
                 type: "Biasa",
-                sales: 0,
+                tiktok: 0,
+                shopee: 0,
             })
             setShowDatePicker(false)
         }
@@ -99,7 +103,8 @@ export function AddLiveDialog() {
             await addLiveAction({
                 date: values.date,
                 type: values.type,
-                sales: values.sales,
+                tiktok: values.tiktok,
+                shopee: values.shopee,
             })
 
             toast.success("Success", {
@@ -110,7 +115,8 @@ export function AddLiveDialog() {
             form.reset({
                 date: defaultDate,
                 type: "Biasa",
-                sales: 0,
+                tiktok: 0,
+                shopee: 0,
             })
             router.refresh()
             if (typeof window !== "undefined") {
@@ -211,34 +217,39 @@ export function AddLiveDialog() {
                             )}
                         />
 
-                        <Controller
-                            name="sales"
-                            control={form.control}
-                            render={({ field, fieldState }) => (
-                                <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel htmlFor="live-sales">Sales</FieldLabel>
-                                    <Input
-                                        value={
-                                            mounted
-                                                ? field.value !== undefined && field.value !== null
-                                                    ? field.value.toLocaleString("id-ID")
-                                                    : ""
-                                                : field.value !== undefined && field.value !== null
-                                                    ? String(field.value)
-                                                    : ""
-                                        }
-                                        id="live-sales"
-                                        type="text"
-                                        inputMode="numeric"
-                                        placeholder="0"
-                                        aria-invalid={fieldState.invalid}
-                                        autoComplete="off"
-                                        onChange={(event) => field.onChange(Number(event.target.value.replace(/\D/g, "")))}
-                                    />
-                                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                                </Field>
-                            )}
-                        />
+                        <div className="grid grid-cols-2 gap-4">
+                            {LIVE_PLATFORMS.map((platform) => (
+                                <Controller
+                                    key={platform.id}
+                                    name={platform.id}
+                                    control={form.control}
+                                    render={({ field, fieldState }) => (
+                                        <Field data-invalid={fieldState.invalid}>
+                                            <FieldLabel htmlFor={`live-${platform.id}`}>{platform.label}</FieldLabel>
+                                            <Input
+                                                value={
+                                                    mounted
+                                                        ? field.value !== undefined && field.value !== null
+                                                            ? field.value.toLocaleString("id-ID")
+                                                            : ""
+                                                        : field.value !== undefined && field.value !== null
+                                                            ? String(field.value)
+                                                            : ""
+                                                }
+                                                id={`live-${platform.id}`}
+                                                type="text"
+                                                inputMode="numeric"
+                                                placeholder="0"
+                                                aria-invalid={fieldState.invalid}
+                                                autoComplete="off"
+                                                onChange={(event) => field.onChange(Number(event.target.value.replace(/\D/g, "")))}
+                                            />
+                                            {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                                        </Field>
+                                    )}
+                                />
+                            ))}
+                        </div>
 
                         <AlertDialogFooter>
                             <AlertDialogCancel type="button" className="cursor-pointer">

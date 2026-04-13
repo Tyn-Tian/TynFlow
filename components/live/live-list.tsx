@@ -32,6 +32,7 @@ import { formatRupiah } from "@/lib/utils"
 import {
     getLiveSalesRate,
     hydrateLiveItems,
+    LIVE_PLATFORMS,
     type HydratedLiveItem,
     type LiveItem,
 } from "@/components/live/live-data"
@@ -112,7 +113,8 @@ export function LiveList({ lives }: LiveListProps) {
                 const monthLabel = liveDate.toLocaleDateString("id-ID", { month: "long" })
                 const typeLabel = item.type === "Lembur" ? ` (${item.type})` : ""
 
-                return `${day} ${monthLabel}${typeLabel}: ${item.sales} pcs`
+                const totalSales = item.tiktok + item.shopee
+                return `${day} ${monthLabel}${typeLabel}: ${totalSales} pcs`
             })
             .join("\n")
 
@@ -193,6 +195,7 @@ export function LiveList({ lives }: LiveListProps) {
                                     month: "long",
                                     day: "numeric",
                                 })
+                                const totalSales = item.tiktok + item.shopee
 
                                 return (
                                     <Card
@@ -231,10 +234,13 @@ export function LiveList({ lives }: LiveListProps) {
                                                             <p className="text-sm font-medium">Rincian perhitungan live</p>
                                                             <p className="text-xs text-muted-foreground">Data live diambil langsung dari tabel Supabase `lives`.</p>
                                                         </div>
-                                                        <span className="inline-flex items-center gap-1 rounded-full border bg-background px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                                                            <IconTrendingUp className="size-3.5" />
-                                                            {item.sales} sales
-                                                        </span>
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {LIVE_PLATFORMS.map((platform) => (
+                                                                <span key={platform.id} className="inline-flex items-center gap-1 rounded-full border bg-background px-2.5 py-1 text-[10px] font-medium text-muted-foreground">
+                                                                    {platform.label}: {item[platform.id]}
+                                                                </span>
+                                                            ))}
+                                                        </div>
                                                     </div>
 
                                                     <div className="space-y-3 text-sm">
@@ -243,8 +249,8 @@ export function LiveList({ lives }: LiveListProps) {
                                                             <span className="font-medium">{item.sessionCount} × {formatRupiah(item.baseRate)} = {formatRupiah(item.baseTotal)}</span>
                                                         </div>
                                                         <div className="flex items-center justify-between">
-                                                            <span className="text-muted-foreground">Bonus sales</span>
-                                                            <span className="font-medium">{item.sales} × {formatRupiah(getLiveSalesRate())} = {formatRupiah(item.salesBonus)}</span>
+                                                            <span className="text-muted-foreground">Bonus sales ({totalSales} pcs)</span>
+                                                            <span className="font-medium">{totalSales} × {formatRupiah(getLiveSalesRate())} = {formatRupiah(item.salesBonus)}</span>
                                                         </div>
                                                         <div className="h-px bg-border" />
                                                         <div className="flex items-center justify-between text-sm font-semibold">

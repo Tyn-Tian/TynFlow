@@ -4,14 +4,15 @@ export type Live = {
   id?: string | number
   date: string
   type: "Lembur" | "Biasa"
-  sales: number
+  tiktok: number
+  shopee: number
   user_id: string
 }
 
 export async function findLivesByUserId(supabase: SupabaseClient, userId: string) {
   return supabase
     .from("lives")
-    .select("id, date, type, sales")
+    .select("id, date, type, tiktok, shopee")
     .eq("user_id", userId)
     .order("date", { ascending: false })
 }
@@ -19,7 +20,7 @@ export async function findLivesByUserId(supabase: SupabaseClient, userId: string
 export async function findLiveById(supabase: SupabaseClient, id: string | number) {
   return supabase
     .from("lives")
-    .select("id, date, type, sales, user_id")
+    .select("id, date, type, tiktok, shopee, user_id")
     .eq("id", id)
     .single()
 }

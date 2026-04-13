@@ -14,7 +14,7 @@ export async function getLivesAction() {
   return liveService.getLives(supabase, user.id)
 }
 
-export async function addLiveAction(input: { date: string; type: "Lembur" | "Biasa"; sales: number }) {
+export async function addLiveAction(input: { date: string; type: "Lembur" | "Biasa"; tiktok: number; shopee: number }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -31,7 +31,7 @@ export async function addLiveAction(input: { date: string; type: "Lembur" | "Bia
   revalidatePath("/live")
 }
 
-export async function editLiveAction(id: string | number, input: { date: string; type: "Lembur" | "Biasa"; sales: number }) {
+export async function editLiveAction(id: string | number, input: { date: string; type: "Lembur" | "Biasa"; tiktok: number; shopee: number }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
