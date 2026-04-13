@@ -16,14 +16,13 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { createClient } from "@/lib/supabase/client"
+import { removeLiveAction } from "@/actions/live-actions"
 
 type DeleteLiveDialogProps = {
     liveId?: string | null
 }
 
 export function DeleteLiveDialog({ liveId }: DeleteLiveDialogProps) {
-    const supabase = createClient()
     const router = useRouter()
     const [open, setOpen] = useState(false)
     const [deleting, setDeleting] = useState(false)
@@ -33,25 +32,7 @@ export function DeleteLiveDialog({ liveId }: DeleteLiveDialogProps) {
 
         setDeleting(true)
         try {
-            const {
-                data: { user },
-            } = await supabase.auth.getUser()
-
-            if (!user) {
-                toast.error("Failed", { description: "Please login to delete live data.", duration: 3000 })
-                return
-            }
-
-            const { error } = await supabase
-                .from("lives")
-                .delete()
-                .eq("id", liveId)
-                .eq("user_id", user.id)
-
-            if (error) {
-                toast.error("Failed", { description: error.message, duration: 3000 })
-                return
-            }
+            await removeLiveAction(liveId)
 
             toast.success("Deleted", { description: "Live has been deleted.", duration: 3000 })
             setOpen(false)

@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { IconCalendar, IconPlus } from "@tabler/icons-react"
 
-import { createClient } from "@/lib/supabase/client"
+import { addLiveAction } from "@/actions/live-actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Calendar } from "@/components/ui/calendar"
@@ -33,7 +33,6 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>
 
 export function AddLiveDialog() {
-    const supabase = createClient()
     const router = useRouter()
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -93,53 +92,15 @@ export function AddLiveDialog() {
         }
     }, [defaultDate, form, open])
 
-    function toIsoDate(date: string) {
-        const [dd, mm, yyyy] = date.split("/")
-        const day = Number(dd)
-        const month = Number(mm)
-        const year = Number(yyyy)
-        const parsed = new Date(year, month - 1, day)
-
-        if (
-            parsed.getFullYear() !== year ||
-            parsed.getMonth() !== month - 1 ||
-            parsed.getDate() !== day
-        ) {
-            throw new Error("Invalid date")
-        }
-
-        return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`
-    }
 
     async function onSubmit(values: FormValues) {
         setLoading(true)
         try {
-            const {
-                data: { user },
-            } = await supabase.auth.getUser()
-
-            if (!user) {
-                toast.error("Failed", {
-                    description: "Please login to add live data.",
-                    duration: 3000,
-                })
-                return
-            }
-
-            const { error } = await supabase.from("lives").insert({
-                date: toIsoDate(values.date),
+            await addLiveAction({
+                date: values.date,
                 type: values.type,
                 sales: values.sales,
-                user_id: user.id,
             })
-
-            if (error) {
-                toast.error("Failed", {
-                    description: error.message,
-                    duration: 3000,
-                })
-                return
-            }
 
             toast.success("Success", {
                 description: "Live has been added.",

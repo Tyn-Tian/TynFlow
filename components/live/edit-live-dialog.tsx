@@ -8,8 +8,8 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { IconCalendar, IconPencil } from "@tabler/icons-react"
 
+import { editLiveAction } from "@/actions/live-actions"
 import { type LiveItem } from "@/components/live/live-data"
-import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Calendar } from "@/components/ui/calendar"
@@ -38,7 +38,6 @@ type EditLiveDialogProps = {
 }
 
 export function EditLiveDialog({ live }: EditLiveDialogProps) {
-    const supabase = createClient()
     const router = useRouter()
     const [open, setOpen] = useState(false)
     const [saving, setSaving] = useState(false)
@@ -97,53 +96,15 @@ export function EditLiveDialog({ live }: EditLiveDialogProps) {
         }
     }, [defaultDateStr, form, live, open])
 
-    function toIsoDate(date: string) {
-        const [dd, mm, yyyy] = date.split("/")
-        const day = Number(dd)
-        const month = Number(mm)
-        const year = Number(yyyy)
-        const parsed = new Date(year, month - 1, day)
-
-        if (
-            parsed.getFullYear() !== year ||
-            parsed.getMonth() !== month - 1 ||
-            parsed.getDate() !== day
-        ) {
-            throw new Error("Invalid date")
-        }
-
-        return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`
-    }
 
     async function onSubmit(values: FormValues) {
         setSaving(true)
         try {
-            const {
-                data: { user },
-            } = await supabase.auth.getUser()
-
-            if (!user) {
-                toast.error("Failed", {
-                    description: "Please login to edit live data.",
-                    duration: 3000,
-                })
-                return
-            }
-
-            const { error } = await supabase
-                .from("lives")
-                .update({
-                    date: toIsoDate(values.date),
-                    type: values.type,
-                    sales: values.sales,
-                })
-                .eq("id", live.id)
-                .eq("user_id", user.id)
-
-            if (error) {
-                toast.error("Failed", { description: error.message, duration: 3000 })
-                return
-            }
+            await editLiveAction(live.id, {
+                date: values.date,
+                type: values.type,
+                sales: values.sales,
+            })
 
             toast.success("Success", { description: "Live has been updated.", duration: 3000 })
             setOpen(false)
