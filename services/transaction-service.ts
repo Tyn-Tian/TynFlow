@@ -2,7 +2,7 @@ import { SupabaseClient } from "@supabase/supabase-js"
 import * as transactionRepository from "@/repository/transaction-repository"
 import * as walletService from "@/services/wallet-service"
 import * as budgetService from "@/services/budget-service"
-import { subDays, format, differenceInDays } from "date-fns"
+import * as portfolioService from "@/services/portfolio-service"
 
 export async function getTransactions(supabase: SupabaseClient, userId: string) {
   const { data: txData, error: txError } = await transactionRepository.findTransactionsByUserId(supabase, userId)
@@ -30,15 +30,26 @@ export async function getTransactions(supabase: SupabaseClient, userId: string) 
     if (!budgetsError && budgetsData) budgetMap = Object.fromEntries((budgetsData as { id: string; name?: string }[]).map((b) => [b.id, b.name ?? ""]))
   }
 
+  const portfolioIds = Array.from(new Set(rows.map((r) => r.portfolio_id).filter(Boolean) as string[]))
+  let portfolioMap: Record<string, string> = {}
+  if (portfolioIds.length) {
+    const { data: portfoliosData, error: portfoliosError } = await supabase
+      .from("portfolios")
+      .select("id, name")
+      .in("id", portfolioIds)
+    if (!portfoliosError && portfoliosData) portfolioMap = Object.fromEntries((portfoliosData as { id: string; name?: string }[]).map((p) => [p.id, p.name ?? ""]))
+  }
+
   return rows.map((t) => ({
     ...t,
     budgetName: t.budget_id ? budgetMap[t.budget_id] : undefined,
     walletName: t.wallet_id ? walletMap[t.wallet_id] : undefined,
     transferName: t.transfer_id ? walletMap[t.transfer_id] : undefined,
+    portfolioName: t.portfolio_id ? portfolioMap[t.portfolio_id] : undefined,
   }))
 }
 
-export async function getFilteredTransactions(supabase: SupabaseClient, filters: { userId: string, type?: "Income" | "Expense" | "Transfer", startDate?: string, endDate?: string, walletId?: string, budgetId?: string, dates?: string[] }) {
+export async function getFilteredTransactions(supabase: SupabaseClient, filters: { userId: string, type?: "Income" | "Expense" | "Transfer" | "Invest", startDate?: string, endDate?: string, walletId?: string, budgetId?: string, dates?: string[] }) {
   const { data, error } = await transactionRepository.findTransactions(supabase, filters)
   if (error) throw new Error(error.message)
   return data ?? []
@@ -85,11 +96,19 @@ export async function getPaginatedTransactions(
     if (budgetsData) budgetMap = Object.fromEntries(budgetsData.map((b) => [b.id, b.name ?? ""]))
   }
 
+  const portfolioIds = Array.from(new Set(rows.map((r) => r.portfolio_id).filter(Boolean) as string[]))
+  let portfolioMap: Record<string, string> = {}
+  if (portfolioIds.length) {
+    const { data: portfoliosData } = await supabase.from("portfolios").select("id, name").in("id", portfolioIds)
+    if (portfoliosData) portfolioMap = Object.fromEntries(portfoliosData.map((p) => [p.id, p.name ?? ""]))
+  }
+
   return rows.map((t) => ({
     ...t,
     budgetName: t.budget_id ? budgetMap[t.budget_id] : undefined,
     walletName: t.wallet_id ? walletMap[t.wallet_id] : undefined,
     transferName: t.transfer_id ? walletMap[t.transfer_id] : undefined,
+    portfolioName: t.portfolio_id ? portfolioMap[t.portfolio_id] : undefined,
   }))
 }
 
@@ -122,6 +141,10 @@ export async function addTransaction(supabase: SupabaseClient, input: transactio
     if (!input.wallet_id || !input.transfer_id) throw new Error("Source and destination wallets are required for transfer.")
     await walletService.updateBalance(supabase, input.wallet_id, -(input.amount + (input.admin_fee ?? 0)))
     await walletService.updateBalance(supabase, input.transfer_id, input.amount)
+  } else if (input.type === "Invest") {
+    if (!input.wallet_id || !input.portfolio_id) throw new Error("Wallet and Portfolio are required for investment.")
+    await walletService.updateBalance(supabase, input.wallet_id, -(input.amount + (input.admin_fee ?? 0)))
+    await portfolioService.updateInvestmentValue(supabase, input.portfolio_id, input.amount)
   } else {
     if (input.wallet_id) {
       const delta = input.type === "Income" ? input.amount : -input.amount
@@ -141,6 +164,9 @@ export async function editTransaction(supabase: SupabaseClient, id: string | num
   if (oldTx.type === "Transfer") {
     if (oldTx.wallet_id) await walletService.updateBalance(supabase, oldTx.wallet_id, oldTx.amount + (oldTx.admin_fee ?? 0))
     if (oldTx.transfer_id) await walletService.updateBalance(supabase, oldTx.transfer_id, -oldTx.amount)
+  } else if (oldTx.type === "Invest") {
+    if (oldTx.wallet_id) await walletService.updateBalance(supabase, oldTx.wallet_id, oldTx.amount + (oldTx.admin_fee ?? 0))
+    if (oldTx.portfolio_id) await portfolioService.updateInvestmentValue(supabase, oldTx.portfolio_id, -oldTx.amount)
   } else {
     if (oldTx.wallet_id) {
       const delta = oldTx.type === "Income" ? -oldTx.amount : oldTx.amount
@@ -158,6 +184,9 @@ export async function editTransaction(supabase: SupabaseClient, id: string | num
   if (input.type === "Transfer") {
     if (input.wallet_id) await walletService.updateBalance(supabase, input.wallet_id, -(input.amount + (input.admin_fee ?? 0)))
     if (input.transfer_id) await walletService.updateBalance(supabase, input.transfer_id, input.amount)
+  } else if (input.type === "Invest") {
+    if (input.wallet_id) await walletService.updateBalance(supabase, input.wallet_id, -(input.amount + (input.admin_fee ?? 0)))
+    if (input.portfolio_id) await portfolioService.updateInvestmentValue(supabase, input.portfolio_id, input.amount)
   } else {
     if (input.wallet_id) {
       const delta = input.type === "Income" ? input.amount : -input.amount
@@ -177,6 +206,9 @@ export async function removeTransaction(supabase: SupabaseClient, id: string | n
   if (tx.type === "Transfer") {
     if (tx.wallet_id) await walletService.updateBalance(supabase, tx.wallet_id, tx.amount + (tx.admin_fee ?? 0))
     if (tx.transfer_id) await walletService.updateBalance(supabase, tx.transfer_id, -tx.amount)
+  } else if (tx.type === "Invest") {
+    if (tx.wallet_id) await walletService.updateBalance(supabase, tx.wallet_id, tx.amount + (tx.admin_fee ?? 0))
+    if (tx.portfolio_id) await portfolioService.updateInvestmentValue(supabase, tx.portfolio_id, -tx.amount)
   } else {
     if (tx.wallet_id) {
       const delta = tx.type === "Income" ? -tx.amount : tx.amount

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { IconWallet, IconLoader } from "@tabler/icons-react"
+import { IconWallet, IconLoader, IconTrendingUp } from "@tabler/icons-react"
 import { Card, CardAction, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { EditTransactionDialog } from "./edit-transaction-dialog"
 import { getTransactionsAction } from "@/actions/transaction-actions"
@@ -17,7 +17,10 @@ type TxItem = {
     wallet_id?: string | null
     transfer_id?: string | null
     transferName?: string | null
-    type: "Income" | "Expense" | "Transfer"
+    portfolioName?: string | null
+    portfolio_id?: string | null
+    admin_fee?: number | null
+    type: "Income" | "Expense" | "Transfer" | "Invest"
 }
 
 interface TransactionListProps {
@@ -129,8 +132,12 @@ export function TransactionList({ initialTransactions }: TransactionListProps) {
                             >
                                 <CardHeader className="gap-0 flex items-center justify-between px-4">
                                     <div className="flex items-center gap-3">
-                                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-emerald-500/10">
-                                            <IconWallet size={20} className="text-emerald-400" />
+                                        <span className={`inline-flex h-9 w-9 items-center justify-center rounded-md ${tx.type === "Invest" ? "bg-blue-500/10" : "bg-emerald-500/10"}`}>
+                                            {tx.type === "Invest" ? (
+                                                <IconTrendingUp size={20} className="text-blue-400" />
+                                            ) : (
+                                                <IconWallet size={20} className="text-emerald-400" />
+                                            )}
                                         </span>
                                         <div className="flex flex-col">
                                             <CardTitle>{tx.name}</CardTitle>
@@ -139,6 +146,8 @@ export function TransactionList({ initialTransactions }: TransactionListProps) {
                                                     tx.walletName ?? "-"
                                                 ) : tx.type === "Expense" ? (
                                                     tx.budgetName ?? "-"
+                                                ) : tx.type === "Invest" ? (
+                                                    `${tx.walletName ?? "-"} → ${tx.portfolioName ?? "-"}`
                                                 ) : (
                                                     `${tx.walletName ?? "-"} → ${tx.transferName ?? "-"}`
                                                 )}

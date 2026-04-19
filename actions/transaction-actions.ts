@@ -33,6 +33,7 @@ export async function addTransactionAction(input: Omit<Transaction, "user_id">) 
   revalidatePath("/transactions")
   revalidatePath("/")
   revalidatePath("/wallet")
+  revalidatePath("/portfolio")
 }
 
 export async function editTransactionAction(id: string | number, input: Omit<Transaction, "user_id">) {
@@ -45,6 +46,7 @@ export async function editTransactionAction(id: string | number, input: Omit<Tra
   revalidatePath("/transactions")
   revalidatePath("/")
   revalidatePath("/wallet")
+  revalidatePath("/portfolio")
 }
 
 export async function removeTransactionAction(id: string | number) {
@@ -57,6 +59,7 @@ export async function removeTransactionAction(id: string | number) {
   revalidatePath("/transactions")
   revalidatePath("/")
   revalidatePath("/wallet")
+  revalidatePath("/portfolio")
 }
 export async function getPaginatedTransactionsAction(params: { page: number, walletId?: string, budgetId?: string }) {
   const supabase = await createClient()

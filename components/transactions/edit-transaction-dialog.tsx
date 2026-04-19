@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { editTransactionAction, getTransactionAction } from "@/actions/transaction-actions"
 import { getBudgetsAction } from "@/actions/budget-actions"
 import { getWalletsAction } from "@/actions/wallet-actions"
+import { getPortfoliosAction } from "@/actions/portfolio-actions"
 import { Input } from "@/components/ui/input"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -28,12 +29,13 @@ import { DeleteTransactionDialog } from "./delete-transaction-dialog"
 
 const formSchema = z.object({
     name: z.string().optional(),
-    type: z.enum(["Expense", "Income", "Transfer"]),
+    type: z.enum(["Expense", "Income", "Transfer", "Invest"]),
     date: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/),
     amount: z.number().int().min(1),
     budget_id: z.string().optional().nullable(),
     wallet_id: z.string().optional().nullable(),
     transfer_id: z.string().optional().nullable(),
+    portfolio_id: z.string().optional().nullable(),
     admin_fee: z.number().int().min(0).optional(),
 })
 
@@ -47,7 +49,8 @@ type TxItem = {
     budget_id?: string | null
     wallet_id?: string | null
     transfer_id?: string | null
-    type?: "Income" | "Expense" | "Transfer"
+    portfolio_id?: string | null
+    type?: "Income" | "Expense" | "Transfer" | "Invest"
     admin_fee?: number | null
 }
 
@@ -60,6 +63,7 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
     const [mounted, setMounted] = useState(false)
     const [budgets, setBudgets] = useState<{ id: string; name: string }[]>([])
     const [wallets, setWallets] = useState<{ id: string; name: string }[]>([])
+    const [portfolios, setPortfolios] = useState<{ id: string; name: string }[]>([])
     const [showDatePicker, setShowDatePicker] = useState(false)
     const datePickerRef = React.useRef<HTMLDivElement | null>(null)
 
@@ -86,13 +90,15 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
         if (!open) return
         void (async () => {
             try {
-                const [budgetsData, walletsData] = await Promise.all([
+                const [budgetsData, walletsData, portfoliosData] = await Promise.all([
                     getBudgetsAction(),
                     getWalletsAction(),
+                    getPortfoliosAction(),
                 ])
 
                 setBudgets(budgetsData as { id: string; name: string }[])
                 setWallets(walletsData as { id: string; name: string }[])
+                setPortfolios(portfoliosData as { id: string; name: string }[])
             } catch (err) {
                 toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
             }
@@ -115,17 +121,17 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: tx?.name ?? "",
-            type: (tx?.type as "Expense" | "Income" | "Transfer") ?? "Expense",
+            type: (tx?.type as "Expense" | "Income" | "Transfer" | "Invest") ?? "Expense",
             date: defaultDateStr,
             amount: tx?.amount ?? 0,
             budget_id: tx?.budget_id ?? undefined,
             wallet_id: tx?.wallet_id ?? undefined,
             transfer_id: tx?.transfer_id ?? undefined,
+            portfolio_id: tx?.portfolio_id ?? undefined,
             admin_fee: tx?.admin_fee ?? 0,
         },
     })
-    const type = form.watch("type")
-    
+    const currentType = form.watch("type")
 
     const [calcOpen, setCalcOpen] = useState(false)
     const [calcExpr, setCalcExpr] = useState<string>("0")
@@ -194,24 +200,26 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                 const dateStr = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`
                 form.reset({
                     name: data.name,
-                    type: (data.type as "Expense" | "Income" | "Transfer") ?? "Expense",
+                    type: (data.type as "Expense" | "Income" | "Transfer" | "Invest") ?? "Expense",
                     date: dateStr,
                     amount: data.amount,
-                    budget_id: data.budget_id ?? undefined,
-                    wallet_id: data.wallet_id ?? undefined,
-                    transfer_id: data.transfer_id ?? undefined,
+                    budget_id: data.budget_id ? String(data.budget_id) : undefined,
+                    wallet_id: data.wallet_id ? String(data.wallet_id) : undefined,
+                    transfer_id: data.transfer_id ? String(data.transfer_id) : undefined,
+                    portfolio_id: data.portfolio_id ? String(data.portfolio_id) : undefined,
                     admin_fee: data.admin_fee ?? 0,
                 })
             } catch (err) {
                 toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
                 form.reset({
                     name: tx.name,
-                    type: (tx?.type as "Expense" | "Income" | "Transfer") ?? "Expense",
+                    type: (tx?.type as "Expense" | "Income" | "Transfer" | "Invest") ?? "Expense",
                     date: defaultDateStr,
                     amount: tx.amount,
-                    budget_id: tx?.budget_id ?? undefined,
-                    wallet_id: tx?.wallet_id ?? undefined,
-                    transfer_id: tx?.transfer_id ?? undefined,
+                    budget_id: tx?.budget_id ? String(tx.budget_id) : undefined,
+                    wallet_id: tx?.wallet_id ? String(tx.wallet_id) : undefined,
+                    transfer_id: tx?.transfer_id ? String(tx.transfer_id) : undefined,
+                    portfolio_id: tx?.portfolio_id ? String(tx.portfolio_id) : undefined,
                     admin_fee: tx?.admin_fee ?? 0,
                 })
             } finally {
@@ -226,13 +234,14 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
         try {
             const isoDate = toIsoDate(values.date)
             await editTransactionAction(tx.id, {
-                name: values.type === "Transfer" ? "Transfer" : (values.name ?? ""),
+                name: (values.type === "Transfer" || values.type === "Invest") ? values.type : (values.name ?? ""),
                 date: isoDate,
                 amount: values.amount,
                 type: values.type,
                 budget_id: values.budget_id ?? null,
                 wallet_id: values.wallet_id ?? null,
                 transfer_id: values.transfer_id ?? null,
+                portfolio_id: values.portfolio_id ?? null,
                 admin_fee: values.admin_fee ?? 0,
             })
 
@@ -262,7 +271,7 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
 
                     <form onSubmit={form.handleSubmit(onSubmit)}>
                         <FieldGroup className="gap-4">
-                            {type !== "Transfer" && (
+                            {currentType !== "Transfer" && currentType !== "Invest" && (
                                 <Controller
                                     name="name"
                                     control={form.control}
@@ -437,7 +446,7 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                                 )}
                             />
 
-                            {type === "Expense" && (
+                            {currentType === "Expense" && (
                                 <Controller
                                     name="budget_id"
                                     control={form.control}
@@ -462,7 +471,7 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                                 />
                             )}
 
-                            {type === "Transfer" ? (
+                            {currentType === "Transfer" ? (
                                 <>
                                     <Controller
                                         name="wallet_id"
@@ -501,6 +510,73 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                                                         {wallets.map((w) => (
                                                             <SelectItem key={w.id} value={w.id}>
                                                                 {w.name}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                                            </Field>
+                                        )}
+                                    />
+
+                                    <Controller
+                                        name="admin_fee"
+                                        control={form.control}
+                                        render={({ field, fieldState }) => (
+                                            <Field data-invalid={fieldState.invalid}>
+                                                <FieldLabel htmlFor="transaction-admin-fee">Admin Fee (optional)</FieldLabel>
+                                                <Input
+                                                    id="transaction-admin-fee"
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    placeholder="0"
+                                                    value={mounted ? (field.value ?? 0).toLocaleString("id-ID") : String(field.value ?? 0)}
+                                                    onChange={(e) => field.onChange(Number(e.target.value.replace(/\D/g, "")))}
+                                                />
+                                                {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                                            </Field>
+                                        )}
+                                    />
+                                </>
+                            ) : currentType === "Invest" ? (
+                                <>
+                                    <Controller
+                                        name="wallet_id"
+                                        control={form.control}
+                                        render={({ field, fieldState }) => (
+                                            <Field data-invalid={fieldState.invalid}>
+                                                <FieldLabel>From Wallet</FieldLabel>
+                                                <Select value={field.value ?? ""} onValueChange={(v) => field.onChange(v || undefined)}>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select source wallet" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {wallets.map((w) => (
+                                                            <SelectItem key={w.id} value={w.id}>
+                                                                {w.name}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                                            </Field>
+                                        )}
+                                    />
+
+                                    <Controller
+                                        name="portfolio_id"
+                                        control={form.control}
+                                        render={({ field, fieldState }) => (
+                                            <Field data-invalid={fieldState.invalid}>
+                                                <FieldLabel>To Portfolio</FieldLabel>
+                                                <Select value={field.value ?? ""} onValueChange={(v) => field.onChange(v || undefined)}>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select destination portfolio" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {portfolios.map((p) => (
+                                                            <SelectItem key={p.id} value={p.id}>
+                                                                {p.name}
                                                             </SelectItem>
                                                         ))}
                                                     </SelectContent>

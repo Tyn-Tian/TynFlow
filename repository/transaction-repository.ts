@@ -5,10 +5,11 @@ export type Transaction = {
   name: string
   date: string
   amount: number
-  type: "Income" | "Expense" | "Transfer"
+  type: "Income" | "Expense" | "Transfer" | "Invest"
   budget_id?: string | null
   wallet_id?: string | null
   transfer_id?: string | null
+  portfolio_id?: string | null
   user_id: string
   admin_fee?: number | null
 }
@@ -16,15 +17,15 @@ export type Transaction = {
 export async function findTransactionsByUserId(supabase: SupabaseClient, userId: string) {
   return supabase
     .from("transactions")
-    .select("id, name, date, amount, type, budget_id, wallet_id, transfer_id, admin_fee")
+    .select("id, name, date, amount, type, budget_id, wallet_id, transfer_id, admin_fee, portfolio_id")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
 }
 
-export async function findTransactions(supabase: SupabaseClient, filters: { userId: string, type?: "Income" | "Expense" | "Transfer", startDate?: string, endDate?: string, walletId?: string, budgetId?: string, dates?: string[] }) {
+export async function findTransactions(supabase: SupabaseClient, filters: { userId: string, type?: "Income" | "Expense" | "Transfer" | "Invest", startDate?: string, endDate?: string, walletId?: string, budgetId?: string, dates?: string[] }) {
   let query = supabase
     .from("transactions")
-    .select("id, name, date, amount, type, budget_id, wallet_id, transfer_id, admin_fee")
+    .select("id, name, date, amount, type, budget_id, wallet_id, transfer_id, admin_fee, portfolio_id")
     .eq("user_id", filters.userId)
 
   if (filters.type) {
@@ -78,7 +79,7 @@ export async function findEarliestTransactionDate(supabase: SupabaseClient, user
 export async function findTransactionById(supabase: SupabaseClient, id: string | number) {
   return supabase
     .from("transactions")
-    .select("id, name, date, amount, type, budget_id, wallet_id, transfer_id, admin_fee")
+    .select("id, name, date, amount, type, budget_id, wallet_id, transfer_id, admin_fee, portfolio_id")
     .eq("id", id)
     .single()
 }
