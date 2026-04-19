@@ -84,3 +84,16 @@ export async function removePortfolio(supabase: SupabaseClient, id: string | num
   const { error } = await portfolioRepository.deletePortfolioById(supabase, id)
   if (error) throw new Error(error.message)
 }
+
+export async function updateInvestmentValue(supabase: SupabaseClient, portfolioId: string, amount: number) {
+  const { data, error: fetchError } = await portfolioRepository.findPortfolioById(supabase, portfolioId)
+  if (fetchError || !data) throw new Error("Portfolio not found")
+
+  const updateInput: UpdatePortfolioInput = {
+    invested: (data.invested || 0) + amount,
+    current_value: (data.current_value || 0) + amount,
+  }
+
+  const { error: updateError } = await portfolioRepository.updatePortfolioById(supabase, portfolioId, updateInput)
+  if (updateError) throw new Error(updateError.message)
+}

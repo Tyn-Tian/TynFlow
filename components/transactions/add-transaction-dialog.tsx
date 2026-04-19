@@ -11,6 +11,7 @@ import { IconPlus, IconCalculator, IconCalendar } from "@tabler/icons-react"
 import { addTransactionAction } from "@/actions/transaction-actions"
 import { getBudgetsAction } from "@/actions/budget-actions"
 import { getWalletsAction } from "@/actions/wallet-actions"
+import { getPortfoliosAction } from "@/actions/portfolio-actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Calendar } from "@/components/ui/calendar"
@@ -34,6 +35,7 @@ const formSchema = z.object({
     budget_id: z.string().optional(),
     wallet_id: z.string().optional(),
     transfer_id: z.string().optional(),
+    portfolio_id: z.string().optional(),
     admin_fee: z.number().int().min(0).optional(),
 })
 
@@ -41,6 +43,7 @@ type FormValues = z.infer<typeof formSchema>
 
 type BudgetOption = { id: string; name: string }
 type WalletOption = { id: string; name: string; balance?: number }
+type PortfolioOption = { id: string; name: string }
 
 export function AddTransactionDialog() {
     const router = useRouter()
@@ -70,7 +73,8 @@ export function AddTransactionDialog() {
     }, [showDatePicker])
     const [budgets, setBudgets] = useState<BudgetOption[]>([])
     const [wallets, setWallets] = useState<WalletOption[]>([])
-    const [tab, setTab] = useState<"Expense" | "Income" | "Transfer">("Expense")
+    const [portfolios, setPortfolios] = useState<PortfolioOption[]>([])
+    const [tab, setTab] = useState<"Expense" | "Income" | "Transfer" | "Invest">("Expense")
 
     useEffect(() => setMounted(true), [])
 
@@ -78,13 +82,15 @@ export function AddTransactionDialog() {
         if (!open) return
         void (async () => {
             try {
-                const [budgetsData, walletsData] = await Promise.all([
+                const [budgetsData, walletsData, portfoliosData] = await Promise.all([
                     getBudgetsAction(),
                     getWalletsAction(),
+                    getPortfoliosAction(),
                 ])
 
                 setBudgets(budgetsData as BudgetOption[])
                 setWallets(walletsData as WalletOption[])
+                setPortfolios(portfoliosData as PortfolioOption[])
             } catch (err) {
                 toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error.", duration: 3000 })
             }
@@ -97,7 +103,7 @@ export function AddTransactionDialog() {
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
-        defaultValues: { name: "", date: defaultDate, amount: 0, budget_id: undefined, wallet_id: undefined, transfer_id: undefined, admin_fee: 0 },
+        defaultValues: { name: "", date: defaultDate, amount: 0, budget_id: undefined, wallet_id: undefined, transfer_id: undefined, portfolio_id: undefined, admin_fee: 0 },
     })
 
     const pressCalc = (v: string) => {
@@ -179,7 +185,7 @@ export function AddTransactionDialog() {
 
             const isoDate = toIsoDate(values.date)
 
-            if (tab !== "Transfer" && (!values.name || !values.name.trim())) {
+            if (tab !== "Transfer" && tab !== "Invest" && (!values.name || !values.name.trim())) {
                 toast.error("Name is required.", { duration: 3000 })
                 return
             }
@@ -196,14 +202,22 @@ export function AddTransactionDialog() {
                 }
             }
 
+            if (tab === "Invest") {
+                if (!values.wallet_id || !values.portfolio_id) {
+                    toast.error("Please select both wallet and portfolio.", { duration: 3000 })
+                    return
+                }
+            }
+
             await addTransactionAction({
-                name: tab === "Transfer" ? "Transfer" : (values.name ?? ""),
+                name: tab === "Transfer" ? "Transfer" : tab === "Invest" ? "Invest" : (values.name ?? ""),
                 date: isoDate,
                 amount: values.amount,
                 type: tab,
                 budget_id: values.budget_id ?? null,
                 wallet_id: values.wallet_id ?? null,
                 transfer_id: values.transfer_id ?? null,
+                portfolio_id: values.portfolio_id ?? null,
                 admin_fee: values.admin_fee ?? 0,
             })
 
@@ -234,15 +248,16 @@ export function AddTransactionDialog() {
                 </AlertDialogHeader>
 
                 <form onSubmit={form.handleSubmit(onSubmit)}>
-                    <Tabs value={tab} onValueChange={(v) => setTab(v as "Expense" | "Income" | "Transfer")} className="mb-6">
+                    <Tabs value={tab} onValueChange={(v) => setTab(v as "Expense" | "Income" | "Transfer" | "Invest")} className="mb-6">
                         <TabsList className="mx-auto">
                             <TabsTrigger value="Expense" className="cursor-pointer">Expense</TabsTrigger>
                             <TabsTrigger value="Income" className="cursor-pointer">Income</TabsTrigger>
                             <TabsTrigger value="Transfer" className="cursor-pointer">Transfer</TabsTrigger>
+                            <TabsTrigger value="Invest" className="cursor-pointer">Invest</TabsTrigger>
                         </TabsList>
                     </Tabs>
                     <FieldGroup className="gap-6">
-                        {tab !== "Transfer" && (
+                        {tab !== "Transfer" && tab !== "Invest" && (
                             <Controller
                                 name="name"
                                 control={form.control}
@@ -485,6 +500,73 @@ export function AddTransactionDialog() {
                                                     {wallets.map((w) => (
                                                         <SelectItem key={w.id} value={w.id}>
                                                             {w.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                                        </Field>
+                                    )}
+                                />
+
+                                <Controller
+                                    name="admin_fee"
+                                    control={form.control}
+                                    render={({ field, fieldState }) => (
+                                        <Field data-invalid={fieldState.invalid}>
+                                            <FieldLabel htmlFor="transaction-admin-fee">Admin Fee (optional)</FieldLabel>
+                                            <Input
+                                                id="transaction-admin-fee"
+                                                type="text"
+                                                inputMode="numeric"
+                                                placeholder="0"
+                                                value={mounted ? (field.value ?? 0).toLocaleString("id-ID") : String(field.value ?? 0)}
+                                                onChange={(e) => field.onChange(Number(e.target.value.replace(/\D/g, "")))}
+                                            />
+                                            {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                                        </Field>
+                                    )}
+                                />
+                            </>
+                        ) : tab === "Invest" ? (
+                            <>
+                                <Controller
+                                    name="wallet_id"
+                                    control={form.control}
+                                    render={({ field, fieldState }) => (
+                                        <Field data-invalid={fieldState.invalid}>
+                                            <FieldLabel>From Wallet</FieldLabel>
+                                            <Select value={field.value ?? ""} onValueChange={(v) => field.onChange(v || undefined)}>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select source wallet" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {wallets.map((w) => (
+                                                        <SelectItem key={w.id} value={w.id}>
+                                                            {w.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                                        </Field>
+                                    )}
+                                />
+
+                                <Controller
+                                    name="portfolio_id"
+                                    control={form.control}
+                                    render={({ field, fieldState }) => (
+                                        <Field data-invalid={fieldState.invalid}>
+                                            <FieldLabel>To Portfolio</FieldLabel>
+                                            <Select value={field.value ?? ""} onValueChange={(v) => field.onChange(v || undefined)}>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select destination portfolio" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {portfolios.map((p) => (
+                                                        <SelectItem key={p.id} value={p.id}>
+                                                            {p.name}
                                                         </SelectItem>
                                                     ))}
                                                 </SelectContent>
