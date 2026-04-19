@@ -15,12 +15,15 @@ import {
 import { EditBudgetDialog } from "@/components/budgets/edit-budget-dialog"
 import { DeleteBudgetDialog } from "@/components/budgets/delete-budget-dialog"
 import { formatRupiah } from "@/lib/utils"
+import { Badge } from "@/components/ui/badge"
 
 type BudgetItem = {
     id?: string | null
     name: string
     total: number
     leftover: number
+    dailySpending?: number
+    totalRealization?: number
 }
 
 export function BudgetList() {
@@ -81,7 +84,7 @@ export function BudgetList() {
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-4">
                 {budgets.map((b) => {
                     const leftover = Math.max(0, b.leftover)
                     const used = Math.max(0, b.total - leftover)
@@ -143,12 +146,44 @@ export function BudgetList() {
 
                             {isOpen && (
                                 <CardContent>
-                                    <div className="flex items-center justify-end gap-2">
-                                        <EditBudgetDialog
-                                            budget={{ id: b.id, name: b.name, total: b.total, leftover: b.leftover }}
-                                            onSuccess={() => setOpenId(null)}
-                                        />
-                                        <DeleteBudgetDialog budgetId={b.id} />
+                                    <div className="rounded-xl border bg-muted/20 p-4">
+                                        <div className="mb-4 flex items-start justify-between gap-3">
+                                            <div>
+                                                <p className="text-sm font-medium">Budget Summary</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    Performance based on profile date range.
+                                                </p>
+                                            </div>
+                                            <Badge
+                                                variant={b.totalRealization! <= b.total ? "default" : "destructive"}
+                                                className={b.totalRealization! <= b.total ? "bg-emerald-500 hover:bg-emerald-600" : "bg-rose-500 hover:bg-rose-600"}
+                                            >
+                                                {b.totalRealization! <= b.total ? "Good" : "Bad"}
+                                            </Badge>
+                                        </div>
+
+                                        <div className="space-y-3 text-sm">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-muted-foreground">Daily Spending</span>
+                                                <span className="font-medium">{formatRupiah(b.dailySpending || 0)}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-muted-foreground">Total Realization</span>
+                                                <span className="font-medium">{formatRupiah(b.totalRealization || 0)}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-muted-foreground">Budget Limit</span>
+                                                <span className="font-medium">{formatRupiah(b.total)}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-4 flex justify-end gap-2">
+                                            <EditBudgetDialog
+                                                budget={{ id: b.id, name: b.name, total: b.total, leftover: b.leftover }}
+                                                onSuccess={() => setOpenId(null)}
+                                            />
+                                            <DeleteBudgetDialog budgetId={b.id} />
+                                        </div>
                                     </div>
                                 </CardContent>
                             )}
