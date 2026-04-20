@@ -30,3 +30,11 @@ export async function findAllJobsByUserId(supabase: SupabaseClient, userId: stri
     .eq("user_id", userId)
     .order("updated_at", { ascending: false })
 }
+
+export async function insertJob(supabase: SupabaseClient, job: Omit<Job, "id"> & { user_id: string }) {
+  return supabase.from("jobs").insert([job])
+}
+
+export async function deleteJobById(supabase: SupabaseClient, id: number | string) {
+  return supabase.from("jobs").delete().eq("id", id)
+}
