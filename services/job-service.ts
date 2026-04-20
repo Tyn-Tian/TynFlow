@@ -25,3 +25,13 @@ export async function getAllJobs(supabase: SupabaseClient, userId: string) {
   if (error) throw new Error(error.message)
   return data || []
 }
+
+export async function addJob(supabase: SupabaseClient, job: Omit<jobRepository.Job, "id"> & { user_id: string }) {
+  const { error } = await jobRepository.insertJob(supabase, job)
+  if (error) throw new Error(error.message)
+}
+
+export async function removeJob(supabase: SupabaseClient, id: number | string) {
+  const { error } = await jobRepository.deleteJobById(supabase, id)
+  if (error) throw new Error(error.message)
+}

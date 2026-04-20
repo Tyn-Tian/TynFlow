@@ -57,6 +57,29 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
+const SOURCES = [
+    "Kalibr",
+    "Dealls",
+    "Jobstreet",
+    "LinkedIn",
+    "Glints",
+    "Company Website",
+    "Social Media",
+]
+
+const STATUSES = [
+    "Screening",
+    "Fill in Information",
+    "Pychotest",
+    "Technical Test",
+    "HR Interview",
+    "User Interview",
+    "Offering",
+    "Rejected",
+    "Accepted",
+    "Other",
+]
+
 export function TableCellViewer({ item }: { item: Job }) {
   const isMobile = useIsMobile()
 
@@ -145,22 +168,11 @@ export function TableCellViewer({ item }: { item: Job }) {
                     <SelectValue placeholder="Select a type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Table of Contents">
-                      Table of Contents
-                    </SelectItem>
-                    <SelectItem value="Executive Summary">
-                      Executive Summary
-                    </SelectItem>
-                    <SelectItem value="Technical Approach">
-                      Technical Approach
-                    </SelectItem>
-                    <SelectItem value="Design">Design</SelectItem>
-                    <SelectItem value="Capabilities">Capabilities</SelectItem>
-                    <SelectItem value="Focus Documents">
-                      Focus Documents
-                    </SelectItem>
-                    <SelectItem value="Narrative">Narrative</SelectItem>
-                    <SelectItem value="Cover Page">Cover Page</SelectItem>
+                    {SOURCES.map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {s}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -171,9 +183,11 @@ export function TableCellViewer({ item }: { item: Job }) {
                     <SelectValue placeholder="Select a status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Done">Done</SelectItem>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="Not Started">Not Started</SelectItem>
+                    {STATUSES.map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {s}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

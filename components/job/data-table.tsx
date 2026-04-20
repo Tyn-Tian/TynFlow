@@ -67,6 +67,7 @@ import {
 import { Job } from "../../repository/job-repository"
 import { columns } from "./columns"
 import { DraggableRow } from "./draggable-row"
+import { AddJobDialog } from "./add-job-dialog"
 
 export function DataTable({
   data: initialData,
@@ -158,10 +159,7 @@ export function DataTable({
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="outline" size="sm">
-            <IconPlus />
-            <span className="hidden lg:inline">Add Section</span>
-          </Button>
+          <AddJobDialog />
         </div>
       </div>
       <div className="relative flex flex-col gap-4 overflow-auto">

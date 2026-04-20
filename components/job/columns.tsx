@@ -22,6 +22,48 @@ import { formatDate } from "@/lib/utils"
 import { Job } from "../../repository/job-repository"
 import { TableCellViewer } from "./table-cell-viewer"
 import { DragHandle } from "./draggable-row"
+import { DeleteJobDialog } from "./delete-job-dialog"
+
+function ActionCell({ job }: { job: Job }) {
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false)
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            className="flex size-8 text-muted-foreground data-[state=open]:bg-muted"
+            size="icon"
+          >
+            <IconDotsVertical />
+            <span className="sr-only">Open menu</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-32">
+          <DropdownMenuItem>Edit</DropdownMenuItem>
+          <DropdownMenuItem>Make a copy</DropdownMenuItem>
+          <DropdownMenuItem>Favorite</DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            variant="destructive"
+            onClick={() => setDeleteDialogOpen(true)}
+            className="cursor-pointer text-rose-500!"
+          >
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <DeleteJobDialog
+        jobId={job.id}
+        jobPosition={job.position}
+        open={deleteDialogOpen}
+        setOpen={setDeleteDialogOpen}
+      />
+    </>
+  )
+}
 
 export const columns: ColumnDef<Job>[] = [
   {
@@ -85,26 +127,6 @@ export const columns: ColumnDef<Job>[] = [
   },
   {
     id: "actions",
-    cell: () => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className="flex size-8 text-muted-foreground data-[state=open]:bg-muted"
-            size="icon"
-          >
-            <IconDotsVertical />
-            <span className="sr-only">Open menu</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-32">
-          <DropdownMenuItem>Edit</DropdownMenuItem>
-          <DropdownMenuItem>Make a copy</DropdownMenuItem>
-          <DropdownMenuItem>Favorite</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
+    cell: ({ row }) => <ActionCell job={row.original} />,
   },
 ]
