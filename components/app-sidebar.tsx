@@ -50,11 +50,17 @@ const data = {
             title: "Live",
             url: "/live",
             icon: "live"
+        },
+        {
+            title: "Job",
+            url: "/job",
+            icon: "job"
         }
     ],
 }
 
 const LIVE_NAV_USER_ID = "8017eb2d-1c88-4e83-ba13-80ce15477154"
+const JOB_NAV_USER_ID = "d4e69f3b-c49e-4b65-ad03-50f6cb803571"
 
 export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const supabase = await createClient()
@@ -82,11 +88,17 @@ export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sideb
     }
 
     const navItems = data.navMain.filter((item) => {
-        if (item.icon !== "live") {
+        if (item.icon !== "live" && item.icon !== "job") {
             return true
         }
 
-        return userId === LIVE_NAV_USER_ID
+        if (item.icon === "live") {
+            return userId === LIVE_NAV_USER_ID
+        }
+
+        if (item.icon === "job") {
+            return userId === JOB_NAV_USER_ID
+        }
     })
 
     return (

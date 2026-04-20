@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const LIVE_ACCESS_USER_ID = "8017eb2d-1c88-4e83-ba13-80ce15477154";
+const JOB_ACCESS_USER_ID = "d4e69f3b-c49e-4b65-ad03-50f6cb803571";
 const PROTECTED_ROUTE_PREFIXES = [
   "/dashboard",
   "/wallet",
@@ -10,6 +11,7 @@ const PROTECTED_ROUTE_PREFIXES = [
   "/transaction",
   "/portfolio",
   "/live",
+  "/job"
 ];
 
 export async function proxy(req: NextRequest) {
@@ -44,6 +46,7 @@ export async function proxy(req: NextRequest) {
     pathname.startsWith(route),
   );
   const isLiveRoute = pathname.startsWith("/live");
+  const isJobRoute = pathname.startsWith("/job");
 
   if (isRoot) {
     if (user) return NextResponse.redirect(new URL("/dashboard", req.url));
@@ -55,6 +58,10 @@ export async function proxy(req: NextRequest) {
   }
 
   if (user && isLiveRoute && user.id !== LIVE_ACCESS_USER_ID) {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
+
+  if (user && isJobRoute && user.id !== JOB_ACCESS_USER_ID) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
@@ -80,6 +87,8 @@ export const config = {
     "/portfolio/:path*",
     "/live",
     "/live/:path*",
+    "/job",
+    "/job/:path*",
     "/login",
   ],
 };

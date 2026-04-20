@@ -9,6 +9,7 @@ import {
   IconChartPie,
   Icon,
   IconLivePhoto,
+  IconBriefcase,
 } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
@@ -65,7 +66,8 @@ export function NavMain({
                       transaction: IconCalendarDollar,
                       budget: IconLockDollar,
                       portfolio: IconChartPie,
-                      live: IconLivePhoto
+                      live: IconLivePhoto,
+                      job: IconBriefcase
                     }
                     const Icon = item.icon ? IconMap[item.icon] : null
                     return Icon ? <Icon /> : null
