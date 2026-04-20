@@ -53,3 +53,19 @@ export async function deleteJobAction(id: number | string) {
   await jobService.removeJob(supabase, id)
   revalidatePath("/job")
 }
+
+export async function editJobAction(id: number | string, job: {
+  position: string
+  company: string
+  source: string
+  status: string
+  applied_at: string
+  updated_at: string
+}) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  await jobService.editJob(supabase, id, job)
+  revalidatePath("/job")
+}
