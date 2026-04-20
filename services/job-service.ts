@@ -35,3 +35,8 @@ export async function removeJob(supabase: SupabaseClient, id: number | string) {
   const { error } = await jobRepository.deleteJobById(supabase, id)
   if (error) throw new Error(error.message)
 }
+
+export async function editJob(supabase: SupabaseClient, id: number | string, job: Partial<jobRepository.Job>) {
+  const { error } = await jobRepository.updateJobById(supabase, id, job)
+  if (error) throw new Error(error.message)
+}

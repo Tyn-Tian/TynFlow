@@ -38,3 +38,7 @@ export async function insertJob(supabase: SupabaseClient, job: Omit<Job, "id"> &
 export async function deleteJobById(supabase: SupabaseClient, id: number | string) {
   return supabase.from("jobs").delete().eq("id", id)
 }
+
+export async function updateJobById(supabase: SupabaseClient, id: number | string, job: Partial<Job>) {
+  return supabase.from("jobs").update(job).eq("id", id)
+}
