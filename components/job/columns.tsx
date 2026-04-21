@@ -5,6 +5,7 @@ import * as React from "react"
 import { ColumnDef } from "@tanstack/react-table"
 import {
   IconCircleCheckFilled,
+  IconCircleX,
   IconDotsVertical,
   IconLoader,
 } from "@tabler/icons-react"
@@ -102,9 +103,11 @@ export const columns: ColumnDef<Job>[] = [
     cell: ({ row }) => (
       <Badge variant="outline" className="px-1.5 text-muted-foreground">
         {row.original.status === "Accepted" ? (
-          <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
+          <IconCircleCheckFilled className="text-emerald-500" />
+        ) : row.original.status === "Rejected" ? (
+          <IconCircleX className="text-rose-500" />
         ) : (
-          <IconLoader />
+          <IconLoader className="text-amber-500" />
         )}
         {row.original.status}
       </Badge>

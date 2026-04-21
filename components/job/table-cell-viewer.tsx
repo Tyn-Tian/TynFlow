@@ -458,7 +458,7 @@ export function TableCellViewer({ item }: { item: Job }) {
           </form>
         </div>
         <DrawerFooter>
-          <Button type="submit" form="edit-job-form">Submit</Button>
+          <Button type="submit" form="edit-job-form" className="cursor-pointer">Submit</Button>
           <DrawerClose asChild>
             <Button variant="outline">Done</Button>
           </DrawerClose>
@@ -474,8 +474,8 @@ export function TableCellViewer({ item }: { item: Job }) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={form.handleSubmit(handleSave)} disabled={loading}>
+            <AlertDialogCancel className="cursor-pointer">Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={form.handleSubmit(handleSave)} disabled={loading} className="cursor-pointer">
               {loading ? "Menyimpan..." : "Simpan"}
             </AlertDialogAction>
           </AlertDialogFooter>
