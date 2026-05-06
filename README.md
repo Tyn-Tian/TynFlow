@@ -1,97 +1,97 @@
 # TynFlow
 
-TynFlow adalah aplikasi manajemen keuangan pribadi dan pelacakan berbasis web yang dirancang untuk membantu pengguna mengelola transaksi (Pemasukan, Pengeluaran, Investasi), memantau anggaran (Budget), serta melacak portofolio dan dompet (Wallet) secara terpusat. Aplikasi ini juga memiliki fitur tambahan untuk manajemen pekerjaan (Job) dan pemantauan langsung (Live).
+TynFlow is a web-based personal finance management and tracking application designed to help users manage transactions (Income, Expense, Investment), monitor budgets, and track portfolios and wallets centrally. This application also features additional modules for job/shipment management and live monitoring.
 
-## 🏗️ Arsitektur & Struktur Folder
+## 🏗️ Architecture & Folder Structure
 
-Aplikasi ini menggunakan pola arsitektur yang memisahkan antara UI, state/business logic (*Services*), dan data access layer (*Repository*). Struktur folder utamanya adalah sebagai berikut:
+This application uses an architectural pattern that separates the UI, state/business logic (*Services*), and data access layer (*Repository*). The main folder structure is as follows:
 
-- **`app/`**: Berisi routing aplikasi menggunakan fitur Next.js App Router.
-  - **`(auth)/`**: Grup route yang diproteksi (membutuhkan autentikasi), menampung semua halaman modul utama aplikasi.
-  - **`api/`**: Endpoint API internal Next.js.
-  - **`login/`**: Halaman autentikasi pengguna.
-- **`components/`**: Kumpulan komponen UI yang dapat digunakan kembali (*reusable*), termasuk komponen-komponen dasar (menggunakan komponen berbasis Shadcn UI) dan komponen spesifik fitur.
-- **`services/`**: Layer yang menangani *business logic*, agregasi data, serta pemrosesan data sebelum ditampilkan ke UI.
-- **`repository/`**: Layer akses data (*Data Access Layer*) yang bertanggung jawab penuh untuk melakukan operasi CRUD langsung ke database (Supabase).
-- **`actions/`**: Berisi Next.js Server Actions untuk mutasi data secara *server-side*.
-- **`hooks/`**: Kumpulan Custom React Hooks untuk merangkum *stateful logic* (contoh: `useShipment`).
-- **`lib/`**: Fungsi-fungsi utilitas umum, konfigurasi, dan *helper* (misalnya utils untuk styling, formatter angka, dll).
+- **`app/`**: Contains the application routing using the Next.js App Router feature.
+  - **`(auth)/`**: A protected route group (requires authentication) that houses all the main module pages of the application.
+  - **`api/`**: Next.js internal API endpoints.
+  - **`login/`**: User authentication page.
+- **`components/`**: A collection of reusable UI components, including base components (built on Shadcn UI) and feature-specific components.
+- **`services/`**: The layer that handles business logic, data aggregation, and data processing before it's displayed on the UI.
+- **`repository/`**: The Data Access Layer that is fully responsible for performing CRUD operations directly to the database (Supabase).
+- **`actions/`**: Contains Next.js Server Actions for server-side data mutations.
+- **`hooks/`**: A collection of Custom React Hooks to encapsulate stateful logic (e.g., `useShipment`).
+- **`lib/`**: General utility functions, configurations, and helpers (e.g., styling utilities, number formatters, etc.).
 
-## 🧩 Modul Tersedia
+## 🧩 Available Modules
 
-TynFlow memiliki beberapa modul utama yang terletak di dalam route `app/(auth)/`:
+TynFlow has several main modules located within the `app/(auth)/` route:
 
-1. **Dashboard (`/dashboard`)**: Halaman ringkasan utama yang menampilkan analitik dan grafik transaksi (misal: *Stacked Bar Chart* untuk Pemasukan vs Pengeluaran).
-2. **Transaction (`/transaction`)**: Modul untuk mencatat dan mengelola aktivitas keuangan seperti Pemasukan (*Income*), Pengeluaran (*Expense*), dan Investasi (*Invest*).
-3. **Budget (`/budget`)**: Modul untuk menetapkan dan memantau target anggaran pengeluaran. Dilengkapi kalkulasi analitik harian seperti *Daily Spending* dan *Total Realization*.
-4. **Portfolio (`/portfolio`)**: Modul untuk melacak performa dan alokasi aset investasi pengguna.
-5. **Wallet (`/wallet`)**: Modul manajemen dompet atau rekening, melacak saldo aktif dari berbagai sumber yang berubah seiring adanya transaksi.
-6. **Job (`/job`)**: Modul pelacakan pekerjaan atau pengiriman barang (*Shipment Tracker*).
-7. **Live (`/live`)**: Modul pelacakan atau pemantauan data secara *real-time*.
+1. **Dashboard (`/dashboard`)**: The main overview page that displays analytics and transaction charts (e.g., Stacked Bar Chart for Income vs. Expense).
+2. **Transaction (`/transaction`)**: A module to record and manage financial activities such as Income, Expense, and Invest.
+3. **Budget (`/budget`)**: A module to set and monitor expense budget targets. It includes daily analytic calculations like Daily Spending and Total Realization.
+4. **Portfolio (`/portfolio`)**: A module to track the performance and allocation of users' investment assets.
+5. **Wallet (`/wallet`)**: A wallet or account management module, tracking active balances from various sources that change with transactions.
+6. **Job (`/job`)**: A module for tracking jobs or shipments (Shipment Tracker).
+7. **Live (`/live`)**: A module for real-time data tracking or monitoring.
 
-## 🚀 Teknologi yang Digunakan (Tech Stack)
+## 🚀 Tech Stack
 
-Aplikasi ini dibangun menggunakan teknologi web modern:
+This application is built using modern web technologies:
 
 - **Framework:** Next.js (v16.1 - App Router)
-- **Library UI:** React (v19)
-- **Bahasa Pemrograman:** TypeScript
+- **UI Library:** React (v19)
+- **Programming Language:** TypeScript
 - **Styling:** Tailwind CSS (v4)
-- **Backend & Database:** Supabase (menggunakan `@supabase/ssr` & `@supabase/supabase-js`)
+- **Backend & Database:** Supabase (using `@supabase/ssr` & `@supabase/supabase-js`)
 
-### Library Pendukung:
-- **UI Primitives & Components:** Radix UI & Shadcn UI (dibantu dengan `class-variance-authority`, `clsx`, `tailwind-merge`)
-- **Form & Validasi:** React Hook Form terintegrasi dengan Zod
-- **Tabel Data:** TanStack React Table (`@tanstack/react-table`)
-- **Grafik / Chart:** Recharts
+### Supporting Libraries:
+- **UI Primitives & Components:** Radix UI & Shadcn UI (assisted by `class-variance-authority`, `clsx`, `tailwind-merge`)
+- **Form & Validation:** React Hook Form integrated with Zod
+- **Data Table:** TanStack React Table (`@tanstack/react-table`)
+- **Charts:** Recharts
 - **Drag & Drop:** `@dnd-kit` (core, sortable, utilities)
-- **Ikon:** Lucide React & Tabler Icons
-- **Notifikasi:** Sonner
-- **Lainnya:** `date-fns` (manipulasi waktu), `next-themes` (Dark/Light mode)
+- **Icons:** Lucide React & Tabler Icons
+- **Notifications:** Sonner
+- **Others:** `date-fns` (time manipulation), `next-themes` (Dark/Light mode)
 
-## 🛠️ Cara Setup Project
+## 🛠️ Setup Instructions
 
-Ikuti langkah-langkah berikut untuk menjalankan proyek ini di mesin lokal Anda:
+Follow these steps to run the project on your local machine:
 
 1. **Clone Repository**
    ```bash
-   git clone <url-repository>
+   git clone <repository-url>
    cd tynflow
    ```
 
 2. **Install Dependencies**
-   Pastikan Anda menggunakan Node.js versi terbaru (>= v20 direkomendasikan).
+   Ensure you are using the latest version of Node.js (>= v20 recommended).
    ```bash
    npm install
-   # atau
+   # or
    yarn install
-   # atau
+   # or
    pnpm install
    ```
 
-3. **Konfigurasi Environment Variables**
-   Buat file `.env.local` di root folder proyek, kemudian masukkan kredensial Supabase Anda:
+3. **Configure Environment Variables**
+   Create a `.env.local` file in the root folder of the project, then insert your Supabase credentials:
    ```env
    NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
    ```
-   *(Cek file `.env` yang sudah ada untuk melihat detail key lain yang dibutuhkan).*
+   *(Check the existing `.env` file for any other required keys).*
 
-## ▶️ Cara Menjalankan Aplikasi
+## ▶️ Running the Application
 
-Setelah setup selesai, Anda dapat menjalankan server pengembangan (*development server*) dengan perintah berikut:
+Once the setup is complete, you can start the development server with the following command:
 
 ```bash
 npm run dev
-# atau
+# or
 yarn dev
-# atau
+# or
 pnpm dev
 ```
 
-Buka [http://localhost:3000](http://localhost:3000) di browser Anda untuk melihat aplikasi berjalan secara lokal.
+Open [http://localhost:3000](http://localhost:3000) in your browser to see the application running locally.
 
-Jika ingin melakukan proses *build* ke tahap produksi, gunakan:
+If you want to build for production, use:
 ```bash
 npm run build
 npm run start
