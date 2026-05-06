@@ -1,6 +1,6 @@
 # TynFlow
 
-TynFlow is a web-based personal finance management and tracking application designed to help users manage transactions (Income, Expense, Investment), monitor budgets, and track portfolios and wallets centrally. This application also features additional modules for job/shipment management and live monitoring.
+TynFlow is a web-based personal finance management and tracking application designed to help users manage transactions (Income, Expense, Investment), monitor budgets, and track portfolios and wallets centrally. This application also features additional modules for job management and live monitoring.
 
 ## 🏗️ Architecture & Folder Structure
 
