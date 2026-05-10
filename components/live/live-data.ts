@@ -1,7 +1,7 @@
 export type LiveType = "Lembur" | "Biasa"
 
 export const LIVE_PLATFORMS = [
-    { id: "tiktok", label: "Tiktok" },
+    { id: "tiktok", label: "TikTok" },
     { id: "shopee", label: "Shopee" },
 ] as const
 
