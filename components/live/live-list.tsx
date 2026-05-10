@@ -113,8 +113,7 @@ export function LiveList({ lives }: LiveListProps) {
                 const monthLabel = liveDate.toLocaleDateString("id-ID", { month: "long" })
                 const typeLabel = item.type === "Lembur" ? ` (${item.type})` : ""
 
-                const totalSales = item.tiktok + item.shopee
-                return `${day} ${monthLabel}${typeLabel}: ${totalSales} pcs`
+                return `${day} ${monthLabel}${typeLabel}: Shopee ${item.shopee} pcs, TikTok ${item.tiktok} pcs`
             })
             .join("\n")
 
