@@ -7,7 +7,6 @@ import {
     IconCopy,
     IconMoodEmpty,
     IconReceiptRupee,
-    IconTrendingUp,
 } from "@tabler/icons-react"
 import { toast } from "sonner"
 
