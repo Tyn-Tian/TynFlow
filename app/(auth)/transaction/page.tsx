@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { TransactionList } from "@/components/transactions/transaction-list"
 import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog"
+import { ExportTransactionDialog } from "@/components/transactions/export-transaction-dialog"
 import { TransactionFilters } from "@/components/transactions/transaction-filters"
 import { TransactionPaginationNav } from "@/components/transactions/transaction-pagination-nav"
 import { getPaginatedTransactionsAction } from "@/actions/transaction-actions"
@@ -48,7 +49,8 @@ export default async function Page({ searchParams }: PageProps) {
             <SiteHeader title="Transaction" />
             <section className="p-6">
                 <div className="mx-auto max-w-7xl">
-                    <div className="col-span-3 flex justify-end">
+                    <div className="col-span-3 flex justify-end gap-2">
+                        <ExportTransactionDialog />
                         <AddTransactionDialog />
                     </div>
 

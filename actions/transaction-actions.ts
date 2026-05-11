@@ -74,3 +74,12 @@ export async function getPaginatedTransactionsAction(params: { page: number, wal
 
   return { data, metadata }
 }
+
+export async function getTransactionsForExportAction(params: { startDate: string, endDate: string }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) throw new Error("Unauthorized")
+
+  return transactionService.getTransactionsWithEnrichment(supabase, { ...params, userId: user.id })
+}

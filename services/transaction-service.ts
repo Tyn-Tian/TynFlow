@@ -55,6 +55,39 @@ export async function getFilteredTransactions(supabase: SupabaseClient, filters:
   return data ?? []
 }
 
+export async function getTransactionsWithEnrichment(supabase: SupabaseClient, filters: { userId: string, startDate?: string, endDate?: string }) {
+  const rows = await getFilteredTransactions(supabase, filters)
+
+  const walletIds = Array.from(new Set(rows.flatMap((r) => [r.wallet_id, r.transfer_id].filter(Boolean) as string[])))
+  let walletMap: Record<string, string> = {}
+  if (walletIds.length) {
+    const { data: walletsData } = await supabase.from("wallets").select("id, name").in("id", walletIds)
+    if (walletsData) walletMap = Object.fromEntries(walletsData.map((w) => [w.id, w.name ?? ""]))
+  }
+
+  const budgetIds = Array.from(new Set(rows.map((r) => r.budget_id).filter(Boolean) as string[]))
+  let budgetMap: Record<string, string> = {}
+  if (budgetIds.length) {
+    const { data: budgetsData } = await supabase.from("budgets").select("id, name").in("id", budgetIds)
+    if (budgetsData) budgetMap = Object.fromEntries(budgetsData.map((b) => [b.id, b.name ?? ""]))
+  }
+
+  const portfolioIds = Array.from(new Set(rows.map((r) => r.portfolio_id).filter(Boolean) as string[]))
+  let portfolioMap: Record<string, string> = {}
+  if (portfolioIds.length) {
+    const { data: portfoliosData } = await supabase.from("portfolios").select("id, name").in("id", portfolioIds)
+    if (portfoliosData) portfolioMap = Object.fromEntries(portfoliosData.map((p) => [p.id, p.name ?? ""]))
+  }
+
+  return rows.map((t) => ({
+    ...t,
+    budgetName: t.budget_id ? budgetMap[t.budget_id] : undefined,
+    walletName: t.wallet_id ? walletMap[t.wallet_id] : undefined,
+    transferName: t.transfer_id ? walletMap[t.transfer_id] : undefined,
+    portfolioName: t.portfolio_id ? portfolioMap[t.portfolio_id] : undefined,
+  }))
+}
+
 export async function getPaginatedTransactions(
   supabase: SupabaseClient, 
   params: { userId: string, page: number, walletId?: string, budgetId?: string }
