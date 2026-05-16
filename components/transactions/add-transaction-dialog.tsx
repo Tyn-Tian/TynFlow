@@ -9,8 +9,6 @@ import { toast } from "sonner"
 import { IconPlus, IconCalculator, IconCalendar } from "@tabler/icons-react"
 
 import { addTransactionAction } from "@/actions/transaction-actions"
-import { getBudgetsAction } from "@/actions/budget-actions"
-import { getWalletsAction } from "@/actions/wallet-actions"
 import { getPortfoliosAction } from "@/actions/portfolio-actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,6 +25,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import useWallet from "@/hooks/use-wallet"
+import useBudget from "@/hooks/use-budget"
 
 const formSchema = z.object({
     name: z.string().optional(),
@@ -41,8 +41,6 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>
 
-type BudgetOption = { id: string; name: string }
-type WalletOption = { id: string; name: string; balance?: number }
 type PortfolioOption = { id: string; name: string }
 
 export function AddTransactionDialog() {
@@ -54,6 +52,9 @@ export function AddTransactionDialog() {
     const [calcExpr, setCalcExpr] = useState<string>("0")
     const [showDatePicker, setShowDatePicker] = useState(false)
     const datePickerRef = React.useRef<HTMLDivElement | null>(null)
+
+    const { data: wallets } = useWallet();
+    const { data: budgets } = useBudget();
 
     useEffect(() => {
         function onClick(e: MouseEvent) {
@@ -71,8 +72,6 @@ export function AddTransactionDialog() {
             document.removeEventListener("keydown", onKey)
         }
     }, [showDatePicker])
-    const [budgets, setBudgets] = useState<BudgetOption[]>([])
-    const [wallets, setWallets] = useState<WalletOption[]>([])
     const [portfolios, setPortfolios] = useState<PortfolioOption[]>([])
     const [tab, setTab] = useState<"Expense" | "Income" | "Transfer" | "Invest">("Expense")
 
@@ -82,14 +81,10 @@ export function AddTransactionDialog() {
         if (!open) return
         void (async () => {
             try {
-                const [budgetsData, walletsData, portfoliosData] = await Promise.all([
-                    getBudgetsAction(),
-                    getWalletsAction(),
+                const [portfoliosData] = await Promise.all([
                     getPortfoliosAction(),
                 ])
 
-                setBudgets(budgetsData as BudgetOption[])
-                setWallets(walletsData as WalletOption[])
                 setPortfolios(portfoliosData as PortfolioOption[])
             } catch (err) {
                 toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error.", duration: 3000 })
@@ -448,7 +443,7 @@ export function AddTransactionDialog() {
                                                 <SelectValue placeholder="Select budget" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {budgets.map((b) => (
+                                                {budgets?.map((b) => (
                                                     <SelectItem key={b.id} value={b.id}>
                                                         {b.name}
                                                     </SelectItem>
@@ -474,7 +469,7 @@ export function AddTransactionDialog() {
                                                     <SelectValue placeholder="Select source wallet" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {wallets.map((w) => (
+                                                    {wallets?.map((w) => (
                                                         <SelectItem key={w.id} value={w.id}>
                                                             {w.name}
                                                         </SelectItem>
@@ -497,7 +492,7 @@ export function AddTransactionDialog() {
                                                     <SelectValue placeholder="Select destination wallet" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {wallets.map((w) => (
+                                                    {wallets?.map((w) => (
                                                         <SelectItem key={w.id} value={w.id}>
                                                             {w.name}
                                                         </SelectItem>
@@ -541,7 +536,7 @@ export function AddTransactionDialog() {
                                                     <SelectValue placeholder="Select source wallet" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {wallets.map((w) => (
+                                                    {wallets?.map((w) => (
                                                         <SelectItem key={w.id} value={w.id}>
                                                             {w.name}
                                                         </SelectItem>
@@ -607,7 +602,7 @@ export function AddTransactionDialog() {
                                                 <SelectValue placeholder="Select wallet" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {wallets.map((w) => (
+                                                {wallets?.map((w) => (
                                                     <SelectItem key={w.id} value={w.id}>
                                                         {w.name}
                                                     </SelectItem>

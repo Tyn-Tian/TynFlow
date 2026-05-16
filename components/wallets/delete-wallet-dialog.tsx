@@ -1,87 +1,92 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { toast } from "sonner"
-import { IconTrash } from "@tabler/icons-react"
+import { useState } from "react";
+import { toast } from "sonner";
+import { IconTrash } from "@tabler/icons-react";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { removeWalletAction } from "@/actions/wallet-actions"
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { walletRepository } from "@/repository/wallet-repository";
 
 export function DeleteWalletDialog({ walletId }: { walletId?: string | null }) {
-    const [open, setOpen] = useState(false)
-    const [deleting, setDeleting] = useState(false)
+  const queryClient = useQueryClient()
 
-    async function handleDelete() {
-        if (!walletId) return
+  const [open, setOpen] = useState(false);
 
-        setDeleting(true)
-        try {
-            await removeWalletAction(walletId)
+  const mutation = useMutation({
+    mutationFn: (id: string) => walletRepository.delete(id),
+    onSuccess: () => {
+      toast.success("Success", {
+        description: "Wallet has been added.",
+        duration: 3000,
+      });
+      setOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["wallets"] });
+    },
+    onError: (err: Error | unknown) => {
+      toast.error("Failed", {
+        description: err instanceof Error ? err.message : "Unexpected error.",
+        duration: 3000,
+      });
+    },
+  });
 
-            toast.success("Deleted", {
-                description: "Wallet has been deleted.",
-                duration: 3000,
-            })
-            setOpen(false)
-            if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("wallets:changed"))
-        } catch (err: Error | unknown) {
-            toast.error("Failed", {
-                description: err instanceof Error ? err.message : "Unexpected error.",
-                duration: 3000,
-            })
-        } finally {
-            setDeleting(false)
-        }
-    }
+  async function handleDelete() {
+    if (!walletId) return;
+    mutation.mutate(walletId);
+  }
 
-    return (
-        <AlertDialog open={open} onOpenChange={setOpen}>
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <Button
+        variant="destructive"
+        className="cursor-pointer bg-rose-500!"
+        onClick={(event) => {
+          event.stopPropagation();
+          if (walletId) setOpen(true);
+        }}
+        disabled={!walletId}
+      >
+        <IconTrash />
+        Delete
+      </Button>
+      <AlertDialogContent onClick={(event) => event.stopPropagation()}>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete wallet?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete the
+            wallet.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel type="button" className="cursor-pointer">
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction asChild>
             <Button
-                variant="destructive"
-                className="cursor-pointer bg-rose-500!"
-                onClick={(event) => {
-                    event.stopPropagation()
-                    if (walletId) setOpen(true)
-                }}
-                disabled={!walletId}
+              variant="destructive"
+              className="cursor-pointer bg-rose-500! text-white"
+              onClick={(event) => {
+                event.stopPropagation();
+                void handleDelete();
+              }}
+              disabled={mutation.isPending}
             >
-                <IconTrash />
-                Delete
+              {mutation.isPending ? "Deleting..." : "Delete"}
             </Button>
-            <AlertDialogContent onClick={(event) => event.stopPropagation()}>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Delete wallet?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete the wallet.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel type="button" className="cursor-pointer">Cancel</AlertDialogCancel>
-                    <AlertDialogAction asChild>
-                        <Button
-                            variant="destructive"
-                            className="cursor-pointer bg-rose-500! text-white"
-                            onClick={(event) => {
-                                event.stopPropagation()
-                                void handleDelete()
-                            }}
-                            disabled={deleting}
-                        >
-                            {deleting ? "Deleting..." : "Delete"}
-                        </Button>
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
-    )
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 }

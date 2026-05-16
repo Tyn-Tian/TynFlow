@@ -7,5 +7,10 @@ export async function getSupabase() {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
 
-  return supabase;
+  const userId = user.id;
+
+  return {
+    supabase,
+    userId,
+  };
 }
