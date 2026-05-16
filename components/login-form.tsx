@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -11,13 +11,15 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldSeparator } from "./ui/field"
 import * as z from "zod"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useMutation } from "@tanstack/react-query"
+import { loginDto } from "@/types/auth-type"
+import { authService } from "@/services/auth-service"
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -29,9 +31,6 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">) {
   const router = useRouter()
-  const supabase = createClient()
-
-  const [loading, setLoading] = useState<boolean>(false)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -41,42 +40,25 @@ export function LoginForm({
     },
   })
 
-  async function onSubmit(data: z.infer<typeof formSchema>) {
-    setLoading(true)
-
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
+  const mutation = useMutation({
+    mutationFn: async (dto: loginDto) => authService.login(dto),
+    onSuccess: () => {
+      toast.success("Success", {
+        description: "You have successfully logged in.",
+        duration: 3000
       })
-
-      if (error) {
-        toast.error("Failed", {
-          description: error.message,
-          duration: 3000
-        })
-      } else {
-        toast.success("Success", {
-          description: "You have successfully logged in.",
-          duration: 3000
-        })
-        router.push("/dashboard")
-      }
-    } catch (err: Error | unknown) {
-      if (err instanceof Error) {
-        toast.error("Failed", {
-          description: err.message,
-          duration: 3000
-        })
-      } else {
-        toast.error('Failed', {
-          description: 'An unexpected error occurred. Please try again.',
-          duration: 3000
-        })
-      }
-    } finally {
-      setLoading(false)
+      router.push("/dashboard")
+    },
+    onError: (error) => {
+      toast.error("Failed", {
+        description: error.message,
+        duration: 3000
+      })
     }
+  })
+
+  async function onSubmit(data: z.infer<typeof formSchema>) {
+    mutation.mutate(data)
   }
 
   return (
@@ -166,8 +148,8 @@ export function LoginForm({
               />
 
               <Field>
-                <Button type="submit" disabled={loading}>
-                  {loading ? 'Signing in...' : 'Login'}
+                <Button type="submit" disabled={mutation.isPending}>
+                  {mutation.isPending ? 'Signing in...' : 'Login'}
                 </Button>
                 <FieldDescription className="text-center">
                   Don&apos;t have an account? <a href="#">Sign up</a>

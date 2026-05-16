@@ -12,7 +12,6 @@ import {
   IconBriefcase,
 } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
 
 import {
   SidebarGroup,
@@ -33,6 +32,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { authService } from "@/services/auth-service"
 
 export function NavMain({
   items,
@@ -44,10 +44,9 @@ export function NavMain({
   }[]
 }) {
   const router = useRouter()
-  const supabase = createClient()
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
+    await authService.logout();
     router.push('/login')
   }
 

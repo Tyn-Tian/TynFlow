@@ -32,7 +32,6 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog"
 import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -40,6 +39,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { EditProfileDialog } from "@/components/nav-user/edit-profile-dialog"
+import { authService } from "@/services/auth-service"
 
 export function NavUser({
   user,
@@ -51,7 +51,6 @@ export function NavUser({
   }
 }) {
   const router = useRouter()
-  const supabase = createClient()
   const [logoutOpen, setLogoutOpen] = useState(false)
   const { isMobile } = useSidebar()
 
@@ -64,6 +63,11 @@ export function NavUser({
       .slice(0, 2)
       .join("")
     return initials.toUpperCase()
+  }
+
+  const handleLogout = async () => {
+    await authService.logout();
+    router.push('/login')
   }
 
   return (
@@ -142,10 +146,7 @@ export function NavUser({
                 <AlertDialogFooter>
                   <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
                   <AlertDialogAction
-                    onClick={async () => {
-                      await supabase.auth.signOut()
-                      router.push("/login")
-                    }}
+                    onClick={handleLogout}
                     className="cursor-pointer"
                   >
                     Continue
