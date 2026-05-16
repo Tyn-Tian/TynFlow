@@ -9,5 +9,17 @@ export const authService = {
   },
   logout: async () => {
     await authRepository.logout();
-  }
+  },
+  getProfile: async () => {
+    const { data } = await authRepository.getUser();
+    if (!data) return null;
+    const userId = data.user?.id
+
+    const { data: profile } = await authRepository.getProfile(userId as string);
+    return {
+      userId: userId,
+      email: data.user?.email,
+      ...profile
+    };
+  },
 };

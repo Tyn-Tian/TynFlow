@@ -1,129 +1,119 @@
-import * as React from "react"
-import { IconInnerShadowTop } from "@tabler/icons-react"
+"use client";
 
-import { NavMain } from "@/components/nav-main"
-import { NavUser } from "@/components/nav-user"
+import * as React from "react";
+import { IconInnerShadowTop } from "@tabler/icons-react";
+
+import { NavMain } from "@/components/nav-main";
+import { NavUser } from "@/components/nav-user";
 import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { createClient } from "@/lib/supabase/server"
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
+import { authService } from "@/services/auth-service";
+import { useQuery } from "@tanstack/react-query";
 
 const data = {
-    user: {
-        name: "shadcn",
-        email: "m@example.com",
-        avatar: "/avatars/shadcn.jpg",
+  user: {
+    name: "shadcn",
+    email: "m@example.com",
+    avatar: "/avatars/shadcn.jpg",
+  },
+  navMain: [
+    {
+      title: "Dashboard",
+      url: "/",
+      icon: "dashboard",
     },
-    navMain: [
-        {
-            title: "Dashboard",
-            url: "/",
-            icon: "dashboard",
-        },
-        {
-            title: "Wallet",
-            url: "/wallet",
-            icon: "wallet",
-        },
-        {
-            title: "Transaction",
-            url: "/transaction",
-            icon: "transaction",
-        },
-        {
-            title: "Budget",
-            url: "/budget",
-            icon: "budget",
-        },
-        {
-            title: "Portfolio",
-            url: "/portfolio",
-            icon: "portfolio",
-        },
-        {
-            title: "Live",
-            url: "/live",
-            icon: "live"
-        },
-        {
-            title: "Job",
-            url: "/job",
-            icon: "job"
-        }
-    ],
-}
+    {
+      title: "Wallet",
+      url: "/wallet",
+      icon: "wallet",
+    },
+    {
+      title: "Transaction",
+      url: "/transaction",
+      icon: "transaction",
+    },
+    {
+      title: "Budget",
+      url: "/budget",
+      icon: "budget",
+    },
+    {
+      title: "Portfolio",
+      url: "/portfolio",
+      icon: "portfolio",
+    },
+    {
+      title: "Live",
+      url: "/live",
+      icon: "live",
+    },
+    {
+      title: "Job",
+      url: "/job",
+      icon: "job",
+    },
+  ],
+};
 
-const LIVE_NAV_USER_ID = "8017eb2d-1c88-4e83-ba13-80ce15477154"
-const JOB_NAV_USER_ID = "d4e69f3b-c49e-4b65-ad03-50f6cb803571"
+const LIVE_NAV_USER_ID = "8017eb2d-1c88-4e83-ba13-80ce15477154";
+const JOB_NAV_USER_ID = "d4e69f3b-c49e-4b65-ad03-50f6cb803571";
 
-export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-    const supabase = await createClient()
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data: profile } = useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => await authService.getProfile(),
+  })
 
-    const { data: userData } = await supabase.auth.getUser()
-    let displayName = userData?.user?.user_metadata?.full_name ?? "Unknown User"
-    const userId = userData?.user?.id
+  const user = {
+    name: profile?.name ?? "",
+    email: profile?.email ?? "",
+    avatar: "/avatars/default.png",
+  };
 
-    if (userId) {
-        const { data: profile, error } = await supabase
-            .from("profiles")
-            .select("name")
-            .eq("user_id", userId)
-            .single()
-
-        if (!error && profile?.name) {
-            displayName = profile.name
-        }
+  const navItems = data.navMain.filter((item) => {
+    if (item.icon !== "live" && item.icon !== "job") {
+      return true;
     }
 
-    const user = {
-        name: displayName,
-        email: userData?.user?.email ?? "",
-        avatar: "/avatars/default.png",
+    if (item.icon === "live") {
+      return profile?.userId === LIVE_NAV_USER_ID;
     }
 
-    const navItems = data.navMain.filter((item) => {
-        if (item.icon !== "live" && item.icon !== "job") {
-            return true
-        }
+    if (item.icon === "job") {
+      return profile?.userId === JOB_NAV_USER_ID;
+    }
+  });
 
-        if (item.icon === "live") {
-            return userId === LIVE_NAV_USER_ID
-        }
-
-        if (item.icon === "job") {
-            return userId === JOB_NAV_USER_ID
-        }
-    })
-
-    return (
-        <Sidebar collapsible="offcanvas" {...props}>
-            <SidebarHeader>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton
-                            asChild
-                            className="data-[slot=sidebar-menu-button]:p-1.5!"
-                        >
-                            <a href="#">
-                                <IconInnerShadowTop className="size-5!" />
-                                <span className="text-base font-semibold">TynFlow</span>
-                            </a>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-            </SidebarHeader>
-            <SidebarContent>
-                <NavMain items={navItems} />
-            </SidebarContent>
-            <SidebarFooter>
-                <NavUser user={user} />
-            </SidebarFooter>
-        </Sidebar>
-    )
+  return (
+    <Sidebar collapsible="offcanvas" {...props}>
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              className="data-[slot=sidebar-menu-button]:p-1.5!"
+            >
+              <a href="#">
+                <IconInnerShadowTop className="size-5!" />
+                <span className="text-base font-semibold">TynFlow</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
+      <SidebarContent>
+        <NavMain items={navItems} />
+      </SidebarContent>
+      <SidebarFooter>
+        <NavUser user={user} />
+      </SidebarFooter>
+    </Sidebar>
+  );
 }
