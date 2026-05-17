@@ -5,7 +5,7 @@ import {
     IconDiamond,
 } from "@tabler/icons-react"
 
-import { type PortfolioType } from "@/repository/portfolio-repository"
+import { type PortfolioType } from "@/types/portfolio-type"
 
 export { type PortfolioType }
 

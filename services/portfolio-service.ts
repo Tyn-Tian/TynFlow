@@ -1,10 +1,10 @@
 import { portfolioRepository } from "@/repository/portfolio-repository";
-import { PortfolioDto } from "@/types/portfolio-type";
+import { PortfolioDto, Portfolio } from "@/types/portfolio-type";
 
 export const portfolioService = {
-  getAll: async () => {
+  getAll: async (): Promise<Portfolio[]> => {
     const { data } = await portfolioRepository.getAll();
-    return data ?? [];
+    return (data as Portfolio[]) ?? [];
   },
   add: async (dto: PortfolioDto) => {
     await portfolioRepository.create(dto);
