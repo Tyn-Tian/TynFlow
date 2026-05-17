@@ -20,7 +20,7 @@ import {
 import { useMemo } from "react";
 import useRange from "@/hooks/use-range";
 import useTransactions from "@/hooks/use-transaction";
-import { dashboardService2 } from "@/services/dashboard-service.new";
+import { dashboardService } from "@/services/dashboard-service";
 
 export function useIncomeChartData() {
   const { data: range } = useRange();
@@ -38,7 +38,7 @@ export function useIncomeChartData() {
       };
     }
 
-    const result = dashboardService2.getIncomeChartData({
+    const result = dashboardService.getIncomeChartData({
       transactions,
     });
 

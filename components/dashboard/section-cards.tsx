@@ -14,7 +14,7 @@ import {
 import { formatRupiah } from "@/lib/utils";
 import useRange from "@/hooks/use-range";
 import useTransactions from "@/hooks/use-transaction";
-import { dashboardService2 } from "@/services/dashboard-service.new";
+import { dashboardService } from "@/services/dashboard-service";
 import { useMemo } from "react";
 
 export function SectionCards() {
@@ -78,7 +78,7 @@ export function SectionCards() {
         };
       }
 
-      const result = dashboardService2.getSummaries({
+      const result = dashboardService.getSummaries({
         incomeTxs,
         expenseTxs,
         prevIncomeTxs,

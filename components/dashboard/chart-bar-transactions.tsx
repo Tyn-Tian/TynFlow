@@ -16,7 +16,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useMemo } from "react";
-import { dashboardService2 } from "@/services/dashboard-service.new";
+import { dashboardService } from "@/services/dashboard-service";
 import useTransactions from "@/hooks/use-transaction";
 import { formatRupiah } from "@/lib/utils";
 import { MonthData } from "@/types/dashboard-type";
@@ -38,7 +38,11 @@ export function useBarChartData() {
 
     return {
       months: generatedMonths,
-      startDate: new Date(generatedMonths[0].year, generatedMonths[0].month, 1).toISOString(),
+      startDate: new Date(
+        generatedMonths[0].year,
+        generatedMonths[0].month,
+        1,
+      ).toISOString(),
       endDate: new Date(
         generatedMonths[5].year,
         generatedMonths[5].month + 1,
@@ -63,9 +67,9 @@ export function useBarChartData() {
       };
     }
 
-    const result = dashboardService2.getBarChartData({
+    const result = dashboardService.getBarChartData({
       transactions,
-      months
+      months,
     });
 
     if (!result) {
@@ -79,8 +83,10 @@ export function useBarChartData() {
   }, [transactions, months]);
 
   return {
-    chartData, chartConfig, isLoading
-  }
+    chartData,
+    chartConfig,
+    isLoading,
+  };
 }
 
 export function ChartBarTransactions() {

@@ -1,45 +1,42 @@
-import { SupabaseClient } from "@supabase/supabase-js"
+import { getSupabase } from "@/lib/api";
+import { PortfolioDto } from "@/types/portfolio-type";
 
-export type PortfolioType = "Reksadana" | "Saham" | "Crypto" | "Emas"
-
-export type Portfolio = {
-  id?: string
-  name: string
-  type: PortfolioType
-  target: number
-  invested: number
-  current_value: number
-  user_id?: string
-}
-
-export async function findPortfoliosByUserId(supabase: SupabaseClient, userId: string) {
-  return supabase
-    .from("portfolios")
-    .select("id, name, type, target, invested, current_value")
-    .eq("user_id", userId)
-    .order("name", { ascending: true })
-}
-
-export async function findPortfolioById(supabase: SupabaseClient, id: string | number) {
-  return supabase
-    .from("portfolios")
-    .select("id, name, type, target, invested, current_value, user_id")
-    .eq("id", id)
-    .single()
-}
-
-export async function insertPortfolio(supabase: SupabaseClient, portfolio: Portfolio) {
-  return supabase.from("portfolios").insert(portfolio)
-}
-
-export async function updatePortfolioById(
-  supabase: SupabaseClient,
-  id: string | number,
-  portfolio: Partial<Omit<Portfolio, "id">>
-) {
-  return supabase.from("portfolios").update(portfolio).eq("id", id)
-}
-
-export async function deletePortfolioById(supabase: SupabaseClient, id: string | number) {
-  return supabase.from("portfolios").delete().eq("id", id)
-}
+export const portfolioRepository = {
+  getAll: async () => {
+    const { supabase, userId } = await getSupabase();
+    return supabase
+      .from("portfolios")
+      .select("id, name, type, target, invested, current_value")
+      .eq("user_id", userId)
+      .order("name", { ascending: true });
+  },
+  getById: async (id: string) => {
+    const { supabase, userId } = await getSupabase();
+    return supabase
+      .from("portfolios")
+      .select("id, name, type, target, invested, current_value, user_id")
+      .eq("user_id", userId)
+      .eq("id", id)
+      .single();
+  },
+  create: async (dto: PortfolioDto) => {
+    const { supabase, userId } = await getSupabase();
+    return supabase.from("portfolios").insert({ ...dto, user_id: userId });
+  },
+  update: async (id: string, dto: PortfolioDto) => {
+    const { supabase, userId } = await getSupabase();
+    return supabase
+      .from("portfolios")
+      .update(dto)
+      .eq("user_id", userId)
+      .eq("id", id);
+  },
+  delete: async (id: string) => {
+    const { supabase, userId } = await getSupabase();
+    return supabase
+      .from("portfolios")
+      .delete()
+      .eq("user_id", userId)
+      .eq("id", id);
+  },
+};

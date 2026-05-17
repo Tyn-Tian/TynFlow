@@ -1,99 +1,18 @@
-import { SupabaseClient } from "@supabase/supabase-js"
-import * as portfolioRepository from "@/repository/portfolio-repository"
+import { portfolioRepository } from "@/repository/portfolio-repository";
+import { PortfolioDto } from "@/types/portfolio-type";
 
-export type CreatePortfolioInput = {
-  name: string
-  type: portfolioRepository.PortfolioType
-  target: number
-  invested: number
-  current_value: number
-  user_id: string
-}
-
-export type UpdatePortfolioInput = {
-  name?: string
-  type?: portfolioRepository.PortfolioType
-  target?: number
-  invested?: number
-  current_value?: number
-}
-
-// Re-export type for convenience if needed
-export type PortfolioItem = {
-    id: string
-    name: string
-    type: portfolioRepository.PortfolioType
-    target: number
-    invested: number
-    currentValue: number
-}
-
-export function getPortfolioType(value: string | null | undefined): portfolioRepository.PortfolioType {
-    if (value === "Saham" || value === "Crypto" || value === "Emas") {
-        return value
-    }
-    return "Reksadana"
-}
-
-function getPortfolioNumber(value: number | string | null | undefined) {
-    const amount = Number(value)
-    return Number.isFinite(amount) ? amount : 0
-}
-
-function getPortfolioText(value: string | null | undefined) {
-    return value?.trim() ?? ""
-}
-
-export function normalizePortfolioItems(
-    items: Array<{
-        id: string | number | null
-        name: string | null
-        type: string | null
-        target: number | string | null
-        invested: number | string | null
-        current_value: number | string | null
-    }>
-): PortfolioItem[] {
-    return items.map((item, index) => ({
-        id: String(item.id ?? `portfolio-${index}`),
-        name: getPortfolioText(item.name),
-        type: getPortfolioType(item.type),
-        target: getPortfolioNumber(item.target),
-        invested: getPortfolioNumber(item.invested),
-        currentValue: getPortfolioNumber(item.current_value),
-    }))
-}
-
-export async function getPortfolios(supabase: SupabaseClient, userId: string) {
-  const { data, error } = await portfolioRepository.findPortfoliosByUserId(supabase, userId)
-  if (error) throw new Error(error.message)
-  return normalizePortfolioItems(data ?? [])
-}
-
-export async function addPortfolio(supabase: SupabaseClient, input: CreatePortfolioInput) {
-  const { error } = await portfolioRepository.insertPortfolio(supabase, input)
-  if (error) throw new Error(error.message)
-}
-
-export async function editPortfolio(supabase: SupabaseClient, id: string | number, input: UpdatePortfolioInput) {
-  const { error } = await portfolioRepository.updatePortfolioById(supabase, id, input)
-  if (error) throw new Error(error.message)
-}
-
-export async function removePortfolio(supabase: SupabaseClient, id: string | number) {
-  const { error } = await portfolioRepository.deletePortfolioById(supabase, id)
-  if (error) throw new Error(error.message)
-}
-
-export async function updateInvestmentValue(supabase: SupabaseClient, portfolioId: string, amount: number) {
-  const { data, error: fetchError } = await portfolioRepository.findPortfolioById(supabase, portfolioId)
-  if (fetchError || !data) throw new Error("Portfolio not found")
-
-  const updateInput: UpdatePortfolioInput = {
-    invested: (data.invested || 0) + amount,
-    current_value: (data.current_value || 0) + amount,
-  }
-
-  const { error: updateError } = await portfolioRepository.updatePortfolioById(supabase, portfolioId, updateInput)
-  if (updateError) throw new Error(updateError.message)
-}
+export const portfolioService = {
+  getAll: async () => {
+    const { data } = await portfolioRepository.getAll();
+    return data ?? [];
+  },
+  add: async (dto: PortfolioDto) => {
+    await portfolioRepository.create(dto);
+  },
+  edit: async (id: string, dto: PortfolioDto) => {
+    await portfolioRepository.update(id, dto);
+  },
+  delete: async (id: string) => {
+    await portfolioRepository.delete(id);
+  },
+};

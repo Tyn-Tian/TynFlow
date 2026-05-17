@@ -1,5 +1,7 @@
+export type TransactionType = "Income" | "Expense" | "Transfer" | "Invest";
+
 export interface Filters {
-  type?: "Income" | "Expense" | "Transfer" | "Invest";
+  type?: TransactionType;
   startDate?: string;
   endDate?: string;
   walletId?: string;
@@ -12,7 +14,7 @@ export interface Transaction {
   name: string;
   date: string;
   amount: number;
-  type: "Income" | "Expense" | "Transfer" | "Invest";
+  type: TransactionType;
   budget_id: string;
   wallet_id: string;
   transfer_id: string;

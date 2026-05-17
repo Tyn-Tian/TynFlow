@@ -20,7 +20,7 @@ import {
 import useRange from "@/hooks/use-range";
 import useBudget from "@/hooks/use-budget";
 import useTransactions from "@/hooks/use-transaction";
-import { dashboardService2 } from "@/services/dashboard-service.new";
+import { dashboardService } from "@/services/dashboard-service";
 import { useMemo } from "react";
 
 export function useExpenseChartData() {
@@ -35,21 +35,21 @@ export function useExpenseChartData() {
 
   const { chartData, chartConfig } = useMemo(() => {
     if (!transactions || !budgets) {
-      return { 
-        chartData: [], 
-        chartConfig: { value: { label: "Amount" } } 
+      return {
+        chartData: [],
+        chartConfig: { value: { label: "Amount" } },
       };
     }
 
-    const result = dashboardService2.getExpenseChartData({
+    const result = dashboardService.getExpenseChartData({
       transactions,
       budgets,
     });
 
     if (!result) {
-      return { 
-        chartData: [], 
-        chartConfig: { value: { label: "Amount" } } 
+      return {
+        chartData: [],
+        chartConfig: { value: { label: "Amount" } },
       };
     }
 
@@ -70,10 +70,10 @@ export function useExpenseChartData() {
   const startLabel = fmt(range?.start_date);
   const endLabel = fmt(range?.end_date);
 
-  return { 
-    chartData, 
-    chartConfig, 
-    startLabel, 
+  return {
+    chartData,
+    chartConfig,
+    startLabel,
     endLabel,
   };
 }
