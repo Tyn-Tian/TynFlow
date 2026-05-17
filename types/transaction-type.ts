@@ -21,3 +21,22 @@ export interface Transaction {
   admin_fee: number;
   portfolio_id: string;
 }
+
+export interface TransactionDto {
+  name: string;
+  date: string;
+  amount: number;
+  type: TransactionType;
+  budget_id?: string | null;
+  wallet_id?: string | null;
+  transfer_id?: string | null;
+  admin_fee?: number | null;
+  portfolio_id?: string | null;
+}
+
+export interface Params {
+  page: number;
+  walletId?: string;
+  budgetId?: string;
+  portfolioId?: string;
+}

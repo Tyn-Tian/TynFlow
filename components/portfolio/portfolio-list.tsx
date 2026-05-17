@@ -28,18 +28,11 @@ import {
   getProgressWidthClass,
   portfolioTypeConfig,
 } from "@/components/portfolio/portfolio-data";
-import { useQuery } from "@tanstack/react-query";
-import { portfolioService } from "@/services/portfolio-service";
+import usePortfolio from "@/hooks/use-portfolio";
 
 export function PortfolioList() {
   const [openId, setOpenId] = useState<string | null>(null);
-
-  const { data: portfolios, isLoading } = useQuery({
-    queryKey: ["portfolios"],
-    queryFn: async () => {
-      return await portfolioService.getAll();
-    },
-  });
+  const { data: portfolios, isLoading } = usePortfolio();
 
   const summary = useMemo(() => {
     const items = portfolios ?? [];

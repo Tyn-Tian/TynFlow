@@ -1,73 +1,104 @@
-"use client"
+"use client";
 
-import React, { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { toast } from "sonner"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { removeTransactionAction } from "@/actions/transaction-actions"
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { transactionService } from "@/services/transaction-service";
 
-type TxItem = { id: number | string; amount: number; budget_id?: string | null; wallet_id?: string | null; transfer_id?: string | null }
+type TxItem = {
+  id: number | string;
+  amount: number;
+  budget_id?: string | null;
+  wallet_id?: string | null;
+  transfer_id?: string | null;
+};
 
-export function DeleteTransactionDialog({ tx, onDeleted, onClose }: { tx?: TxItem | null; onDeleted?: () => void; onClose?: () => void }) {
-    const router = useRouter()
-    const [open, setOpen] = useState(false)
-    const [loading, setLoading] = useState(false)
+export function DeleteTransactionDialog({
+  tx,
+  onDeleted,
+  onClose,
+}: {
+  tx?: TxItem | null;
+  onDeleted?: () => void;
+  onClose?: () => void;
+}) {
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(!!tx);
+  const [prevTx, setPrevTx] = useState(tx);
 
-    useEffect(() => {
-        if (tx) setOpen(true)
-    }, [tx])
+  if (tx !== prevTx) {
+    setPrevTx(tx);
+    if (tx) setOpen(!!tx);
+  }
 
-    async function handleDelete() {
-        if (!tx) return
-        setLoading(true)
-        try {
-            await removeTransactionAction(tx.id)
+  const mutation = useMutation({
+    mutationFn: async (id: string) => await transactionService.delete(id),
+    onSuccess: () => {
+      toast.success("Deleted", { description: "Transaction deleted." });
+      setOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      onDeleted?.();
+    },
+    onError: (err: Error | unknown) => {
+      toast.error("Failed", {
+        description: err instanceof Error ? err.message : "Unexpected error.",
+      });
+    },
+  });
 
-            toast.success("Deleted", { description: "Transaction deleted." })
-            setOpen(false)
-            router.refresh()
-            if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("transactions:changed"))
-            onDeleted?.()
-        } catch (err) {
-            toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
-        } finally {
-            setLoading(false)
-        }
-    }
+  async function handleDelete() {
+    if (!tx) return;
+    mutation.mutate(tx.id as string);
+  }
 
-    return (
-        <AlertDialog open={open} onOpenChange={setOpen}>
-            <AlertDialogTrigger asChild>
-                <div />
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
-                </AlertDialogHeader>
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger asChild>
+        <div />
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
+        </AlertDialogHeader>
 
-                <p className="text-sm text-muted-foreground">Are you sure you want to delete this transaction? This action cannot be undone.</p>
+        <p className="text-sm text-muted-foreground">
+          Are you sure you want to delete this transaction? This action cannot
+          be undone.
+        </p>
 
-                <AlertDialogFooter>
-                    <AlertDialogCancel className="cursor-pointer" onClick={() => { setOpen(false); onClose?.(); }}>
-                        Cancel
-                    </AlertDialogCancel>
-                    <AlertDialogAction asChild>
-                        <Button variant="destructive" onClick={handleDelete} disabled={loading} className="cursor-pointer bg-rose-500! text-white">
-                            {loading ? "Deleting..." : "Delete"}
-                        </Button>
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
-    )
+        <AlertDialogFooter>
+          <AlertDialogCancel
+            className="cursor-pointer"
+            onClick={() => {
+              setOpen(false);
+              onClose?.();
+            }}
+          >
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction asChild>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={mutation.isPending}
+              className="cursor-pointer bg-rose-500! text-white"
+            >
+              {mutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 }

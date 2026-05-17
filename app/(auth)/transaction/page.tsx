@@ -1,50 +1,51 @@
-import { SiteHeader } from "@/components/site-header"
-import { TransactionList } from "@/components/transactions/transaction-list"
-import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog"
-import { ExportTransactionDialog } from "@/components/transactions/export-transaction-dialog"
-import { TransactionFilters } from "@/components/transactions/transaction-filters"
-import { TransactionPaginationNav } from "@/components/transactions/transaction-pagination-nav"
-import { getPaginatedTransactionsAction } from "@/actions/transaction-actions"
+"use client";
 
-interface PageProps {
-    searchParams: Promise<{
-        page?: string
-        walletId?: string
-        budgetId?: string
-    }>
-}
+import { SiteHeader } from "@/components/site-header";
+import { TransactionList } from "@/components/transactions/transaction-list";
+import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog";
+import { ExportTransactionDialog } from "@/components/transactions/export-transaction-dialog";
+import { TransactionPaginationNav } from "@/components/transactions/transaction-pagination-nav";
 
-export default async function Page({ searchParams }: PageProps) {
-    const params = await searchParams
-    const currentPage = Number(params.page) || 1
-    const walletId = params.walletId
-    const budgetId = params.budgetId
+import { useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { transactionService } from "@/services/transaction-service";
+import { TransactionFilters } from "@/components/transactions/transaction-filters";
 
-    const [
-        { data: transactions, metadata },
-    ] = await Promise.all([
-        getPaginatedTransactionsAction({ page: currentPage, walletId, budgetId }),
-    ])
+export default function Page() {
+  const searchParams = useSearchParams();
+  const currentPage = Number(searchParams.get("page")) || 1;
+  const walletId = searchParams.get("walletId") ?? undefined;
+  const budgetId = searchParams.get("budgetId") ?? undefined;
 
-    return (
-        <>
-            <SiteHeader title="Transaction" />
-            <section className="p-6">
-                <div className="mx-auto max-w-7xl">
-                    <div className="col-span-3 flex justify-end gap-2">
-                        <ExportTransactionDialog />
-                        <AddTransactionDialog />
-                    </div>
+  const { data: metadata = { totalPages: 1 } } = useQuery({
+    queryKey: ["transactions", "metadata", currentPage, walletId, budgetId],
+    queryFn: async () =>
+      await transactionService.getTransactionPaginationMetadata({
+        page: currentPage,
+        walletId,
+        budgetId,
+      }),
+  });
 
-                    {/* <TransactionFilters budgets={budgets} /> */}
-                    <TransactionList initialTransactions={transactions} />
+  return (
+    <>
+      <SiteHeader title="Transaction" />
+      <section className="p-6">
+        <div className="mx-auto max-w-7xl">
+          <div className="col-span-3 flex justify-end gap-2">
+            <ExportTransactionDialog />
+            <AddTransactionDialog />
+          </div>
 
-                    <TransactionPaginationNav
-                        totalPages={metadata.totalPages}
-                        currentPage={currentPage}
-                    />
-                </div>
-            </section>
-        </>
-    )
+          <TransactionFilters />
+          <TransactionList />
+
+          <TransactionPaginationNav
+            totalPages={metadata.totalPages}
+            currentPage={currentPage}
+          />
+        </div>
+      </section>
+    </>
+  );
 }

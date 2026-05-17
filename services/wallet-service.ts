@@ -10,9 +10,19 @@ export const walletService = {
     await walletRepository.create(dto);
   },
   edit: async (id: string, dto: WalletDto) => {
-    await walletRepository.update(id, dto)
+    await walletRepository.update(id, dto);
   },
   delete: async (id: string) => {
     await walletRepository.delete(id);
+  },
+  updateBalance: async (id: string, delta: number) => {
+    const { data } = await walletRepository.getById(id);
+    const newBalance = data?.balance + delta;
+
+    await walletRepository.update(id, {
+      name: data?.name,
+      type: data?.type,
+      balance: newBalance,
+    });
   },
 };
