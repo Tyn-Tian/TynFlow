@@ -1,37 +1,47 @@
-import { SupabaseClient } from "@supabase/supabase-js"
+import { getSupabase } from "@/lib/api";
+import { WalletDto } from "@/types/wallet-type";
 
-export type Wallet = {
-  id?: string
-  name: string
-  type: string
-  balance: number
-  user_id?: string
-}
-
-export async function getWalletsByUserId(supabase: SupabaseClient, userId: string) {
-  return supabase
-    .from("wallets")
-    .select("id, name, type, balance")
-    .eq("user_id", userId)
-    .order("name", { ascending: true })
-}
-
-export async function getWalletById(supabase: SupabaseClient, id: string) {
-  return supabase
-    .from("wallets")
-    .select("id, name, type, balance")
-    .eq("id", id)
-    .single()
-}
-
-export async function createWallet(supabase: SupabaseClient, wallet: Wallet) {
-  return supabase.from("wallets").insert(wallet)
-}
-
-export async function updateWallet(supabase: SupabaseClient, id: string, wallet: Partial<Omit<Wallet, "id">>) {
-  return supabase.from("wallets").update(wallet).eq("id", id)
-}
-
-export async function deleteWallet(supabase: SupabaseClient, id: string) {
-  return supabase.from("wallets").delete().eq("id", id)
-}
+export const walletRepository = {
+  getAll: async () => {
+    const { supabase, userId } = await getSupabase();
+    return supabase
+      .from("wallets")
+      .select("id, name, type, balance")
+      .eq("user_id", userId)
+      .order("name", { ascending: true });
+  },
+  getById: async (id: string) => {
+    const { supabase, userId } = await getSupabase();
+    return supabase
+      .from("wallets")
+      .select("id, name, type, balance")
+      .eq("id", id)
+      .eq("user_id", userId)
+      .single();
+  },
+  create: async (dto: WalletDto) => {
+    const { supabase, userId } = await getSupabase();
+    return supabase.from("wallets").insert({
+      name: dto.name,
+      type: dto.type,
+      balance: dto.balance,
+      user_id: userId,
+    });
+  },
+  update: async (id: string, dto: WalletDto) => {
+    const { supabase, userId } = await getSupabase();
+    return supabase
+      .from("wallets")
+      .update({
+        name: dto.name,
+        type: dto.type,
+        balance: dto.balance,
+      })
+      .eq("id", id)
+      .eq("user_id", userId);
+  },
+  delete: async (id: string) => {
+    const { supabase, userId } = await getSupabase();
+    return supabase.from("wallets").delete().eq("id", id).eq("user_id", userId);
+  },
+};

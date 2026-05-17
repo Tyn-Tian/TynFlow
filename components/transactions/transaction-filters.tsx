@@ -2,23 +2,18 @@
 
 import { useRouter, useSearchParams } from "next/navigation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import useWallet from "@/hooks/use-wallet"
+import useBudget from "@/hooks/use-budget"
 
-type Option = {
-  id: string
-  name: string
-}
-
-interface TransactionFiltersProps {
-  wallets: Option[]
-  budgets: Option[]
-}
-
-export function TransactionFilters({ wallets, budgets }: TransactionFiltersProps) {
+export function TransactionFilters() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
   const walletId = searchParams.get("walletId") || ""
   const budgetId = searchParams.get("budgetId") || ""
+
+  const { data: wallets } = useWallet();
+  const { data: budgets } = useBudget();
 
   const updateFilter = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -39,7 +34,7 @@ export function TransactionFilters({ wallets, budgets }: TransactionFiltersProps
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Wallets</SelectItem>
-          {wallets.map((w) => (
+          {wallets?.map((w) => (
             <SelectItem key={w.id} value={w.id}>
               {w.name}
             </SelectItem>
@@ -53,7 +48,7 @@ export function TransactionFilters({ wallets, budgets }: TransactionFiltersProps
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Budgets</SelectItem>
-          {budgets.map((b) => (
+          {budgets?.map((b) => (
             <SelectItem key={b.id} value={b.id}>
               {b.name}
             </SelectItem>

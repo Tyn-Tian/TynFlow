@@ -15,11 +15,15 @@ export const authService = {
     if (!data) return null;
     const userId = data.user?.id
 
-    const { data: profile } = await authRepository.getProfile(userId as string);
+    const { data: profile } = await authRepository.getProfile();
     return {
       userId: userId,
       email: data.user?.email,
       ...profile
     };
   },
+  getRangeDate: async () => {
+    const { data } = await authRepository.getRangeDate();
+    return data;
+  }
 };

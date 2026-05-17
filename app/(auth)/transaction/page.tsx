@@ -1,68 +1,51 @@
-import { SiteHeader } from "@/components/site-header"
-import { createClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
-import { TransactionList } from "@/components/transactions/transaction-list"
-import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog"
-import { ExportTransactionDialog } from "@/components/transactions/export-transaction-dialog"
-import { TransactionFilters } from "@/components/transactions/transaction-filters"
-import { TransactionPaginationNav } from "@/components/transactions/transaction-pagination-nav"
-import { getPaginatedTransactionsAction } from "@/actions/transaction-actions"
-import { getWalletsAction } from "@/actions/wallet-actions"
-import { getBudgetsAction } from "@/actions/budget-actions"
+"use client";
 
-interface PageProps {
-    searchParams: Promise<{
-        page?: string
-        walletId?: string
-        budgetId?: string
-    }>
-}
+import { SiteHeader } from "@/components/site-header";
+import { TransactionList } from "@/components/transactions/transaction-list";
+import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog";
+import { ExportTransactionDialog } from "@/components/transactions/export-transaction-dialog";
+import { TransactionPaginationNav } from "@/components/transactions/transaction-pagination-nav";
 
-export default async function Page({ searchParams }: PageProps) {
-    const supabase = await createClient()
+import { useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { transactionService } from "@/services/transaction-service";
+import { TransactionFilters } from "@/components/transactions/transaction-filters";
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser()
+export default function Page() {
+  const searchParams = useSearchParams();
+  const currentPage = Number(searchParams.get("page")) || 1;
+  const walletId = searchParams.get("walletId") ?? undefined;
+  const budgetId = searchParams.get("budgetId") ?? undefined;
 
-    if (!user) {
-        redirect("/login")
-    }
+  const { data: metadata = { totalPages: 1 } } = useQuery({
+    queryKey: ["transactions", "metadata", currentPage, walletId, budgetId],
+    queryFn: async () =>
+      await transactionService.getTransactionPaginationMetadata({
+        page: currentPage,
+        walletId,
+        budgetId,
+      }),
+  });
 
-    const params = await searchParams
-    const currentPage = Number(params.page) || 1
-    const walletId = params.walletId
-    const budgetId = params.budgetId
+  return (
+    <>
+      <SiteHeader title="Transaction" />
+      <section className="p-6">
+        <div className="mx-auto max-w-7xl">
+          <div className="col-span-3 flex justify-end gap-2">
+            <ExportTransactionDialog />
+            <AddTransactionDialog />
+          </div>
 
-    const [
-        { data: transactions, metadata },
-        wallets,
-        budgets
-    ] = await Promise.all([
-        getPaginatedTransactionsAction({ page: currentPage, walletId, budgetId }),
-        getWalletsAction(),
-        getBudgetsAction()
-    ])
+          <TransactionFilters />
+          <TransactionList />
 
-    return (
-        <>
-            <SiteHeader title="Transaction" />
-            <section className="p-6">
-                <div className="mx-auto max-w-7xl">
-                    <div className="col-span-3 flex justify-end gap-2">
-                        <ExportTransactionDialog />
-                        <AddTransactionDialog />
-                    </div>
-
-                    <TransactionFilters wallets={wallets} budgets={budgets} />
-                    <TransactionList initialTransactions={transactions} />
-
-                    <TransactionPaginationNav
-                        totalPages={metadata.totalPages}
-                        currentPage={currentPage}
-                    />
-                </div>
-            </section>
-        </>
-    )
+          <TransactionPaginationNav
+            totalPages={metadata.totalPages}
+            currentPage={currentPage}
+          />
+        </div>
+      </section>
+    </>
+  );
 }

@@ -1,7 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { getBudgetsAction } from "@/actions/budget-actions"
+import { useState } from "react"
 import { IconCalendarDollar, IconLoader } from "@tabler/icons-react"
 import { IconLockDollar } from "@tabler/icons-react"
 
@@ -15,56 +14,15 @@ import {
 import { EditBudgetDialog } from "@/components/budgets/edit-budget-dialog"
 import { DeleteBudgetDialog } from "@/components/budgets/delete-budget-dialog"
 import { formatRupiah } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-
-type BudgetItem = {
-    id?: string | null
-    name: string
-    total: number
-    leftover: number
-    dailySpending?: number
-    totalRealization?: number
-}
+import useBudget from "@/hooks/use-budget"
 
 export function BudgetList() {
     const [openId, setOpenId] = useState<string | null>(null)
-    const [budgets, setBudgets] = useState<BudgetItem[] | null>(null)
-    const [loading, setLoading] = useState(true)
-
-    const fetchBudgets = async () => {
-        setLoading(true)
-        try {
-            const data = await getBudgetsAction()
-            setBudgets(data as BudgetItem[])
-        } catch (err) {
-            console.error(err)
-            setBudgets([])
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    useEffect(() => {
-        let mounted = true
-        void (async () => {
-            if (!mounted) return
-            await fetchBudgets()
-        })()
-
-        const handler = () => {
-            void fetchBudgets()
-        }
-        window.addEventListener("budgets:changed", handler)
-
-        return () => {
-            mounted = false
-            window.removeEventListener("budgets:changed", handler)
-        }
-    }, [])
+    const { data: budgets, isLoading } = useBudget();
 
     const monthYear = new Date().toLocaleString("en-US", { month: "long", year: "numeric" })
 
-    if (loading) return <div className="flex items-center justify-center"><IconLoader className="animate-spin" /></div>
+    if (isLoading) return <div className="flex items-center justify-center"><IconLoader className="animate-spin" /></div>
     if (!budgets || budgets.length === 0) return <div className="text-sm text-center text-muted-foreground">No budgets yet.</div>
 
     return (
@@ -147,7 +105,7 @@ export function BudgetList() {
                             {isOpen && (
                                 <CardContent>
                                     <div className="rounded-xl border bg-muted/20 p-4">
-                                        <div className="mb-4 flex items-start justify-between gap-3">
+                                        {/* <div className="mb-4 flex items-start justify-between gap-3">
                                             <div>
                                                 <p className="text-sm font-medium">Budget Summary</p>
                                                 <p className="text-xs text-muted-foreground">
@@ -175,7 +133,7 @@ export function BudgetList() {
                                                 <span className="text-muted-foreground">Budget Limit</span>
                                                 <span className="font-medium">{formatRupiah(b.total)}</span>
                                             </div>
-                                        </div>
+                                        </div> */}
 
                                         <div className="mt-4 flex justify-end gap-2">
                                             <EditBudgetDialog

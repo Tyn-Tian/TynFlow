@@ -1,3 +1,5 @@
+import { Live } from "@/types/live-type"
+
 export type LiveType = "Lembur" | "Biasa"
 
 export const LIVE_PLATFORMS = [
@@ -69,7 +71,7 @@ export function normalizeLiveItems(
     }))
 }
 
-export function hydrateLiveItems(items: LiveItem[]): HydratedLiveItem[] {
+export function hydrateLiveItems(items: Live[]): HydratedLiveItem[] {
     return items.map((item) => {
         const baseRate = getLiveBaseRate(item.type)
         const baseTotal = baseRate * LIVE_SESSION_COUNT

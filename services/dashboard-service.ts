@@ -1,235 +1,171 @@
-import { SupabaseClient } from "@supabase/supabase-js"
-import * as dashboardRepository from "@/repository/dashboard-repository"
-import * as transactionService from "@/services/transaction-service"
-import * as budgetService from "@/services/budget-service"
-import { ChartConfig } from "@/components/ui/chart"
+import { ChartConfig } from "@/components/ui/chart";
+import { Budget } from "@/types/budget-type";
+import { MonthData } from "@/types/dashboard-type";
+import { Transaction } from "@/types/transaction-type";
 
-export async function getDashboardDateRange(supabase: SupabaseClient, userId: string) {
-    const { data, error } = await dashboardRepository.getDashboardDateRange(supabase, userId)
-    if (error) return { startDate: undefined, endDate: undefined }
-    return {
-        startDate: data.start_date as unknown as string | undefined,
-        endDate: data.end_date as unknown as string | undefined,
-    }
-}
+export const dashboardService = {
+  getSummaries: ({
+    incomeTxs = [],
+    expenseTxs = [],
+    prevIncomeTxs = [],
+    prevExpenseTxs = [],
+  }: {
+    incomeTxs?: Transaction[];
+    expenseTxs?: Transaction[];
+    prevIncomeTxs?: Transaction[];
+    prevExpenseTxs?: Transaction[];
+  }) => {
+    const sumAmounts = (txs: Transaction[]) =>
+      txs.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
 
-export async function getSummaryCardsData(supabase: SupabaseClient, userId: string) {
-    const { startDate, endDate } = await getDashboardDateRange(supabase, userId)
+    const incomeTotal = sumAmounts(incomeTxs);
+    const expenseTotal = sumAmounts(expenseTxs);
 
-    const incomeTransactions = await transactionService.getFilteredTransactions(supabase, {
-        userId,
-        type: "Income",
-        startDate,
-        endDate,
-    })
-
-    const expenseTransactions = await transactionService.getFilteredTransactions(supabase, {
-        userId,
-        type: "Expense",
-        startDate,
-        endDate,
-    })
-
-    const sumAmounts = (txs: any[]) => txs.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0)
-
-    const incomeTotal = sumAmounts(incomeTransactions)
-    const expenseTotal = sumAmounts(expenseTransactions)
-
-    let incomePrevTotal = 0
-    let expensePrevTotal = 0
-
-    if (startDate && endDate) {
-        const sd = new Date(startDate)
-        const ed = new Date(endDate)
-        const prevSd = new Date(sd)
-        const prevEd = new Date(ed)
-        prevSd.setMonth(prevSd.getMonth() - 1)
-        prevEd.setMonth(prevEd.getMonth() - 1)
-        const prevStartIso = prevSd.toISOString()
-        const prevEndIso = prevEd.toISOString()
-
-        const incomePrevTransactions = await transactionService.getFilteredTransactions(supabase, {
-            userId,
-            type: "Income",
-            startDate: prevStartIso,
-            endDate: prevEndIso,
-        })
-
-        const expensePrevTransactions = await transactionService.getFilteredTransactions(supabase, {
-            userId,
-            type: "Expense",
-            startDate: prevStartIso,
-            endDate: prevEndIso,
-        })
-
-        incomePrevTotal = sumAmounts(incomePrevTransactions)
-        expensePrevTotal = sumAmounts(expensePrevTransactions)
-    }
+    const incomePrevTotal = sumAmounts(prevIncomeTxs);
+    const expensePrevTotal = sumAmounts(prevExpenseTxs);
 
     const calcChange = (current: number, previous: number) => {
-        if (previous === 0) return current === 0 ? 0 : 100
-        return ((current - previous) / Math.abs(previous)) * 100
-    }
+      if (previous === 0) return current === 0 ? 0 : 100;
+      return ((current - previous) / Math.abs(previous)) * 100;
+    };
 
     return {
-        incomeTotal,
-        expenseTotal,
-        incomeChange: calcChange(incomeTotal, incomePrevTotal),
-        expenseChange: calcChange(expenseTotal, expensePrevTotal),
-        cashFlow: incomeTotal - expenseTotal,
-        startDate,
-        endDate,
-    }
-}
+      incomeTotal,
+      expenseTotal,
+      incomeChange: calcChange(incomeTotal, incomePrevTotal),
+      expenseChange: calcChange(expenseTotal, expensePrevTotal),
+      cashFlow: incomeTotal - expenseTotal,
+    };
+  },
+  getIncomeChartData: ({
+    transactions = [],
+  }: {
+    transactions?: Transaction[];
+  }) => {
+    const grouped = transactions.reduce<Record<string, number>>((acc, t) => {
+      const name = t.name ?? "Unnamed";
+      acc[name] = (acc[name] ?? 0) + (Number(t.amount) || 0);
+      return acc;
+    }, {});
 
-export async function getIncomeChartData(supabase: SupabaseClient, userId: string) {
-    const { startDate, endDate } = await getDashboardDateRange(supabase, userId)
-
-    const txs = await transactionService.getFilteredTransactions(supabase, {
-        userId,
-        type: "Income",
-        startDate,
-        endDate,
-    })
-
-    const grouped = txs.reduce<Record<string, number>>((acc, t) => {
-        const name = t.name ?? "Unnamed"
-        acc[name] = (acc[name] ?? 0) + (Number(t.amount) || 0)
-        return acc
-    }, {})
-
-    const paletteSize = 5
-    const entries = Object.entries(grouped)
+    const paletteSize = 5;
+    const entries = Object.entries(grouped);
 
     const chartData = entries.map(([name, value], idx) => {
-        const key = `i_${idx}`
-        return {
-            name,
-            value,
-            fill: `var(--color-${key})`,
-            [key]: name,
-            __key: key,
-        }
-    })
+      const key = `i_${idx}`;
+      return {
+        name,
+        value,
+        fill: `var(--color-${key})`,
+        [key]: name,
+        __key: key,
+      };
+    });
 
-    const chartConfig: ChartConfig = { value: { label: "Amount" } }
+    const chartConfig: ChartConfig = { value: { label: "Amount" } };
     chartData.forEach((d, idx) => {
-        const key = d.__key
-        chartConfig[key] = {
-            label: `${d.name}`,
-            color: `var(--chart-${(idx % paletteSize) + 1})`,
-        }
-    })
+      const key = d.__key;
+      chartConfig[key] = {
+        label: `${d.name}`,
+        color: `var(--chart-${(idx % paletteSize) + 1})`,
+      };
+    });
 
-    return { chartData, chartConfig, startDate, endDate }
-}
-
-export async function getExpenseChartData(supabase: SupabaseClient, userId: string) {
-    const { startDate, endDate } = await getDashboardDateRange(supabase, userId)
-
-    const txs = await transactionService.getFilteredTransactions(supabase, {
-        userId,
-        type: "Expense",
-        startDate,
-        endDate,
-    })
-
-    const budgetIds = Array.from(new Set(txs.map((t) => t.budget_id).filter(Boolean) as string[]))
-    const budgetsMap = new Map<string, string>()
+    return {
+      chartData,
+      chartConfig,
+    };
+  },
+  getExpenseChartData: ({
+    transactions = [],
+    budgets = [],
+  }: {
+    transactions?: Transaction[];
+    budgets?: Budget[];
+  }) => {
+    const budgetIds = Array.from(
+      new Set(transactions.map((t) => t.budget_id).filter(Boolean) as string[]),
+    );
+    const budgetsMap = new Map<string, string>();
 
     if (budgetIds.length) {
-        const budgets = await budgetService.getBudgets(supabase, userId)
-        budgets.filter((b: any) => budgetIds.includes(b.id)).forEach((b: any) => budgetsMap.set(b.id, b.name))
+      budgets
+        .filter((b: Budget) => budgetIds.includes(b.id))
+        .forEach((b: Budget) => budgetsMap.set(b.id, b.name));
     }
 
-    const grouped = txs.reduce<Record<string, number>>((acc, t) => {
-        const bid = t.budget_id ?? "__uncategorized__"
-        const name = budgetsMap.get(bid) ?? (bid === "__uncategorized__" ? "Uncategorized" : "Unknown")
-        acc[name] = (acc[name] ?? 0) + (Number(t.amount) || 0)
-        return acc
-    }, {})
+    const grouped = transactions.reduce<Record<string, number>>((acc, t) => {
+      const bid = t.budget_id ?? "__uncategorized__";
+      const name =
+        budgetsMap.get(bid) ??
+        (bid === "__uncategorized__" ? "Uncategorized" : "Unknown");
+      acc[name] = (acc[name] ?? 0) + (Number(t.amount) || 0);
+      return acc;
+    }, {});
 
-    const paletteSize = 5
-    const entries = Object.entries(grouped)
+    const paletteSize = 5;
+    const entries = Object.entries(grouped);
 
     const chartData = entries.map(([name, value], idx) => {
-        const key = `b_${idx}`
-        return {
-            name,
-            value,
-            fill: `var(--color-${key})`,
-            [key]: name,
-            __key: key,
-        }
-    })
+      const key = `b_${idx}`;
+      return {
+        name,
+        value,
+        fill: `var(--color-${key})`,
+        [key]: name,
+        __key: key,
+      };
+    });
 
-    const chartConfig: ChartConfig = { value: { label: "Amount" } }
+    const chartConfig: ChartConfig = { value: { label: "Amount" } };
     chartData.forEach((d, idx) => {
-        const key = d.__key
-        chartConfig[key] = { label: d.name, color: `var(--chart-${(idx % paletteSize) + 1})` }
-    })
+      const key = d.__key;
+      chartConfig[key] = {
+        label: d.name,
+        color: `var(--chart-${(idx % paletteSize) + 1})`,
+      };
+    });
 
-    return { chartData, chartConfig, startDate, endDate }
-}
-
-interface MonthData {
-    year: number
-    month: number
-    label: string
-    income: number
-    expense: number
-}
-
-export async function getBarChartData(supabase: SupabaseClient, userId: string) {
-    const now = new Date()
-    const months: MonthData[] = []
-    for (let i = 5; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-        months.push({
-            year: d.getFullYear(),
-            month: d.getMonth(),
-            label: d.toLocaleString("en-US", { month: "long" }),
-            income: 0,
-            expense: 0,
-        })
-    }
-
-    const startDate = new Date(months[0].year, months[0].month, 1).toISOString()
-    const endDate = new Date(months[5].year, months[5].month + 1, 0, 23, 59, 59).toISOString()
-
-    const txs = await transactionService.getFilteredTransactions(supabase, {
-        userId,
-        startDate,
-        endDate,
-    })
-
-    txs.forEach((t) => {
-        const d = new Date(t.date)
-        const year = d.getFullYear()
-        const month = d.getMonth()
-        const found = months.find((m) => m.year === year && m.month === month)
-        if (found) {
-            if (t.type === "Income") found.income += Number(t.amount) || 0
-            if (t.type === "Expense") found.expense += Number(t.amount) || 0
-        }
-    })
+    return {
+      chartData,
+      chartConfig,
+    };
+  },
+  getBarChartData: ({
+    transactions = [],
+    months = [],
+  }: {
+    transactions?: Transaction[];
+    months: MonthData[];
+  }) => {
+    transactions.forEach((t) => {
+      const d = new Date(t.date);
+      const year = d.getFullYear();
+      const month = d.getMonth();
+      const found = months.find((m) => m.year === year && m.month === month);
+      if (found) {
+        if (t.type === "Income") found.income += Number(t.amount) || 0;
+        if (t.type === "Expense") found.expense += Number(t.amount) || 0;
+      }
+    });
 
     const chartData = months.map((m) => ({
-        month: m.label,
-        income: m.income,
-        expense: m.expense,
-    }))
+      month: m.label,
+      income: m.income,
+      expense: m.expense,
+    }));
 
     const chartConfig: ChartConfig = {
-        income: {
-            label: "Income",
-            color: "var(--chart-2)",
-        },
-        expense: {
-            label: "Expense",
-            color: "var(--chart-5)",
-        },
-    }
+      income: {
+        label: "Income",
+        color: "var(--chart-2)",
+      },
+      expense: {
+        label: "Expense",
+        color: "var(--chart-5)",
+      },
+    };
 
-    return { chartData, chartConfig }
-}
+    return { chartData, chartConfig };
+  },
+};

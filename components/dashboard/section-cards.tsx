@@ -1,6 +1,8 @@
-import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react"
+"use client";
 
-import { Badge } from "@/components/ui/badge"
+import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react";
+
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardAction,
@@ -8,26 +10,103 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { formatRupiah } from "@/lib/utils"
-import { getSummaryCardsAction } from "@/actions/dashboard-actions"
+} from "@/components/ui/card";
+import { formatRupiah } from "@/lib/utils";
+import useRange from "@/hooks/use-range";
+import useTransactions from "@/hooks/use-transaction";
+import { dashboardService } from "@/services/dashboard-service";
+import { useMemo } from "react";
 
-export async function SectionCards() {
-  const data = await getSummaryCardsAction()
+export function SectionCards() {
+  const { data: range } = useRange();
 
-  const incomeChange = data.incomeChange
-  const expenseChange = data.expenseChange
+  const { prevStartIso, prevEndIso } = useMemo(() => {
+    if (!range?.start_date || !range?.end_date) {
+      return { prevStartIso: undefined, prevEndIso: undefined };
+    }
+    const sd = new Date(range.start_date);
+    const ed = new Date(range.end_date);
 
-  const formattedIncome = formatRupiah(data.incomeTotal)
-  const formattedExpense = formatRupiah(data.expenseTotal)
-  const cashFlow = data.cashFlow
-  const formattedCashFlow = formatRupiah(cashFlow)
+    if (isNaN(sd.getTime()) || isNaN(ed.getTime())) {
+      return { prevStartIso: undefined, prevEndIso: undefined };
+    }
+
+    const prevSd = new Date(sd);
+    const prevEd = new Date(ed);
+    prevSd.setMonth(prevSd.getMonth() - 1);
+    prevEd.setMonth(prevEd.getMonth() - 1);
+
+    return {
+      prevStartIso: prevSd.toISOString(),
+      prevEndIso: prevEd.toISOString(),
+    };
+  }, [range]);
+
+  const { data: incomeTxs } = useTransactions({
+    type: "Income",
+    startDate: range?.start_date,
+    endDate: range?.end_date,
+  });
+
+  const { data: expenseTxs } = useTransactions({
+    type: "Expense",
+    startDate: range?.start_date,
+    endDate: range?.end_date,
+  });
+
+  const { data: prevIncomeTxs } = useTransactions({
+    type: "Income",
+    startDate: prevStartIso,
+    endDate: prevEndIso,
+  });
+
+  const { data: prevExpenseTxs } = useTransactions({
+    type: "Expense",
+    startDate: prevStartIso,
+    endDate: prevEndIso,
+  });
+
+  const { incomeTotal, expenseTotal, incomeChange, expenseChange, cashFlow } =
+    useMemo(() => {
+      if (!incomeTxs || !expenseTxs || !prevIncomeTxs || !prevExpenseTxs) {
+        return {
+          incomeTotal: 0,
+          expenseTotal: 0,
+          incomeChange: 0,
+          expenseChange: 0,
+          cashFlow: 0,
+        };
+      }
+
+      const result = dashboardService.getSummaries({
+        incomeTxs,
+        expenseTxs,
+        prevIncomeTxs,
+        prevExpenseTxs,
+      });
+
+      if (!result) {
+        return {
+          incomeTotal: 0,
+          expenseTotal: 0,
+          incomeChange: 0,
+          expenseChange: 0,
+          cashFlow: 0,
+        };
+      }
+
+      return result;
+    }, [incomeTxs, expenseTxs, prevIncomeTxs, prevExpenseTxs]);
+
+  const formattedIncome = formatRupiah(incomeTotal);
+  const formattedExpense = formatRupiah(expenseTotal);
+  const formattedCashFlow = formatRupiah(cashFlow);
   const cashFlowFooter =
     cashFlow > 0
       ? "Cash flow improving — healthy"
       : cashFlow < 0
         ? "Cash flow deficit — review expenses"
-        : "Cash flow stable"
+        : "Cash flow stable";
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 px-4 lg:px-6">
@@ -39,9 +118,18 @@ export async function SectionCards() {
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
-              {incomeChange > 0 ? <IconTrendingUp /> : incomeChange < 0 ? <IconTrendingDown /> : <IconTrendingUp />}
-              {incomeChange > 0 ?
-                `+${Math.round(incomeChange)}%` : incomeChange < 0 ? `${Math.round(incomeChange)}%` : `0%`}
+              {incomeChange > 0 ? (
+                <IconTrendingUp />
+              ) : incomeChange < 0 ? (
+                <IconTrendingDown />
+              ) : (
+                <IconTrendingUp />
+              )}
+              {incomeChange > 0
+                ? `+${Math.round(incomeChange)}%`
+                : incomeChange < 0
+                  ? `${Math.round(incomeChange)}%`
+                  : `0%`}
             </Badge>
           </CardAction>
         </CardHeader>
@@ -59,8 +147,18 @@ export async function SectionCards() {
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
-              {expenseChange > 0 ? <IconTrendingUp /> : expenseChange < 0 ? <IconTrendingDown /> : <IconTrendingUp />}
-              {expenseChange > 0 ? `+${Math.round(expenseChange)}%` : expenseChange < 0 ? `${Math.round(expenseChange)}%` : `0%`}
+              {expenseChange > 0 ? (
+                <IconTrendingUp />
+              ) : expenseChange < 0 ? (
+                <IconTrendingDown />
+              ) : (
+                <IconTrendingUp />
+              )}
+              {expenseChange > 0
+                ? `+${Math.round(expenseChange)}%`
+                : expenseChange < 0
+                  ? `${Math.round(expenseChange)}%`
+                  : `0%`}
             </Badge>
           </CardAction>
         </CardHeader>
@@ -87,5 +185,5 @@ export async function SectionCards() {
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }

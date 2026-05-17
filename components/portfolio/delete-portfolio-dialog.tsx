@@ -1,11 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { IconTrash } from "@tabler/icons-react"
 import { toast } from "sonner"
 
-import { removePortfolioAction } from "@/actions/portfolio-actions"
 import { Button } from "@/components/ui/button"
 import {
     AlertDialog,
@@ -17,40 +15,38 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { portfolioService } from "@/services/portfolio-service"
 
 type DeletePortfolioDialogProps = {
     portfolioId?: string | null
 }
 
 export function DeletePortfolioDialog({ portfolioId }: DeletePortfolioDialogProps) {
-    const router = useRouter()
+    const queryClient = useQueryClient()
     const [open, setOpen] = useState(false)
-    const [deleting, setDeleting] = useState(false)
 
-    async function handleDelete() {
-        if (!portfolioId) return
-
-        setDeleting(true)
-        try {
-            await removePortfolioAction(portfolioId)
-
+    const mutation = useMutation({
+        mutationFn: async (id: string) => await portfolioService.delete(id),
+        onSuccess: () => {
             toast.success("Deleted", {
                 description: "Portfolio has been deleted.",
                 duration: 3000,
             })
             setOpen(false)
-            router.refresh()
-            if (typeof window !== "undefined") {
-                window.dispatchEvent(new CustomEvent("portfolios:changed"))
-            }
-        } catch (error) {
+            queryClient.invalidateQueries({ queryKey: ["portfolios"] })
+        },
+        onError: (error) => {
             toast.error("Failed", {
                 description: error instanceof Error ? error.message : "Unexpected error.",
                 duration: 3000,
             })
-        } finally {
-            setDeleting(false)
-        }
+        },
+    })
+
+    async function handleDelete() {
+        if (!portfolioId) return
+        mutation.mutate(portfolioId)
     }
 
     return (
@@ -86,9 +82,9 @@ export function DeletePortfolioDialog({ portfolioId }: DeletePortfolioDialogProp
                                 event.stopPropagation()
                                 void handleDelete()
                             }}
-                            disabled={deleting}
+                            disabled={mutation.isPending}
                         >
-                            {deleting ? "Deleting..." : "Delete"}
+                            {mutation.isPending ? "Deleting..." : "Delete"}
                         </Button>
                     </AlertDialogAction>
                 </AlertDialogFooter>

@@ -11,15 +11,27 @@ export const authRepository = {
     });
   },
   logout: async () => {
-    const supabase = await getSupabase();
+    const { supabase } = await getSupabase();
     return supabase.auth.signOut();
   },
   getUser: async () => {
-    const supabase = await getSupabase();
+    const { supabase } = await getSupabase();
     return supabase.auth.getUser();
   },
-  getProfile: async (userId: string) => {
-    const supabase = await getSupabase();
-    return supabase.from("profiles").select("name").eq("user_id", userId).single();
-  } 
+  getProfile: async () => {
+    const { supabase, userId } = await getSupabase();
+    return supabase
+      .from("profiles")
+      .select("name")
+      .eq("user_id", userId)
+      .single();
+  },
+  getRangeDate: async () => {
+    const { supabase, userId } = await getSupabase();
+    return supabase
+      .from("profiles")
+      .select("start_date, end_date")
+      .eq("user_id", userId)
+      .single();
+  },
 };
