@@ -33,17 +33,20 @@ import {
     hydrateLiveItems,
     LIVE_PLATFORMS,
     type HydratedLiveItem,
-    type LiveItem,
 } from "@/components/live/live-data"
+import { useQuery } from "@tanstack/react-query"
+import { liveService } from "@/services/live-service"
 
-type LiveListProps = {
-    lives: LiveItem[]
-}
-
-export function LiveList({ lives }: LiveListProps) {
+export function LiveList() {
     const [openId, setOpenId] = useState<string | null>(null)
     const [copiedMonth, setCopiedMonth] = useState<string | null>(null)
-    const transactions = useMemo(() => hydrateLiveItems(lives), [lives])
+
+    const { data: lives } = useQuery({
+        queryKey: ["lives"],
+        queryFn: async () => await liveService.getAll(),
+    })
+
+    const transactions = useMemo(() => hydrateLiveItems(lives ?? []), [lives])
     const groupedMonths = useMemo(() => {
         const groups = transactions.reduce<Record<string, HydratedLiveItem[]>>((acc, item) => {
             const date = new Date(item.date)
