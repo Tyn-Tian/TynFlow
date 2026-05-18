@@ -1,9 +1,9 @@
 import { getSupabase } from "@/lib/api";
 import { createClient } from "@/lib/supabase/client";
-import { loginDto } from "@/types/auth-type";
+import { LoginDto, UpdateProfileDto } from "@/types/auth-type";
 
 export const authRepository = {
-  login: (dto: loginDto) => {
+  login: (dto: LoginDto) => {
     const supabase = createClient();
     return supabase.auth.signInWithPassword({
       email: dto.email,
@@ -22,9 +22,16 @@ export const authRepository = {
     const { supabase, userId } = await getSupabase();
     return supabase
       .from("profiles")
-      .select("name")
+      .select("name, start_date, end_date")
       .eq("user_id", userId)
       .single();
+  },
+  updateProfile: async (dto: UpdateProfileDto) => {
+    const { supabase, userId } = await getSupabase();
+    return supabase
+      .from("profiles")
+      .update(dto)
+      .eq("user_id", userId);
   },
   getRangeDate: async () => {
     const { supabase, userId } = await getSupabase();
