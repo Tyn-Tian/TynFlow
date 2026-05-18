@@ -1,17 +1,14 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
+import React, { useState } from "react";
 import {
   IconCreditCard,
   IconDotsVertical,
   IconLogout,
   IconNotification,
-} from "@tabler/icons-react"
+} from "@tabler/icons-react";
 
-import {
-  Avatar,
-  AvatarFallback,
-} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,7 +17,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -30,45 +27,48 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
-} from "@/components/ui/alert-dialog"
-import { useRouter } from "next/navigation"
+} from "@/components/ui/alert-dialog";
+import { useRouter } from "next/navigation";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
-import { EditProfileDialog } from "@/components/nav-user/edit-profile-dialog"
-import { authService } from "@/services/auth-service"
+} from "@/components/ui/sidebar";
+import { EditProfileDialog } from "@/components/nav-user/edit-profile-dialog";
+import { authService } from "@/services/auth-service";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function NavUser({
   user,
 }: {
   user: {
-    name: string
-    email: string
-    avatar: string
-  }
+    name: string;
+    email: string;
+    avatar: string;
+  };
 }) {
-  const router = useRouter()
-  const [logoutOpen, setLogoutOpen] = useState(false)
-  const { isMobile } = useSidebar()
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const { isMobile } = useSidebar();
 
   const getInitials = (name: string) => {
-    if (!name) return ""
-    const parts = name.trim().split(/\s+/)
+    if (!name) return "";
+    const parts = name.trim().split(/\s+/);
     const initials = parts
       .map((p) => p[0])
       .filter(Boolean)
       .slice(0, 2)
-      .join("")
-    return initials.toUpperCase()
-  }
+      .join("");
+    return initials.toUpperCase();
+  };
 
   const handleLogout = async () => {
     await authService.logout();
-    router.push('/login')
-  }
+    queryClient.clear();
+    router.push("/login");
+  };
 
   return (
     <SidebarMenu>
@@ -80,7 +80,9 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg grayscale">
-                <AvatarFallback className="rounded-lg">{getInitials(user.name)}</AvatarFallback>
+                <AvatarFallback className="rounded-lg">
+                  {getInitials(user.name)}
+                </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
@@ -98,9 +100,11 @@ export function NavUser({
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
-                <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarFallback className="rounded-lg">{getInitials(user.name)}</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">
+                    {getInitials(user.name)}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
@@ -125,9 +129,9 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onPointerDown={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                setLogoutOpen(true)
+                e.preventDefault();
+                e.stopPropagation();
+                setLogoutOpen(true);
               }}
               className="cursor-pointer"
             >
@@ -144,7 +148,9 @@ export function NavUser({
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+                  <AlertDialogCancel className="cursor-pointer">
+                    Cancel
+                  </AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleLogout}
                     className="cursor-pointer"
@@ -158,5 +164,5 @@ export function NavUser({
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }

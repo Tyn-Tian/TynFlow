@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   IconLogout,
@@ -10,8 +10,8 @@ import {
   Icon,
   IconLivePhoto,
   IconBriefcase,
-} from "@tabler/icons-react"
-import { useRouter } from "next/navigation"
+} from "@tabler/icons-react";
+import { useRouter } from "next/navigation";
 
 import {
   SidebarGroup,
@@ -19,7 +19,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 import {
   AlertDialog,
@@ -31,24 +31,27 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { authService } from "@/services/auth-service"
+} from "@/components/ui/alert-dialog";
+import { authService } from "@/services/auth-service";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function NavMain({
   items,
 }: {
   items: {
-    title: string
-    url: string
-    icon?: string
-  }[]
+    title: string;
+    url: string;
+    icon?: string;
+  }[];
 }) {
-  const router = useRouter()
+  const router = useRouter();
+  const queryClient = useQueryClient();
 
   const handleLogout = async () => {
     await authService.logout();
-    router.push('/login')
-  }
+    queryClient.clear();
+    router.push("/login");
+  };
 
   return (
     <SidebarGroup>
@@ -56,7 +59,11 @@ export function NavMain({
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton tooltip={item.title} className="cursor-pointer" asChild>
+              <SidebarMenuButton
+                tooltip={item.title}
+                className="cursor-pointer"
+                asChild
+              >
                 <a href={item.url}>
                   {(() => {
                     const IconMap: Record<string, Icon> = {
@@ -66,10 +73,10 @@ export function NavMain({
                       budget: IconLockDollar,
                       portfolio: IconChartPie,
                       live: IconLivePhoto,
-                      job: IconBriefcase
-                    }
-                    const Icon = item.icon ? IconMap[item.icon] : null
-                    return Icon ? <Icon /> : null
+                      job: IconBriefcase,
+                    };
+                    const Icon = item.icon ? IconMap[item.icon] : null;
+                    return Icon ? <Icon /> : null;
                   })()}
                   <span>{item.title}</span>
                 </a>
@@ -80,11 +87,12 @@ export function NavMain({
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Logout" className="cursor-pointer" asChild>
-                  <button
-                    type="button"
-                    className="flex items-center gap-2"
-                  >
+                <SidebarMenuButton
+                  tooltip="Logout"
+                  className="cursor-pointer"
+                  asChild
+                >
+                  <button type="button" className="flex items-center gap-2">
                     <IconLogout className="text-rose-500" />
                     <span className="text-rose-500">Logout</span>
                   </button>
@@ -95,18 +103,25 @@ export function NavMain({
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. This will log you out of your account.
+                  This action cannot be undone. This will log you out of your
+                  account.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleLogout} className="cursor-pointer">Continue</AlertDialogAction>
+                <AlertDialogCancel className="cursor-pointer">
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleLogout}
+                  className="cursor-pointer"
+                >
+                  Continue
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
-  )
+  );
 }
