@@ -6,7 +6,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IconUserCircle } from "@tabler/icons-react";
 import { toast } from "sonner";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,7 @@ import {
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { authService } from "@/services/auth-service";
 import { UpdateProfileDto } from "@/types/auth-type";
+import useProfile from "@/hooks/use-profile";
 
 const datePattern = /^(\d{2})\/(\d{2})\/(\d{4})$/;
 
@@ -98,11 +99,7 @@ export function EditProfileDialog({
     return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
   };
 
-  const { data: profile } = useQuery({
-    queryKey: ["profile"],
-    queryFn: async () => await authService.getProfile(),
-    enabled: open,
-  });
+  const { data: profile } = useProfile(open);
 
   useEffect(() => {
     if (open) {

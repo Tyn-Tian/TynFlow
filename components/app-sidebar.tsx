@@ -14,8 +14,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { authService } from "@/services/auth-service";
-import { useQuery } from "@tanstack/react-query";
+import useProfile from "@/hooks/use-profile";
 
 const data = {
   user: {
@@ -66,10 +65,7 @@ const LIVE_NAV_USER_ID = "8017eb2d-1c88-4e83-ba13-80ce15477154";
 const JOB_NAV_USER_ID = "d4e69f3b-c49e-4b65-ad03-50f6cb803571";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { data: profile } = useQuery({
-    queryKey: ['profile'],
-    queryFn: async () => await authService.getProfile(),
-  })
+  const { data: profile } = useProfile();
 
   const user = {
     name: profile?.name ?? "",
