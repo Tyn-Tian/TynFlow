@@ -59,8 +59,8 @@ export function PortfolioList() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12 text-muted-foreground">
-        <IconLoader className="size-5 animate-spin" />
+      <div className="flex items-center justify-center">
+        <IconLoader className="animate-spin" />
       </div>
     );
   }

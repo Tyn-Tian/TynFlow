@@ -65,13 +65,14 @@ export function TransactionList() {
       portfolios !== undefined,
   });
 
-  if (isLoading)
+  if (isLoading || !transactions)
     return (
       <div className="flex items-center justify-center">
         <IconLoader className="animate-spin" />
       </div>
     );
-  if (!transactions || transactions.length === 0)
+
+  if (transactions.length === 0)
     return (
       <div className="text-sm text-center text-muted-foreground">
         No transactions yet.

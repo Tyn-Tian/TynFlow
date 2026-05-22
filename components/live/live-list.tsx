@@ -5,6 +5,7 @@ import {
     IconBolt,
     IconCheck,
     IconCopy,
+    IconLoader,
     IconMoodEmpty,
     IconReceiptRupee,
 } from "@tabler/icons-react"
@@ -41,7 +42,7 @@ export function LiveList() {
     const [openId, setOpenId] = useState<string | null>(null)
     const [copiedMonth, setCopiedMonth] = useState<string | null>(null)
 
-    const { data: lives } = useQuery({
+    const { data: lives, isLoading } = useQuery({
         queryKey: ["lives"],
         queryFn: async () => await liveService.getAll(),
     })
@@ -51,7 +52,7 @@ export function LiveList() {
         const groups = transactions.reduce<Record<string, HydratedLiveItem[]>>((acc, item) => {
             const date = new Date(item.date)
             const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`
-            ;(acc[monthKey] ??= []).push(item)
+                ; (acc[monthKey] ??= []).push(item)
             return acc
         }, {})
 
@@ -61,6 +62,14 @@ export function LiveList() {
 
         return { groups, sortedMonths }
     }, [transactions])
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center">
+                <IconLoader className="animate-spin" />
+            </div>
+        );
+    }
 
     if (transactions.length === 0) {
         return (
