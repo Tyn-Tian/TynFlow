@@ -60,9 +60,8 @@ export function AddBudgetDialog() {
       });
       form.reset();
       setOpen(false);
-      queryClient.invalidateQueries({
-        queryKey: ["budgets"],
-      });
+      queryClient.invalidateQueries({ queryKey: ["budgets"] });
+      queryClient.invalidateQueries({ queryKey: ["enriched-budgets"] });
     },
     onError: (err: Error | unknown) => {
       toast.error("Failed", {

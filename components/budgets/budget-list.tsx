@@ -14,16 +14,28 @@ import {
 import { EditBudgetDialog } from "@/components/budgets/edit-budget-dialog"
 import { DeleteBudgetDialog } from "@/components/budgets/delete-budget-dialog"
 import { formatRupiah } from "@/lib/utils"
-import useBudget from "@/hooks/use-budget"
+import useRange from "@/hooks/use-range"
+import { useQuery } from "@tanstack/react-query"
+import { budgetService } from "@/services/budget-service"
+import { Badge } from "../ui/badge"
 
 export function BudgetList() {
     const [openId, setOpenId] = useState<string | null>(null)
-    const { data: budgets, isLoading } = useBudget();
+
+    const { data: range } = useRange();
+    const { data: budgets, isLoading } = useQuery({
+        queryKey: ["enriched-budgets", range?.start_date, range?.end_date],
+        queryFn: async () => {
+            if (!range) return [];
+            return await budgetService.getBudgets(range.start_date, range.end_date);
+        },
+        enabled: !!range,
+    })
 
     const monthYear = new Date().toLocaleString("en-US", { month: "long", year: "numeric" })
 
-    if (isLoading) return <div className="flex items-center justify-center"><IconLoader className="animate-spin" /></div>
-    if (!budgets || budgets.length === 0) return <div className="text-sm text-center text-muted-foreground">No budgets yet.</div>
+    if (isLoading || !budgets) return <div className="flex items-center justify-center"><IconLoader className="animate-spin" /></div>
+    if (budgets.length === 0) return <div className="text-sm text-center text-muted-foreground">No budgets yet.</div>
 
     return (
         <>
@@ -105,7 +117,7 @@ export function BudgetList() {
                             {isOpen && (
                                 <CardContent>
                                     <div className="rounded-xl border bg-muted/20 p-4">
-                                        {/* <div className="mb-4 flex items-start justify-between gap-3">
+                                        <div className="mb-4 flex items-start justify-between gap-3">
                                             <div>
                                                 <p className="text-sm font-medium">Budget Summary</p>
                                                 <p className="text-xs text-muted-foreground">
@@ -133,7 +145,7 @@ export function BudgetList() {
                                                 <span className="text-muted-foreground">Budget Limit</span>
                                                 <span className="font-medium">{formatRupiah(b.total)}</span>
                                             </div>
-                                        </div> */}
+                                        </div>
 
                                         <div className="mt-4 flex justify-end gap-2">
                                             <EditBudgetDialog
