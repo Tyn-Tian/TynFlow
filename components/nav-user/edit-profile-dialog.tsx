@@ -170,7 +170,10 @@ export function EditProfileDialog({
         Account
       </DropdownMenuItem>
       <AlertDialog open={open} onOpenChange={setOpen}>
-        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+        <AlertDialogContent
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+        >
           <AlertDialogHeader className="gap-0">
             <AlertDialogTitle>Edit Profile</AlertDialogTitle>
             <AlertDialogDescription>

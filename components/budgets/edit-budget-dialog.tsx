@@ -114,7 +114,10 @@ export function EditBudgetDialog({
         <IconPencil />
         Edit
       </Button>
-      <AlertDialogContent onClick={(event) => event.stopPropagation()}>
+      <AlertDialogContent
+        onClick={(event) => event.stopPropagation()}
+        onKeyDown={(event) => event.stopPropagation()}
+      >
         <AlertDialogHeader>
           <AlertDialogTitle>Edit Budget</AlertDialogTitle>
           <AlertDialogDescription>

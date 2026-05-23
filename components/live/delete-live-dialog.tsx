@@ -64,7 +64,10 @@ export function DeleteLiveDialog({ liveId }: DeleteLiveDialogProps) {
         <IconTrash />
         Delete
       </Button>
-      <AlertDialogContent onClick={(event) => event.stopPropagation()}>
+      <AlertDialogContent
+        onClick={(event) => event.stopPropagation()}
+        onKeyDown={(event) => event.stopPropagation()}
+      >
         <AlertDialogHeader>
           <AlertDialogTitle>Delete live?</AlertDialogTitle>
           <AlertDialogDescription>

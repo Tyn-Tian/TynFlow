@@ -60,7 +60,10 @@ export function DeleteWalletDialog({ walletId }: { walletId?: string | null }) {
         <IconTrash />
         Delete
       </Button>
-      <AlertDialogContent onClick={(event) => event.stopPropagation()}>
+      <AlertDialogContent
+        onClick={(event) => event.stopPropagation()}
+        onKeyDown={(event) => event.stopPropagation()}
+      >
         <AlertDialogHeader>
           <AlertDialogTitle>Delete wallet?</AlertDialogTitle>
           <AlertDialogDescription>

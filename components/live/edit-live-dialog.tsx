@@ -146,7 +146,10 @@ export function EditLiveDialog({ live }: EditLiveDialogProps) {
         <IconPencil />
         Edit
       </Button>
-      <AlertDialogContent onClick={(event) => event.stopPropagation()}>
+      <AlertDialogContent
+        onClick={(event) => event.stopPropagation()}
+        onKeyDown={(event) => event.stopPropagation()}
+      >
         <AlertDialogHeader>
           <AlertDialogTitle>Edit Live</AlertDialogTitle>
           <AlertDialogDescription>

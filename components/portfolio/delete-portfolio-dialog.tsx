@@ -63,7 +63,10 @@ export function DeletePortfolioDialog({ portfolioId }: DeletePortfolioDialogProp
                 <IconTrash />
                 Delete
             </Button>
-            <AlertDialogContent onClick={(event) => event.stopPropagation()}>
+            <AlertDialogContent
+                onClick={(event) => event.stopPropagation()}
+                onKeyDown={(event) => event.stopPropagation()}
+            >
                 <AlertDialogHeader>
                     <AlertDialogTitle>Delete portfolio?</AlertDialogTitle>
                     <AlertDialogDescription>

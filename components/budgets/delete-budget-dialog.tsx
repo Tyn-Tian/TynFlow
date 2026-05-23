@@ -59,7 +59,10 @@ export function DeleteBudgetDialog({ budgetId }: { budgetId?: string | null }) {
         <IconTrash />
         Delete
       </Button>
-      <AlertDialogContent onClick={(event) => event.stopPropagation()}>
+      <AlertDialogContent
+        onClick={(event) => event.stopPropagation()}
+        onKeyDown={(event) => event.stopPropagation()}
+      >
         <AlertDialogHeader>
           <AlertDialogTitle>Delete budget?</AlertDialogTitle>
           <AlertDialogDescription>
