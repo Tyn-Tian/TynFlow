@@ -162,13 +162,14 @@ export function AddTransactionDialog() {
     return calcResultValue().toLocaleString("id-ID");
   };
 
-  useEffect(() => {
-    if (!open) {
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (!newOpen) {
       form.reset();
       setCalcExpr("0");
       setShowDatePicker(false);
     }
-  }, [open, form]);
+  };
 
   const mutation = useMutation({
     mutationFn: async (dto: TransactionDto) =>
@@ -178,9 +179,8 @@ export function AddTransactionDialog() {
         description: "Transaction added.",
         duration: 3000,
       });
-      form.reset();
       setTab("Expense");
-      setOpen(false);
+      handleOpenChange(false);
       queryClient.invalidateQueries({
         queryKey: ["transactions"],
       });
@@ -265,14 +265,14 @@ export function AddTransactionDialog() {
   }
 
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
+    <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogTrigger asChild>
         <Button className="cursor-pointer">
           <IconPlus />
           Add Transaction
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className="max-h-[90vh] overflow-y-auto">
         <AlertDialogHeader>
           <AlertDialogTitle>Add Transaction</AlertDialogTitle>
         </AlertDialogHeader>
