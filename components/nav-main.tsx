@@ -2,7 +2,6 @@
 
 import {
   IconLogout,
-  IconDashboard,
   IconWallet,
   IconCalendarDollar,
   IconLockDollar,
@@ -10,6 +9,7 @@ import {
   Icon,
   IconLivePhoto,
   IconBriefcase,
+  IconLayoutDashboard,
 } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 
@@ -67,7 +67,7 @@ export function NavMain({
                 <a href={item.url}>
                   {(() => {
                     const IconMap: Record<string, Icon> = {
-                      dashboard: IconDashboard,
+                      dashboard: IconLayoutDashboard,
                       wallet: IconWallet,
                       transaction: IconCalendarDollar,
                       budget: IconLockDollar,
