@@ -56,7 +56,7 @@ export function BudgetList() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-4">
                 {budgets.map((b) => {
-                    const leftover = Math.max(0, b.leftover)
+                    const leftover = b.leftover
                     const used = Math.max(0, b.total - leftover)
                     const remainingPct = b.total > 0 ? Math.round((leftover / b.total) * 100) : 0
 
@@ -67,7 +67,7 @@ export function BudgetList() {
                                 ? "bg-amber-400 dark:bg-amber-500"
                                 : "bg-rose-500 dark:bg-rose-400"
 
-                    const progressWidth = Math.min(remainingPct, 100)
+                    const progressWidth = Math.max(0, Math.min(remainingPct, 100))
 
                     const key = b.id ?? b.name
                     const isOpen = openId === key
