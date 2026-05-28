@@ -1,5 +1,4 @@
 import { SectionCards } from "@/components/dashboard/section-cards"
-
 import { SiteHeader } from "@/components/site-header"
 import { ChartExpenses } from "@/components/dashboard/chart-expenses"
 import { ChartIncome } from "@/components/dashboard/chart-income"

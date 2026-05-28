@@ -1,12 +1,11 @@
 "use client";
 
-import { Suspense } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { TransactionList } from "@/components/transactions/transaction-list";
 import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog";
 import { ExportTransactionDialog } from "@/components/transactions/export-transaction-dialog";
 import { TransactionPaginationNav } from "@/components/transactions/transaction-pagination-nav";
-import { TransactionContentSkeleton } from "@/components/transactions/skeleton/transaction-content-skeleton";
+import { TransactionPaginationSkeleton } from "@/components/transactions/skeleton/transaction-pagination-skeleton";
 
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -19,7 +18,7 @@ function TransactionContent() {
   const walletId = searchParams.get("walletId") ?? undefined;
   const budgetId = searchParams.get("budgetId") ?? undefined;
 
-  const { data: metadata = { totalPages: 1 } } = useQuery({
+  const { data: metadata = { totalPages: 1 }, isLoading } = useQuery({
     queryKey: ["transactions", "metadata", currentPage, walletId, budgetId],
     queryFn: async () =>
       await transactionService.getTransactionPaginationMetadata({
@@ -39,10 +38,14 @@ function TransactionContent() {
       <TransactionFilters />
       <TransactionList />
 
-      <TransactionPaginationNav
-        totalPages={metadata.totalPages}
-        currentPage={currentPage}
-      />
+      {isLoading ? (
+        <TransactionPaginationSkeleton />
+      ) : (
+        <TransactionPaginationNav
+          totalPages={metadata.totalPages}
+          currentPage={currentPage}
+        />
+      )}
     </div>
   );
 }
@@ -52,9 +55,7 @@ export default function Page() {
     <>
       <SiteHeader title="Transaction" />
       <section className="p-6">
-        <Suspense fallback={<TransactionContentSkeleton />}>
-          <TransactionContent />
-        </Suspense>
+        <TransactionContent />
       </section>
     </>
   );
