@@ -1,4 +1,5 @@
 import { ResetPasswordForm } from "@/components/auth/reset-password-form"
+import { ResetPasswordSkeleton } from "@/components/auth/skeleton/reset-password-skeleton"
 import { IconInnerShadowTop } from "@tabler/icons-react"
 import { Suspense } from "react"
 
@@ -12,7 +13,7 @@ export default function ResetPasswordPage() {
                     </div>
                     TynFlow
                 </a>
-                <Suspense fallback={<div className="h-[400px] flex items-center justify-center">Loading form...</div>}>
+                <Suspense fallback={<ResetPasswordSkeleton />}>
                     <ResetPasswordForm />
                 </Suspense>
             </div>

@@ -1,7 +1,9 @@
 "use client";
 
+import { TransactionListSkeleton } from "@/components/transactions/skeleton/transaction-list-skeleton";
+
 import { useState } from "react";
-import { IconWallet, IconLoader, IconTrendingUp } from "@tabler/icons-react";
+import { IconWallet, IconTrendingUp } from "@tabler/icons-react";
 import {
   Card,
   CardAction,
@@ -65,12 +67,7 @@ export function TransactionList() {
       portfolios !== undefined,
   });
 
-  if (isLoading || !transactions)
-    return (
-      <div className="flex items-center justify-center">
-        <IconLoader className="animate-spin" />
-      </div>
-    );
+  if (isLoading || !transactions) return <TransactionListSkeleton />;
 
   if (transactions.length === 0)
     return (

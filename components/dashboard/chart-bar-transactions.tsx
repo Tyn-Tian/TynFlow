@@ -1,5 +1,7 @@
 "use client";
 
+import { ChartBarTransactionsSkeleton } from "@/components/dashboard/skeleton/chart-bar-transactions-skeleton";
+
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
 import {
@@ -104,19 +106,7 @@ export function ChartBarTransactions() {
   const emergencyFund12 = avgExpense * 12;
 
   if (isLoading) {
-    return (
-      <Card className="flex flex-col">
-        <CardHeader className="items-center pb-0 gap-0">
-          <CardTitle>Transactions Overview</CardTitle>
-          <CardDescription>Last 6 Months</CardDescription>
-        </CardHeader>
-        <CardContent className="flex-1 pb-0 min-h-[300px] flex items-center justify-center">
-          <div className="text-muted-foreground animate-pulse">
-            Loading chart data...
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <ChartBarTransactionsSkeleton />;
   }
 
   return (

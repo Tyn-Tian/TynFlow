@@ -1,5 +1,7 @@
 "use client";
 
+import { ChartExpensesSkeleton } from "@/components/dashboard/skeleton/chart-expenses-skeleton";
+
 import { Pie, PieChart } from "recharts";
 
 import {
@@ -24,14 +26,16 @@ import { dashboardService } from "@/services/dashboard-service";
 import { useMemo } from "react";
 
 export function useExpenseChartData() {
-  const { data: range } = useRange();
-  const { data: transactions } = useTransactions({
+  const { data: range, isLoading: isRangeLoading } = useRange();
+  const { data: transactions, isLoading: isTransactionsLoading } = useTransactions({
     type: "Expense",
     startDate: range?.start_date,
     endDate: range?.end_date,
   });
 
-  const { data: budgets } = useBudget();
+  const { data: budgets, isLoading: isBudgetsLoading } = useBudget();
+
+  const isLoading = isRangeLoading || isTransactionsLoading || isBudgetsLoading;
 
   const { chartData, chartConfig } = useMemo(() => {
     if (!transactions || !budgets) {
@@ -75,12 +79,16 @@ export function useExpenseChartData() {
     chartConfig,
     startLabel,
     endLabel,
+    isLoading,
   };
 }
 
 export function ChartExpenses() {
-  const { chartData, chartConfig, startLabel, endLabel } =
+  const { chartData, chartConfig, startLabel, endLabel, isLoading } =
     useExpenseChartData();
+
+  if (isLoading) return <ChartExpensesSkeleton />;
+
   const monthYear = new Date().toLocaleString("en-US", {
     month: "long",
     year: "numeric",

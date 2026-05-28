@@ -1,5 +1,7 @@
 "use client";
 
+import { SectionCardsSkeleton } from "@/components/dashboard/skeleton/section-cards-skeleton";
+
 import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +20,7 @@ import { dashboardService } from "@/services/dashboard-service";
 import { useMemo } from "react";
 
 export function SectionCards() {
-  const { data: range } = useRange();
+  const { data: range, isLoading: isRangeLoading } = useRange();
 
   const { prevStartIso, prevEndIso } = useMemo(() => {
     if (!range?.start_date || !range?.end_date) {
@@ -42,29 +44,31 @@ export function SectionCards() {
     };
   }, [range]);
 
-  const { data: incomeTxs } = useTransactions({
+  const { data: incomeTxs, isLoading: isIncomeLoading } = useTransactions({
     type: "Income",
     startDate: range?.start_date,
     endDate: range?.end_date,
   });
 
-  const { data: expenseTxs } = useTransactions({
+  const { data: expenseTxs, isLoading: isExpenseLoading } = useTransactions({
     type: "Expense",
     startDate: range?.start_date,
     endDate: range?.end_date,
   });
 
-  const { data: prevIncomeTxs } = useTransactions({
+  const { data: prevIncomeTxs, isLoading: isPrevIncomeLoading } = useTransactions({
     type: "Income",
     startDate: prevStartIso,
     endDate: prevEndIso,
   });
 
-  const { data: prevExpenseTxs } = useTransactions({
+  const { data: prevExpenseTxs, isLoading: isPrevExpenseLoading } = useTransactions({
     type: "Expense",
     startDate: prevStartIso,
     endDate: prevEndIso,
   });
+
+  const isLoading = isRangeLoading || isIncomeLoading || isExpenseLoading || isPrevIncomeLoading || isPrevExpenseLoading;
 
   const { incomeTotal, expenseTotal, incomeChange, expenseChange, cashFlow } =
     useMemo(() => {
@@ -100,6 +104,11 @@ export function SectionCards() {
 
   const formattedIncome = formatRupiah(incomeTotal);
   const formattedExpense = formatRupiah(expenseTotal);
+
+  if (isLoading) {
+    return <SectionCardsSkeleton />;
+  }
+
   const formattedCashFlow = formatRupiah(cashFlow);
   const cashFlowFooter =
     cashFlow > 0

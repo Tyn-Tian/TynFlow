@@ -1,12 +1,13 @@
 "use client";
 
+import { WalletListSkeleton } from "@/components/wallets/skeleton/wallet-list-skeleton";
+
 import { useState } from "react";
 import {
   IconBuildingBank,
   IconCash,
   IconDeviceMobile,
   IconWallet,
-  IconLoader,
   IconPigMoney,
 } from "@tabler/icons-react";
 
@@ -39,12 +40,7 @@ export function WalletList() {
     year: "numeric",
   });
 
-  if (isLoading)
-    return (
-      <div className="flex items-center justify-center">
-        <IconLoader className="animate-spin" />
-      </div>
-    );
+  if (isLoading) return <WalletListSkeleton />;
   if (!wallets || wallets.length === 0)
     return (
       <div className="text-sm text-center text-muted-foreground">

@@ -1,5 +1,7 @@
 "use client"
 
+import { TransactionFiltersSkeleton } from "@/components/transactions/skeleton/transaction-filters-skeleton"
+
 import { useRouter, useSearchParams } from "next/navigation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import useWallet from "@/hooks/use-wallet"
@@ -12,8 +14,12 @@ export function TransactionFilters() {
   const walletId = searchParams.get("walletId") || ""
   const budgetId = searchParams.get("budgetId") || ""
 
-  const { data: wallets } = useWallet();
-  const { data: budgets } = useBudget();
+  const { data: wallets, isLoading: isWalletsLoading } = useWallet();
+  const { data: budgets, isLoading: isBudgetsLoading } = useBudget();
+  
+  const isLoading = isWalletsLoading || isBudgetsLoading;
+  
+  if (isLoading) return <TransactionFiltersSkeleton />;
 
   const updateFilter = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString())

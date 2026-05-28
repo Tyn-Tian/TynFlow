@@ -1,4 +1,5 @@
 import { LoginForm } from "@/components/auth/login-form"
+import { LoginSkeleton } from "@/components/auth/skeleton/login-skeleton"
 import { IconInnerShadowTop } from "@tabler/icons-react"
 import { Suspense } from "react"
 
@@ -12,7 +13,7 @@ export default function LoginPage() {
                     </div>
                     TynFlow
                 </a>
-                <Suspense fallback={<div className="h-[400px] flex items-center justify-center">Loading form...</div>}>
+                <Suspense fallback={<LoginSkeleton />}>
                     <LoginForm />
                 </Suspense>
             </div>

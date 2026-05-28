@@ -1,5 +1,7 @@
 "use client";
 
+import { ChartIncomeSkeleton } from "@/components/dashboard/skeleton/chart-income-skeleton";
+
 import { Pie, PieChart } from "recharts";
 
 import {
@@ -23,12 +25,14 @@ import useTransactions from "@/hooks/use-transaction";
 import { dashboardService } from "@/services/dashboard-service";
 
 export function useIncomeChartData() {
-  const { data: range } = useRange();
-  const { data: transactions } = useTransactions({
+  const { data: range, isLoading: isRangeLoading } = useRange();
+  const { data: transactions, isLoading: isTransactionsLoading } = useTransactions({
     type: "Income",
     startDate: range?.start_date,
     endDate: range?.end_date,
   });
+
+  const isLoading = isRangeLoading || isTransactionsLoading;
 
   const { chartData, chartConfig } = useMemo(() => {
     if (!transactions) {
@@ -71,11 +75,15 @@ export function useIncomeChartData() {
     chartConfig,
     startLabel,
     endLabel,
+    isLoading,
   };
 }
 
 export function ChartIncome() {
-  const { chartData, chartConfig, startLabel, endLabel } = useIncomeChartData();
+  const { chartData, chartConfig, startLabel, endLabel, isLoading } = useIncomeChartData();
+
+  if (isLoading) return <ChartIncomeSkeleton />;
+
   const monthYear = new Date().toLocaleString("en-US", {
     month: "long",
     year: "numeric",
