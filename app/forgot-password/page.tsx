@@ -1,0 +1,21 @@
+import { ForgotPasswordForm } from "@/components/forgot-password-form"
+import { IconInnerShadowTop } from "@tabler/icons-react"
+import { Suspense } from "react"
+
+export default function ForgotPasswordPage() {
+    return (
+        <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
+            <div className="flex w-full max-w-sm flex-col gap-6">
+                <a href="#" className="flex items-center gap-2 self-center font-medium">
+                    <div className="flex size-6 items-center justify-center rounded-md bg-emerald-500/10">
+                        <IconInnerShadowTop size={16} className="text-emerald-500" />
+                    </div>
+                    TynFlow
+                </a>
+                <Suspense fallback={<div className="h-[400px] flex items-center justify-center">Loading form...</div>}>
+                    <ForgotPasswordForm />
+                </Suspense>
+            </div>
+        </div>
+    )
+}
