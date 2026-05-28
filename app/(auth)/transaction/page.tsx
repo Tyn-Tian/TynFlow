@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { TransactionList } from "@/components/transactions/transaction-list";
 import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog";
@@ -55,7 +56,9 @@ export default function Page() {
     <>
       <SiteHeader title="Transaction" />
       <section className="p-6">
-        <TransactionContent />
+        <Suspense fallback={<div />}>
+          <TransactionContent />
+        </Suspense>
       </section>
     </>
   );
