@@ -6,12 +6,12 @@ import { TransactionList } from "@/components/transactions/transaction-list";
 import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog";
 import { ExportTransactionDialog } from "@/components/transactions/export-transaction-dialog";
 import { TransactionPaginationNav } from "@/components/transactions/transaction-pagination-nav";
+import { TransactionContentSkeleton } from "@/components/transactions/skeleton/transaction-content-skeleton";
 
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { transactionService } from "@/services/transaction-service";
 import { TransactionFilters } from "@/components/transactions/transaction-filters";
-import { IconLoader } from "@tabler/icons-react";
 
 function TransactionContent() {
   const searchParams = useSearchParams();
@@ -52,13 +52,7 @@ export default function Page() {
     <>
       <SiteHeader title="Transaction" />
       <section className="p-6">
-        <Suspense
-          fallback={
-            <div className="flex items-center justify-center py-12 text-muted-foreground">
-              <IconLoader className="size-5 animate-spin" />
-            </div>
-          }
-        >
+        <Suspense fallback={<TransactionContentSkeleton />}>
           <TransactionContent />
         </Suspense>
       </section>

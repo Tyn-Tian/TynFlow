@@ -1,4 +1,5 @@
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form"
+import { ForgotPasswordSkeleton } from "@/components/auth/skeleton/forgot-password-skeleton"
 import { IconInnerShadowTop } from "@tabler/icons-react"
 import { Suspense } from "react"
 
@@ -12,7 +13,7 @@ export default function ForgotPasswordPage() {
                     </div>
                     TynFlow
                 </a>
-                <Suspense fallback={<div className="h-[400px] flex items-center justify-center">Loading form...</div>}>
+                <Suspense fallback={<ForgotPasswordSkeleton />}>
                     <ForgotPasswordForm />
                 </Suspense>
             </div>
