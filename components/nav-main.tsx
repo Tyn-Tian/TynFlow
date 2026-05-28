@@ -12,6 +12,7 @@ import {
   IconLayoutDashboard,
 } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import {
   SidebarGroup,
@@ -77,7 +78,7 @@ export function NavMain({
                   className="cursor-pointer"
                   asChild
                 >
-                  <a href={item.url}>
+                  <Link href={item.url}>
                     {(() => {
                       const IconMap: Record<string, Icon> = {
                         dashboard: IconLayoutDashboard,
@@ -92,7 +93,7 @@ export function NavMain({
                       return Icon ? <Icon /> : null;
                     })()}
                     <span>{item.title}</span>
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))
