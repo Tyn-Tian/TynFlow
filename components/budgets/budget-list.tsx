@@ -1,7 +1,9 @@
 "use client"
 
+import { BudgetListSkeleton } from "@/components/budgets/skeleton/budget-list-skeleton"
+
 import { useState } from "react"
-import { IconCalendarDollar, IconLoader } from "@tabler/icons-react"
+import { IconCalendarDollar } from "@tabler/icons-react"
 import { IconLockDollar } from "@tabler/icons-react"
 
 import {
@@ -34,7 +36,7 @@ export function BudgetList() {
 
     const monthYear = new Date().toLocaleString("en-US", { month: "long", year: "numeric" })
 
-    if (isLoading || !budgets) return <div className="flex items-center justify-center"><IconLoader className="animate-spin" /></div>
+    if (isLoading || !budgets) return <BudgetListSkeleton />;
     if (budgets.length === 0) return <div className="text-sm text-center text-muted-foreground">No budgets yet.</div>
 
     return (

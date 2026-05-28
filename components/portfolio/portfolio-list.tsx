@@ -1,8 +1,9 @@
 "use client";
 
+import { PortfolioListSkeleton } from "@/components/portfolio/skeleton/portfolio-list-skeleton";
+
 import { useMemo, useState } from "react";
 import {
-  IconLoader,
   IconMoodEmpty,
   IconTargetArrow,
 } from "@tabler/icons-react";
@@ -58,11 +59,7 @@ export function PortfolioList() {
   });
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center">
-        <IconLoader className="animate-spin" />
-      </div>
-    );
+    return <PortfolioListSkeleton />;
   }
 
   if (!portfolios || portfolios.length === 0) {

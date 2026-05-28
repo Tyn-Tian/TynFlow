@@ -1,11 +1,12 @@
 "use client"
 
+import { LiveListSkeleton } from "@/components/live/skeleton/live-list-skeleton"
+
 import { useMemo, useState } from "react"
 import {
     IconBolt,
     IconCheck,
     IconCopy,
-    IconLoader,
     IconMoodEmpty,
     IconReceiptRupee,
 } from "@tabler/icons-react"
@@ -64,11 +65,7 @@ export function LiveList() {
     }, [transactions])
 
     if (isLoading) {
-        return (
-            <div className="flex items-center justify-center">
-                <IconLoader className="animate-spin" />
-            </div>
-        );
+        return <LiveListSkeleton />;
     }
 
     if (transactions.length === 0) {
