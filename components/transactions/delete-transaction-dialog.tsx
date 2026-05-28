@@ -48,6 +48,15 @@ export function DeleteTransactionDialog({
       toast.success("Deleted", { description: "Transaction deleted." });
       setOpen(false);
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      queryClient.invalidateQueries({
+        queryKey: ["budgets"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["enriched-budgets"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["wallets"],
+      });
       onDeleted?.();
     },
     onError: (err: Error | unknown) => {

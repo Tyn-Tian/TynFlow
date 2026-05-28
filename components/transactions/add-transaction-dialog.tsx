@@ -184,6 +184,15 @@ export function AddTransactionDialog() {
       queryClient.invalidateQueries({
         queryKey: ["transactions"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["budgets"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["enriched-budgets"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["wallets"],
+      });
     },
     onError: (err: Error | unknown) => {
       toast.error("Failed", {

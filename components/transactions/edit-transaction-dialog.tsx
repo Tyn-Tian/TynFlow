@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { z } from "zod";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { IconCalculator } from "@tabler/icons-react";
@@ -123,7 +123,10 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
       admin_fee: tx?.admin_fee ?? 0,
     },
   });
-  const currentType = form.watch("type");
+  const currentType = useWatch({
+    control: form.control,
+    name: "type",
+  });
 
   const [calcOpen, setCalcOpen] = useState(false);
   const [calcExpr, setCalcExpr] = useState<string>("0");
@@ -197,7 +200,7 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
 
   useEffect(() => {
     if (!tx) {
-      setOpen(false);
+      setTimeout(() => setOpen(false), 0);
       return;
     }
     const initialDate = new Date(tx.date);
@@ -217,7 +220,7 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
       portfolio_id: tx?.portfolio_id ? String(tx.portfolio_id) : undefined,
       admin_fee: tx?.admin_fee ?? 0,
     });
-    setOpen(true);
+    setTimeout(() => setOpen(true), 0);
   }, [tx, defaultDateStr, form]);
 
   useEffect(() => {
@@ -255,6 +258,15 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
       setOpen(false);
       onClose?.();
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      queryClient.invalidateQueries({
+        queryKey: ["budgets"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["enriched-budgets"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["wallets"],
+      });
     },
     onError: (err: Error | unknown) => {
       toast.error("Failed", {
