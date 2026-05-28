@@ -14,5 +14,10 @@ export async function GET(request: Request) {
     }
   }
 
+  const error_description = searchParams.get('error_description')
+  if (error_description) {
+    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error_description)}`)
+  }
+
   return NextResponse.redirect(`${origin}/login?error=auth-callback-failed`)
 }

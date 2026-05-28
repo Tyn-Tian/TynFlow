@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldSeparator } from "./ui/field"
 import * as z from "zod"
 import { Controller, useForm } from "react-hook-form"
@@ -32,7 +32,24 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const pathname = usePathname()
   const supabase = createClient()
+
+  useEffect(() => {
+    const error = searchParams.get('error')
+    if (error) {
+      toast.error("Failed", {
+        description: "Contact developer for support",
+        duration: 3000
+      })
+
+      const params = new URLSearchParams(searchParams.toString())
+      params.delete('error')
+      const query = params.toString()
+      router.replace(`${pathname}${query ? `?${query}` : ''}`, { scroll: false })
+    }
+  }, [searchParams, pathname, router])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
