@@ -34,15 +34,18 @@ import {
 } from "@/components/ui/alert-dialog";
 import { authService } from "@/services/auth-service";
 import { useQueryClient } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function NavMain({
   items,
+  isLoading,
 }: {
   items: {
     title: string;
     url: string;
     icon?: string;
   }[];
+  isLoading?: boolean;
 }) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -57,32 +60,43 @@ export function NavMain({
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
         <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton
-                tooltip={item.title}
-                className="cursor-pointer"
-                asChild
-              >
-                <a href={item.url}>
-                  {(() => {
-                    const IconMap: Record<string, Icon> = {
-                      dashboard: IconLayoutDashboard,
-                      wallet: IconWallet,
-                      transaction: IconCalendarDollar,
-                      budget: IconLockDollar,
-                      portfolio: IconChartPie,
-                      live: IconLivePhoto,
-                      job: IconBriefcase,
-                    };
-                    const Icon = item.icon ? IconMap[item.icon] : null;
-                    return Icon ? <Icon /> : null;
-                  })()}
-                  <span>{item.title}</span>
-                </a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          {isLoading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <SidebarMenuItem key={i}>
+                <div className="flex h-8 w-full items-center gap-2 rounded-md px-2">
+                  <Skeleton className="h-4 w-4" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+              </SidebarMenuItem>
+            ))
+          ) : (
+            items.map((item) => (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton
+                  tooltip={item.title}
+                  className="cursor-pointer"
+                  asChild
+                >
+                  <a href={item.url}>
+                    {(() => {
+                      const IconMap: Record<string, Icon> = {
+                        dashboard: IconLayoutDashboard,
+                        wallet: IconWallet,
+                        transaction: IconCalendarDollar,
+                        budget: IconLockDollar,
+                        portfolio: IconChartPie,
+                        live: IconLivePhoto,
+                        job: IconBriefcase,
+                      };
+                      const Icon = item.icon ? IconMap[item.icon] : null;
+                      return Icon ? <Icon /> : null;
+                    })()}
+                    <span>{item.title}</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))
+          )}
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
