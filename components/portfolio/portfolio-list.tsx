@@ -140,7 +140,7 @@ export function PortfolioList() {
           return (
             <Card
               key={item.id}
-              className="@container/card cursor-pointer gap-2 self-start transition-shadow hover:shadow-md"
+              className="@container/card cursor-pointer gap-2 self-start transition-shadow hover:shadow-md py-4 sm:py-6"
               onClick={() => setOpenId(isOpen ? null : item.id)}
               role="button"
               tabIndex={0}
@@ -151,7 +151,7 @@ export function PortfolioList() {
                 }
               }}
             >
-              <CardHeader className="flex items-center justify-between gap-3">
+              <CardHeader className="flex items-center justify-between gap-3 px-4 sm:px-6">
                 <div className="flex items-center gap-3">
                   <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-muted/60">
                     <TypeIcon size={20} className={typeConfig.iconClassName} />
@@ -166,7 +166,7 @@ export function PortfolioList() {
                 </CardAction>
               </CardHeader>
 
-              <CardContent>
+              <CardContent className="px-4 sm:px-6">
                 <div className="my-2 space-y-2">
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span>Target Progress</span>

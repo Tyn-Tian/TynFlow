@@ -207,7 +207,7 @@ export function LiveList() {
                                 return (
                                     <Card
                                         key={item.id}
-                                        className="@container/card cursor-pointer gap-2 self-start transition-shadow hover:shadow-md"
+                                        className="@container/card cursor-pointer gap-2 self-start transition-shadow hover:shadow-md py-4 sm:py-6"
                                         onClick={() => setOpenId(isOpen ? null : item.id)}
                                         role="button"
                                         tabIndex={0}
@@ -218,7 +218,7 @@ export function LiveList() {
                                             }
                                         }}
                                     >
-                                        <CardHeader className="flex items-center justify-between gap-3">
+                                        <CardHeader className="flex items-center justify-between gap-3 px-4 sm:px-6">
                                             <div className="flex items-center gap-3">
                                                 <span className={`inline-flex h-9 w-9 items-center justify-center rounded-md ${item.type === "Lembur" ? "bg-amber-500/10" : "bg-emerald-500/10"}`}>
                                                     <IconReceiptRupee size={20} className={item.type === "Lembur" ? "text-amber-500" : "text-emerald-400"} />

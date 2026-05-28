@@ -110,15 +110,15 @@ export function ChartBarTransactions() {
   }
 
   return (
-    <Card className="flex flex-col">
-      <CardHeader className="items-center pb-0 gap-0">
+    <Card className="flex flex-col py-4 sm:py-6">
+      <CardHeader className="items-center pb-0 gap-0 px-4 sm:px-6">
         <CardTitle>Transactions Overview</CardTitle>
         <CardDescription>Last 6 Months</CardDescription>
       </CardHeader>
-      <CardContent className="flex-1 pb-0">
+      <CardContent className="flex-1 pb-0 px-4 sm:px-6">
         <ChartContainer
           config={chartConfig}
-          className="mx-auto aspect-[16/9] max-h-[300px] w-full"
+          className="mx-auto aspect-video max-h-[300px] w-full"
         >
           <BarChart accessibilityLayer data={chartData}>
             <CartesianGrid vertical={false} />

@@ -119,8 +119,8 @@ export function SectionCards() {
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 px-4 lg:px-6">
-      <Card className="@container/card gap-2">
-        <CardHeader>
+      <Card className="@container/card gap-2 py-4 sm:py-6">
+        <CardHeader className="px-4 sm:px-6">
           <CardDescription>Total Income</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
             {formattedIncome}
@@ -142,14 +142,15 @@ export function SectionCards() {
             </Badge>
           </CardAction>
         </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+        <CardFooter className="flex-col items-start gap-1.5 text-sm px-4 sm:px-6">
           <div className="text-muted-foreground">
             Visitors for the last 6 months
           </div>
         </CardFooter>
       </Card>
-      <Card className="@container/card gap-2">
-        <CardHeader>
+
+      <Card className="@container/card gap-2 py-4 sm:py-6">
+        <CardHeader className="px-4 sm:px-6">
           <CardDescription>Total Expense</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
             {formattedExpense}
@@ -171,14 +172,15 @@ export function SectionCards() {
             </Badge>
           </CardAction>
         </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+        <CardFooter className="flex-col items-start gap-1.5 text-sm px-4 sm:px-6">
           <div className="text-muted-foreground">
             Acquisition needs attention
           </div>
         </CardFooter>
       </Card>
-      <Card className="@container/card gap-2">
-        <CardHeader>
+
+      <Card className="@container/card gap-2 py-4 sm:py-6">
+        <CardHeader className="px-4 sm:px-6">
           <CardDescription>Cash Flow</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
             {formattedCashFlow}
@@ -189,7 +191,7 @@ export function SectionCards() {
             </Badge>
           </CardAction>
         </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+        <CardFooter className="flex-col items-start gap-1.5 text-sm px-4 sm:px-6">
           <div className="text-muted-foreground">{cashFlowFooter}</div>
         </CardFooter>
       </Card>

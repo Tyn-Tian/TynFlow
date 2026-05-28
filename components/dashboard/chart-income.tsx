@@ -92,12 +92,12 @@ export function ChartIncome() {
     startLabel && endLabel ? `${startLabel} - ${endLabel}` : monthYear;
 
   return (
-    <Card className="flex flex-col gap-0">
-      <CardHeader className="items-center pb-0 gap-0">
+    <Card className="flex flex-col gap-0 py-4 sm:py-6">
+      <CardHeader className="items-center pb-0 gap-0 px-4 sm:px-6">
         <CardTitle>Income Allocation</CardTitle>
         <CardDescription>{rangeLabel}</CardDescription>
       </CardHeader>
-      <CardContent className="flex-1 pb-0">
+      <CardContent className="flex-1 pb-0 px-4 sm:px-6">
         <ChartContainer
           config={chartConfig}
           className="mx-auto aspect-square max-h-75"
