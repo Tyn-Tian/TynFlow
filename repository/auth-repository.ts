@@ -41,4 +41,27 @@ export const authRepository = {
       .eq("user_id", userId)
       .single();
   },
+
+  googleLogin: () => {
+    const supabase = createClient();
+    return supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${location.origin}/auth/callback`,
+        queryParams: {
+          prompt: 'consent',
+        },
+      },
+    })
+  },
+  forgotPassword: (email: string) => {
+    const supabase = createClient();
+    return supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+  },
+  resetPassword: (password: string) => {
+    const supabase = createClient();
+    return supabase.auth.updateUser({ password });
+  },
 };

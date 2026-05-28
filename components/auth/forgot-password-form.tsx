@@ -12,12 +12,12 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { toast } from 'sonner'
-import { Field, FieldError, FieldGroup, FieldLabel } from "./ui/field"
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import * as z from "zod"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation } from "@tanstack/react-query"
-import { createClient } from "@/lib/supabase/client"
+import { authService } from "@/services/auth-service"
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -27,8 +27,6 @@ export function ForgotPasswordForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const supabase = createClient()
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -37,12 +35,7 @@ export function ForgotPasswordForm({
   })
 
   const mutation = useMutation({
-    mutationFn: async (data: z.infer<typeof formSchema>) => {
-      const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      })
-      if (error) throw error
-    },
+    mutationFn: async (data: z.infer<typeof formSchema>) => await authService.forgotPassword(data.email),
     onSuccess: () => {
       toast.success("Check your email", {
         description: "We've sent you a link to reset your password.",
