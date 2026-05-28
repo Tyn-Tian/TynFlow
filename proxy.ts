@@ -41,6 +41,7 @@ export async function proxy(req: NextRequest) {
   } = await supabase.auth.getUser();
 
   const isLoginPage = pathname === "/login";
+  const isForgotPasswordPage = pathname === "/forgot-password";
   const isRoot = pathname === "/";
   const isProtectedRoute = PROTECTED_ROUTE_PREFIXES.some((route) =>
     pathname.startsWith(route),
@@ -69,6 +70,10 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
+  if (user && isForgotPasswordPage) {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
+
   return res;
 }
 
@@ -90,5 +95,6 @@ export const config = {
     "/job",
     "/job/:path*",
     "/login",
+    "/forgot-password",
   ],
 };
