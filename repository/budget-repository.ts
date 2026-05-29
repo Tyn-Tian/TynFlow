@@ -2,13 +2,20 @@ import { getSupabase } from "@/lib/api";
 import { BudgetDto } from "@/types/budget-type";
 
 export const budgetRepository = {
-  getAll: async () => {
+  getAll: async (includeDeleted: boolean = false) => {
     const { supabase, userId } = await getSupabase();
-    return supabase
+
+    let query = supabase
       .from("budgets")
-      .select("id, name, total, leftover")
+      .select("id, name, total, leftover, deleted_at")
       .eq("user_id", userId)
       .order("name", { ascending: true });
+
+    if (!includeDeleted) {
+      query = query.is("deleted_at", null);
+    }
+
+    return query;
   },
   getById: async (id: string) => {
     const { supabase, userId } = await getSupabase();
@@ -42,6 +49,8 @@ export const budgetRepository = {
   },
   delete: async (id: string) => {
     const { supabase, userId } = await getSupabase();
-    return supabase.from("budgets").delete().eq("user_id", userId).eq("id", id);
+    return supabase.from("budgets")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("user_id", userId).eq("id", id);
   },
 };

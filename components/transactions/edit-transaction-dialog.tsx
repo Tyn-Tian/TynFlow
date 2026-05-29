@@ -75,7 +75,7 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
   const datePickerRef = React.useRef<HTMLDivElement | null>(null);
 
   const { data: wallets } = useWallet();
-  const { data: budgets } = useBudget();
+  const { data: budgets } = useBudget(true);
   const { data: portfolios } = usePortfolio();
 
   useEffect(() => {
@@ -590,8 +590,8 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                         </SelectTrigger>
                         <SelectContent>
                           {budgets?.map((b) => (
-                            <SelectItem key={b.id} value={String(b.id)}>
-                              {b.name}
+                            <SelectItem key={b.id} value={String(b.id)} disabled={!!b.deleted_at}>
+                              {b.name} {!!b.deleted_at ? "(Deleted)" : ""}
                             </SelectItem>
                           ))}
                         </SelectContent>

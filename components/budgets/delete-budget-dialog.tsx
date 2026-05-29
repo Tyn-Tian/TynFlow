@@ -32,6 +32,7 @@ export function DeleteBudgetDialog({ budgetId }: { budgetId?: string | null }) {
       setOpen(false);
       queryClient.invalidateQueries({ queryKey: ["budgets"] });
       queryClient.invalidateQueries({ queryKey: ["enriched-budgets"] });
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
     },
     onError: (err: Error | unknown) => {
       toast.error("Failed", {

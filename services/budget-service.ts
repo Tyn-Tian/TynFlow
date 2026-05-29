@@ -3,8 +3,8 @@ import { transactionRepository } from "@/repository/transaction-repository";
 import { BudgetDto } from "@/types/budget-type";
 
 export const budgetService = {
-  getAll: async () => {
-    const { data } = await budgetRepository.getAll();
+  getAll: async (includeDeleted: boolean = false) => {
+    const { data } = await budgetRepository.getAll(includeDeleted);
     return data;
   },
   add: async (dto: BudgetDto) => {

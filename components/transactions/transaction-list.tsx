@@ -45,7 +45,7 @@ export function TransactionList() {
   const budgetId = searchParams.get("budgetId") ?? undefined;
 
   const { data: wallets } = useWallet();
-  const { data: budgets } = useBudget();
+  const { data: budgets } = useBudget(true);
   const { data: portfolios } = usePortfolio();
 
   const { data: transactions, isLoading } = useQuery({
