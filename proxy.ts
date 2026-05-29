@@ -42,6 +42,7 @@ export async function proxy(req: NextRequest) {
 
   const isLoginPage = pathname === "/login";
   const isForgotPasswordPage = pathname === "/forgot-password";
+  const isResetPasswordPage = pathname === "/reset-password";
   const isRoot = pathname === "/";
   const isProtectedRoute = PROTECTED_ROUTE_PREFIXES.some((route) =>
     pathname.startsWith(route),
@@ -74,6 +75,10 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
+  if (user && isResetPasswordPage) {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
+
   return res;
 }
 
@@ -96,5 +101,6 @@ export const config = {
     "/job/:path*",
     "/login",
     "/forgot-password",
+    "/reset-password"
   ],
 };
