@@ -1,5 +1,7 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
+
 import { ChartIncomeSkeleton } from "@/components/dashboard/skeleton/chart-income-skeleton";
 
 import { Pie, PieChart } from "recharts";
@@ -25,11 +27,19 @@ import useTransactions from "@/hooks/use-transaction";
 import { dashboardService } from "@/services/dashboard-service";
 
 export function useIncomeChartData() {
+  const searchParams = useSearchParams();
+  const fromParam = searchParams.get("from");
+  const toParam = searchParams.get("to");
+
   const { data: range, isLoading: isRangeLoading } = useRange();
+  
+  const activeStartDate = fromParam || range?.start_date;
+  const activeEndDate = toParam || range?.end_date;
+
   const { data: transactions, isLoading: isTransactionsLoading } = useTransactions({
     type: "Income",
-    startDate: range?.start_date,
-    endDate: range?.end_date,
+    startDate: activeStartDate,
+    endDate: activeEndDate,
   });
 
   const isLoading = isRangeLoading || isTransactionsLoading;
@@ -67,8 +77,8 @@ export function useIncomeChartData() {
     });
   };
 
-  const startLabel = fmt(range?.start_date);
-  const endLabel = fmt(range?.end_date);
+  const startLabel = fmt(activeStartDate);
+  const endLabel = fmt(activeEndDate);
 
   return {
     chartData,

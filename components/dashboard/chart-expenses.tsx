@@ -1,5 +1,7 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
+
 import { ChartExpensesSkeleton } from "@/components/dashboard/skeleton/chart-expenses-skeleton";
 
 import { Pie, PieChart } from "recharts";
@@ -26,14 +28,22 @@ import { dashboardService } from "@/services/dashboard-service";
 import { useMemo } from "react";
 
 export function useExpenseChartData() {
+  const searchParams = useSearchParams();
+  const fromParam = searchParams.get("from");
+  const toParam = searchParams.get("to");
+
   const { data: range, isLoading: isRangeLoading } = useRange();
+  
+  const activeStartDate = fromParam || range?.start_date;
+  const activeEndDate = toParam || range?.end_date;
+
   const { data: transactions, isLoading: isTransactionsLoading } = useTransactions({
     type: "Expense",
-    startDate: range?.start_date,
-    endDate: range?.end_date,
+    startDate: activeStartDate,
+    endDate: activeEndDate,
   });
 
-  const { data: budgets, isLoading: isBudgetsLoading } = useBudget();
+  const { data: budgets, isLoading: isBudgetsLoading } = useBudget(true);
 
   const isLoading = isRangeLoading || isTransactionsLoading || isBudgetsLoading;
 
@@ -71,8 +81,8 @@ export function useExpenseChartData() {
     });
   };
 
-  const startLabel = fmt(range?.start_date);
-  const endLabel = fmt(range?.end_date);
+  const startLabel = fmt(activeStartDate);
+  const endLabel = fmt(activeEndDate);
 
   return {
     chartData,

@@ -1,5 +1,7 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
+
 import { SectionCardsSkeleton } from "@/components/dashboard/skeleton/section-cards-skeleton";
 
 import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react";
@@ -20,14 +22,21 @@ import { dashboardService } from "@/services/dashboard-service";
 import { useMemo } from "react";
 
 export function SectionCards() {
+  const searchParams = useSearchParams();
+  const fromParam = searchParams.get("from");
+  const toParam = searchParams.get("to");
+
   const { data: range, isLoading: isRangeLoading } = useRange();
 
+  const activeStartDate = fromParam || range?.start_date;
+  const activeEndDate = toParam || range?.end_date;
+
   const { prevStartIso, prevEndIso } = useMemo(() => {
-    if (!range?.start_date || !range?.end_date) {
+    if (!activeStartDate || !activeEndDate) {
       return { prevStartIso: undefined, prevEndIso: undefined };
     }
-    const sd = new Date(range.start_date);
-    const ed = new Date(range.end_date);
+    const sd = new Date(activeStartDate);
+    const ed = new Date(activeEndDate);
 
     if (isNaN(sd.getTime()) || isNaN(ed.getTime())) {
       return { prevStartIso: undefined, prevEndIso: undefined };
@@ -42,18 +51,18 @@ export function SectionCards() {
       prevStartIso: prevSd.toISOString(),
       prevEndIso: prevEd.toISOString(),
     };
-  }, [range]);
+  }, [activeStartDate, activeEndDate]);
 
   const { data: incomeTxs, isLoading: isIncomeLoading } = useTransactions({
     type: "Income",
-    startDate: range?.start_date,
-    endDate: range?.end_date,
+    startDate: activeStartDate,
+    endDate: activeEndDate,
   });
 
   const { data: expenseTxs, isLoading: isExpenseLoading } = useTransactions({
     type: "Expense",
-    startDate: range?.start_date,
-    endDate: range?.end_date,
+    startDate: activeStartDate,
+    endDate: activeEndDate,
   });
 
   const { data: prevIncomeTxs, isLoading: isPrevIncomeLoading } = useTransactions({
