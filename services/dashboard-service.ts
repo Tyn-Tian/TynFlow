@@ -168,4 +168,57 @@ export const dashboardService = {
 
     return { chartData, chartConfig };
   },
+  getWeeklyExpenseChartData: ({
+    transactions = [],
+  }: {
+    transactions?: Transaction[];
+  }) => {
+    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const chartData = days.map((day) => ({
+      day,
+      amount: 0,
+      fill: "",
+    }));
+
+    transactions.forEach((t) => {
+      const d = new Date(t.date);
+      let dayIndex = d.getDay();
+      dayIndex = dayIndex === 0 ? 6 : dayIndex - 1;
+      chartData[dayIndex].amount += Number(t.amount) || 0;
+    });
+
+    const rosePalette = [
+      "#fda4af",
+      "#fb7185",
+      "#f43f5e",
+      "#e11d48",
+      "#be123c",
+      "#9f1239",
+      "#881337"
+    ];
+
+    const amounts = chartData.map((d) => d.amount);
+    const maxAmount = Math.max(...amounts);
+
+    chartData.forEach((d) => {
+      if (maxAmount === 0 || d.amount === 0) {
+        d.fill = rosePalette[0];
+      } else {
+        const ratio = d.amount / maxAmount;
+        const colorIndex = Math.min(
+          Math.floor(ratio * rosePalette.length),
+          rosePalette.length - 1
+        );
+        d.fill = rosePalette[colorIndex];
+      }
+    });
+
+    const chartConfig: ChartConfig = {
+      amount: {
+        label: "Amount",
+      },
+    };
+
+    return { chartData, chartConfig };
+  },
 };

@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/site-header"
 import { ChartExpenses } from "@/components/dashboard/chart-expenses"
 import { ChartIncome } from "@/components/dashboard/chart-income"
 import { ChartBarTransactions } from "@/components/dashboard/chart-bar-transactions"
+import { ChartWeeklyExpense } from "@/components/dashboard/chart-weekly-expense"
 
 export default async function Page() {
   return (
@@ -18,6 +19,9 @@ export default async function Page() {
             </div>
             <div className="px-4 lg:px-6">
               <ChartBarTransactions />
+            </div>
+            <div className="px-4 lg:px-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <ChartWeeklyExpense />
             </div>
           </div>
         </div>
