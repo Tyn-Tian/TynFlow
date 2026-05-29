@@ -158,11 +158,11 @@ export const dashboardService = {
     const chartConfig: ChartConfig = {
       income: {
         label: "Income",
-        color: "var(--chart-2)",
+        color: "#10b981",
       },
       expense: {
         label: "Expense",
-        color: "var(--chart-5)",
+        color: "#f43f5e",
       },
     };
 
