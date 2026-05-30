@@ -39,4 +39,12 @@ export const portfolioRepository = {
       .eq("user_id", userId)
       .eq("id", id);
   },
+  getSnapshots: async () => {
+    const { supabase, userId } = await getSupabase();
+    return supabase
+      .from("portfolio_snapshots")
+      .select("id, created_at, invested, current_value")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: true });
+  },
 };

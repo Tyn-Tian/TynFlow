@@ -1,5 +1,5 @@
 import { portfolioRepository } from "@/repository/portfolio-repository";
-import { PortfolioDto, Portfolio } from "@/types/portfolio-type";
+import { PortfolioDto, Portfolio, PortfolioSnapshot } from "@/types/portfolio-type";
 
 export const portfolioService = {
   getAll: async (): Promise<Portfolio[]> => {
@@ -28,5 +28,9 @@ export const portfolioService = {
       invested: newInvested,
       current_value: newValue,
     });
+  },
+  getSnapshots: async (): Promise<PortfolioSnapshot[]> => {
+    const { data } = await portfolioRepository.getSnapshots();
+    return (data as PortfolioSnapshot[]) ?? [];
   },
 };

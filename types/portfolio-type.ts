@@ -16,3 +16,11 @@ export interface PortfolioDto {
   invested: number;
   current_value: number;
 }
+
+export interface PortfolioSnapshot {
+  id: string;
+  created_at: string;
+  invested: number;
+  current_value: number;
+  user_id: string;
+}
