@@ -128,6 +128,11 @@ export const transactionService = {
       await portfolioService.updateValue(dto.portfolio_id, dto.amount);
     }
   },
+  addMany: async (dtos: TransactionDto[]) => {
+    for (const dto of dtos) {
+      await transactionService.add(dto);
+    }
+  },
   edit: async (id: string, dto: TransactionDto) => {
     const { data: tx } = await transactionRepository.getById(id);
 
