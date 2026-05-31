@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
@@ -13,6 +13,11 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "TynFlow",
   description: "Basicly a better way to manage your money.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "TynFlow",
+  },
   icons: {
     icon: [
       { url: "/favion.png", type: "image/png" },
@@ -23,6 +28,10 @@ export const metadata: Metadata = {
       { url: "/icon-192x192.png" },
     ],
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#09090b",
 };
 
 export default function RootLayout({
