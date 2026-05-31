@@ -278,7 +278,9 @@ export function AddTransactionDialog() {
       <AlertDialogTrigger asChild>
         <Button className="cursor-pointer">
           <IconPlus />
-          Add Transaction
+          <span className="hidden sm:block">
+            Add Transaction
+          </span>
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent className="max-h-[90vh] overflow-y-auto">

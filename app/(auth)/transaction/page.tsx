@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { TransactionList } from "@/components/transactions/transaction-list";
 import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog";
+import { AddMultipleTransactionDialog } from "@/components/transactions/add-multiple-transaction-dialog";
 import { ExportTransactionDialog } from "@/components/transactions/export-transaction-dialog";
 import { TransactionPaginationNav } from "@/components/transactions/transaction-pagination-nav";
 import { TransactionPaginationSkeleton } from "@/components/transactions/skeleton/transaction-pagination-skeleton";
@@ -33,6 +34,7 @@ function TransactionContent() {
     <div className="mx-auto max-w-7xl">
       <div className="col-span-3 flex justify-end gap-2">
         <ExportTransactionDialog />
+        <AddMultipleTransactionDialog />
         <AddTransactionDialog />
       </div>
 
