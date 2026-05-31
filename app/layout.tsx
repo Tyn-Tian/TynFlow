@@ -13,6 +13,16 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "TynFlow",
   description: "Basicly a better way to manage your money.",
+  icons: {
+    icon: [
+      { url: "/favion.png", type: "image/png" },
+      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icon-192x192.png" },
+    ],
+  },
 };
 
 export default function RootLayout({
