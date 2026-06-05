@@ -138,18 +138,25 @@ export const dashboardService = {
     transactions?: Transaction[];
     months: MonthData[];
   }) => {
+    // Clone and reset months to avoid mutating the memoized reference
+    const clonedMonths = months.map((m) => ({
+      ...m,
+      income: 0,
+      expense: 0,
+    }));
+
     transactions.forEach((t) => {
       const d = new Date(t.date);
       const year = d.getFullYear();
       const month = d.getMonth();
-      const found = months.find((m) => m.year === year && m.month === month);
+      const found = clonedMonths.find((m) => m.year === year && m.month === month);
       if (found) {
         if (t.type === "Income") found.income += Number(t.amount) || 0;
         if (t.type === "Expense") found.expense += Number(t.amount) || 0;
       }
     });
 
-    const chartData = months.map((m) => ({
+    const chartData = clonedMonths.map((m) => ({
       month: m.label,
       income: m.income,
       expense: m.expense,
