@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { IconInnerShadowTop } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
@@ -15,6 +14,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import useProfile from "@/hooks/use-profile";
+import Image from "next/image";
 
 const data = {
   user: {
@@ -97,7 +97,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:p-1.5!"
             >
               <a href="#">
-                <IconInnerShadowTop className="size-5!" />
+                <Image src="/icon-192x192.png" alt="TynFlow" width={24} height={24} />
                 <span className="text-base font-semibold">TynFlow</span>
               </a>
             </SidebarMenuButton>

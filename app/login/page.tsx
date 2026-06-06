@@ -1,6 +1,6 @@
 import { LoginForm } from "@/components/auth/login-form"
 import { LoginSkeleton } from "@/components/auth/skeleton/login-skeleton"
-import { IconInnerShadowTop } from "@tabler/icons-react"
+import Image from "next/image"
 import { Suspense } from "react"
 
 export default function LoginPage() {
@@ -9,7 +9,7 @@ export default function LoginPage() {
             <div className="flex w-full max-w-sm flex-col gap-6">
                 <a href="#" className="flex items-center gap-2 self-center font-medium">
                     <div className="flex size-6 items-center justify-center rounded-md bg-emerald-500/10">
-                        <IconInnerShadowTop size={16} className="text-emerald-500" />
+                        <Image src="/icon-192x192.png" alt="TynFlow" width={24} height={24} />
                     </div>
                     TynFlow
                 </a>
