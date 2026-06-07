@@ -3,11 +3,12 @@ import { createClient } from "./supabase/client";
 export async function getSupabase() {
   const supabase = createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  const userId = user.id;
+  if (!session?.user) throw new Error("Unauthorized");
+
+  const userId = session.user.id;
 
   return {
     supabase,
