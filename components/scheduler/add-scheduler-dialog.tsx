@@ -92,7 +92,6 @@ export function AddSchedulerDialog() {
       document.removeEventListener("keydown", onKey);
     };
   }, [showDatePicker]);
-
   const [tab, setTab] = useState<"Expense" | "Income" | "Transfer" | "Invest">(
     "Expense",
   );
@@ -122,7 +121,6 @@ export function AddSchedulerDialog() {
       return setCalcExpr((s) => (s.length <= 1 ? "0" : s.slice(0, -1)));
     setCalcExpr((s) => (s === "0" ? v : s + v));
   };
-
   const evalCalc = () => {
     try {
       const res = Function(`"use strict";return (${calcExpr})`)();
@@ -131,7 +129,6 @@ export function AddSchedulerDialog() {
       setCalcExpr("0");
     }
   };
-
   const insertCalc = () => {
     try {
       const res = Function(`"use strict";return (${calcExpr})`)();
