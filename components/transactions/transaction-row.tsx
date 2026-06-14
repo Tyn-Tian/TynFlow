@@ -4,6 +4,7 @@ import { IconTrash, IconCalendar, IconCalculator } from "@tabler/icons-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "../ui/input-group";
 import { Calendar } from "@/components/ui/calendar";
 import {
   AlertDialog,
@@ -219,21 +220,21 @@ export function TransactionRow({
                 <FieldLabel>Date</FieldLabel>
                 <div className="relative" ref={datePickerRef}>
                   <div className="flex items-center">
-                    <Input
-                      value={field.value}
-                      placeholder="dd/mm/yyyy"
-                      onChange={(e) => field.onChange(format(e.target.value))}
-                      autoComplete="off"
-                      className="flex-1"
-                    />
-                    <button
-                      type="button"
-                      aria-label="Open date picker"
-                      onClick={() => setShowDatePicker(true)}
-                      className="w-9 h-10 flex items-center justify-center ml-2 cursor-pointer"
-                    >
-                      <IconCalendar />
-                    </button>
+                    <InputGroup>
+                      <InputGroupInput
+                        value={field.value}
+                        placeholder="dd/mm/yyyy"
+                        onChange={(e) => field.onChange(format(e.target.value))}
+                        autoComplete="off"
+                        className="flex-1"
+                      />
+                      <InputGroupAddon align="inline-end">
+                        <IconCalendar
+                          className="cursor-pointer"
+                          onClick={() => setShowDatePicker(true)}
+                        />
+                      </InputGroupAddon>
+                    </InputGroup>
                   </div>
 
                   {showDatePicker && (
