@@ -39,6 +39,7 @@ import usePortfolio from "@/hooks/use-portfolio";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { TransactionDto } from "@/types/transaction-type";
 import { transactionService } from "@/services/transaction-service";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "../ui/input-group";
 
 const formSchema = z.object({
   name: z.string().optional(),
@@ -359,27 +360,26 @@ export function AddTransactionDialog() {
                     <FieldLabel htmlFor="transaction-date">Date</FieldLabel>
                     <div className="relative" ref={datePickerRef}>
                       <div className="flex items-center">
-                        <Input
-                          id="transaction-date"
-                          value={field.value}
-                          placeholder="dd/mm/yyyy"
-                          onChange={(e) =>
-                            field.onChange(format(e.target.value))
-                          }
-                          autoComplete="off"
-                          className="flex-1"
-                        />
-
-                        <button
-                          type="button"
-                          aria-label="Open date picker"
-                          onClick={() => {
-                            setShowDatePicker(true);
-                          }}
-                          className="w-9 h-10 flex items-center justify-center ml-2 cursor-pointer"
-                        >
-                          <IconCalendar />
-                        </button>
+                        <InputGroup>
+                          <InputGroupInput
+                            id="transaction-date"
+                            value={field.value}
+                            placeholder="dd/mm/yyyy"
+                            onChange={(e) =>
+                              field.onChange(format(e.target.value))
+                            }
+                            autoComplete="off"
+                            className="flex-1"
+                          />
+                          <InputGroupAddon align="inline-end">
+                            <IconCalendar
+                              className="cursor-pointer"
+                              onClick={() => {
+                                setShowDatePicker(true);
+                              }}
+                            />
+                          </InputGroupAddon>
+                        </InputGroup>
                       </div>
 
                       {showDatePicker && (
