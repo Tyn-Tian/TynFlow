@@ -20,6 +20,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 
 import {
@@ -36,6 +39,18 @@ import {
 import { authService } from "@/services/auth-service";
 import { useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
+import { ChevronRight } from "lucide-react";
+
+const IconMap: Record<string, Icon> = {
+  dashboard: IconLayoutDashboard,
+  wallet: IconWallet,
+  transaction: IconCalendarDollar,
+  budget: IconLockDollar,
+  portfolio: IconChartPie,
+  live: IconLivePhoto,
+  job: IconBriefcase,
+};
 
 export function NavMain({
   items,
@@ -45,6 +60,10 @@ export function NavMain({
     title: string;
     url: string;
     icon?: string;
+    items?: {
+      title: string;
+      url: string;
+    }[];
   }[];
   isLoading?: boolean;
 }) {
@@ -71,32 +90,62 @@ export function NavMain({
               </SidebarMenuItem>
             ))
           ) : (
-            items.map((item) => (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton
-                  tooltip={item.title}
-                  className="cursor-pointer"
-                  asChild
-                >
-                  <Link href={item.url}>
-                    {(() => {
-                      const IconMap: Record<string, Icon> = {
-                        dashboard: IconLayoutDashboard,
-                        wallet: IconWallet,
-                        transaction: IconCalendarDollar,
-                        budget: IconLockDollar,
-                        portfolio: IconChartPie,
-                        live: IconLivePhoto,
-                        job: IconBriefcase,
-                      };
-                      const Icon = item.icon ? IconMap[item.icon] : null;
-                      return Icon ? <Icon /> : null;
-                    })()}
-                    <span>{item.title}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))
+            items.map((item) => {
+              if (item.items) {
+                return (
+                  <Collapsible
+                    key={item.title}
+                    asChild
+                    defaultOpen={true}
+                    className="group/collapsible"
+                  >
+                    <SidebarMenuItem>
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton tooltip={item.title}>
+                          {(() => {
+                            const IconCmp = item.icon ? IconMap[item.icon] : null;
+                            return IconCmp ? <IconCmp /> : null;
+                          })()}
+                          <span>{item.title}</span>
+                          <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          {item.items?.map((subItem) => (
+                            <SidebarMenuSubItem key={subItem.title}>
+                              <SidebarMenuSubButton asChild>
+                                <Link href={subItem.url}>
+                                  <span>{subItem.title}</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          ))}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    </SidebarMenuItem>
+                  </Collapsible>
+                )
+              }
+
+              return (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    tooltip={item.title}
+                    className="cursor-pointer"
+                    asChild
+                  >
+                    <Link href={item.url}>
+                      {(() => {
+                        const IconCmp = item.icon ? IconMap[item.icon] : null;
+                        return IconCmp ? <IconCmp /> : null;
+                      })()}
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )
+            })
           )}
 
           <AlertDialog>

@@ -35,8 +35,18 @@ const data = {
     },
     {
       title: "Transaction",
-      url: "/transaction",
+      url: "#",
       icon: "transaction",
+      items: [
+        {
+          title: "List",
+          url: "/transaction",
+        },
+        {
+          title: "Scheduler",
+          url: "/scheduler",
+        }
+      ]
     },
     {
       title: "Budget",
