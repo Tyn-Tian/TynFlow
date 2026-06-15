@@ -4,6 +4,7 @@ import { cn, formatDate, formatRupiah } from "@/lib/utils"
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "../ui/badge"
 import { Scheduler } from "@/types/scheduler-type"
+import { ActionCell } from "./action-cell"
 
 export const columns: ColumnDef<Scheduler>[] = [
     {
@@ -50,4 +51,9 @@ export const columns: ColumnDef<Scheduler>[] = [
             )
         }
     },
+    {
+        id: "actions",
+        header: () => <div className="text-right"></div>,
+        cell: ({ row }) => <ActionCell scheduler={row.original} />
+    }
 ]

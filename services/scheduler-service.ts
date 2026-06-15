@@ -13,4 +13,11 @@ export const schedulerService = {
         }
         return result;
     },
+    deactivate: async (id: string) => {
+        const { error, data: result } = await schedulerRepository.deactivate(id);
+        if (error) {
+            throw new Error(error.message);
+        }
+        return result;
+    },
 }
