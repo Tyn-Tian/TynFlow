@@ -2,8 +2,8 @@
 
 import { cn, formatDate, formatRupiah } from "@/lib/utils"
 import { ColumnDef } from "@tanstack/react-table"
-import { Badge } from "../ui/badge"
 import { Scheduler } from "@/types/scheduler-type"
+import { Badge } from "@/components/ui/badge"
 import { ActionCell } from "./action-cell"
 
 export const columns: ColumnDef<Scheduler>[] = [
