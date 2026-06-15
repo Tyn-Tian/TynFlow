@@ -22,6 +22,7 @@ import { dashboardService } from "@/services/dashboard-service";
 import useTransactions from "@/hooks/use-transaction";
 import { formatRupiah } from "@/lib/utils";
 import { MonthData } from "@/types/dashboard-type";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function useBarChartData() {
   const { months, startDate, endDate } = useMemo(() => {
@@ -92,6 +93,7 @@ export function useBarChartData() {
 }
 
 export function ChartBarTransactions() {
+  const isMobile = useIsMobile();
   const { chartData, chartConfig, isLoading } = useBarChartData();
 
   const monthsWithExpense = chartData.filter((m) => m.expense > 0);
@@ -133,8 +135,8 @@ export function ChartBarTransactions() {
               cursor={false}
               content={<ChartTooltipContent indicator="dashed" />}
             />
-            <Bar dataKey="income" fill="var(--color-income)" radius={8} />
-            <Bar dataKey="expense" fill="var(--color-expense)" radius={8} />
+            <Bar dataKey="income" fill="var(--color-income)" radius={isMobile ? 4 : 8} />
+            <Bar dataKey="expense" fill="var(--color-expense)" radius={isMobile ? 4 : 8} />
           </BarChart>
         </ChartContainer>
       </CardContent>
