@@ -2,23 +2,32 @@
 
 import React, { useEffect, useState } from "react";
 import { z } from "zod";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { IconCalculator, IconCalendar } from "@tabler/icons-react";
+import { IconPlus, IconCalculator, IconCalendar } from "@tabler/icons-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { InputGroup, InputGroupAddon, InputGroupInput } from "../ui/input-group";
 import { Calendar } from "@/components/ui/calendar";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertDialog,
   AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Field,
   FieldError,
@@ -32,51 +41,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DeleteTransactionDialog } from "./delete-transaction-dialog";
 import useWallet from "@/hooks/use-wallet";
 import useBudget from "@/hooks/use-budget";
 import usePortfolio from "@/hooks/use-portfolio";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { transactionService } from "@/services/transaction-service";
-import { TransactionDto } from "@/types/transaction-type";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { SchedulerDto } from "@/types/scheduler-type";
+import { schedulerService } from "@/services/scheduler-service";
 
 const formSchema = z.object({
   name: z.string().optional(),
-  type: z.enum(["Expense", "Income", "Transfer", "Invest"]),
-  date: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/),
-  amount: z.number().int().min(1),
-  budget_id: z.string().optional().nullable(),
-  wallet_id: z.string().optional().nullable(),
-  transfer_id: z.string().optional().nullable(),
-  portfolio_id: z.string().optional().nullable(),
+  amount: z.number().int().min(0, "Amount must be at least 0"),
+  budget_id: z.string().optional(),
+  wallet_id: z.string().optional(),
+  transfer_id: z.string().optional(),
+  portfolio_id: z.string().optional(),
   admin_fee: z.number().int().min(0).optional(),
+  frequency: z.enum(["Daily", "Weekly", "Monthly", "Yearly"]),
+  next_run_date: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/, "Date must be in dd/mm/yyyy"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-type TxItem = {
-  id: number | string;
-  name: string;
-  date: string;
-  amount: number;
-  budget_id?: string | null;
-  wallet_id?: string | null;
-  transfer_id?: string | null;
-  portfolio_id?: string | null;
-  type?: "Income" | "Expense" | "Transfer" | "Invest";
-  admin_fee?: number | null;
-};
-
-type Props = { tx?: TxItem | null; onClose?: () => void };
-
-export function EditTransactionDialog({ tx, onClose }: Props) {
+export function AddSchedulerDialog() {
   const queryClient = useQueryClient();
+  const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
+  const [calcOpen, setCalcOpen] = useState(false);
+  const [calcExpr, setCalcExpr] = useState<string>("0");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const datePickerRef = React.useRef<HTMLDivElement | null>(null);
 
   const { data: wallets } = useWallet();
-  const { data: budgets } = useBudget(true);
+  const { data: budgets } = useBudget();
   const { data: portfolios } = usePortfolio();
 
   useEffect(() => {
@@ -96,41 +92,28 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
       document.removeEventListener("keydown", onKey);
     };
   }, [showDatePicker]);
+  const [tab, setTab] = useState<"Expense" | "Income" | "Transfer" | "Invest">(
+    "Expense",
+  );
 
   const pad = (n: number) => String(n).padStart(2, "0");
-  const toIsoDate = (d: string) => {
-    const [dd, mm, yyyy] = d.split("/");
-    const day = Number(dd);
-    const month = Number(mm);
-    const year = Number(yyyy);
-    return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-  };
-
-  const defaultDate = tx ? new Date(tx.date) : new Date();
-  const defaultDateStr = `${pad(defaultDate.getDate())}/${pad(defaultDate.getMonth() + 1)}/${defaultDate.getFullYear()}`;
+  const today = new Date();
+  const defaultDate = `${pad(today.getDate())}/${pad(today.getMonth() + 1)}/${today.getFullYear()}`;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: tx?.name ?? "",
-      type:
-        (tx?.type as "Expense" | "Income" | "Transfer" | "Invest") ?? "Expense",
-      date: defaultDateStr,
-      amount: tx?.amount ?? 0,
-      budget_id: tx?.budget_id ?? undefined,
-      wallet_id: tx?.wallet_id ?? undefined,
-      transfer_id: tx?.transfer_id ?? undefined,
-      portfolio_id: tx?.portfolio_id ?? undefined,
-      admin_fee: tx?.admin_fee ?? 0,
+      name: "",
+      amount: 0,
+      budget_id: undefined,
+      wallet_id: undefined,
+      transfer_id: undefined,
+      portfolio_id: undefined,
+      admin_fee: 0,
+      frequency: "Monthly",
+      next_run_date: defaultDate,
     },
   });
-  const currentType = useWatch({
-    control: form.control,
-    name: "type",
-  });
-
-  const [calcOpen, setCalcOpen] = useState(false);
-  const [calcExpr, setCalcExpr] = useState<string>("0");
 
   const pressCalc = (v: string) => {
     if (v === "C") return setCalcExpr("0");
@@ -190,83 +173,27 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
     return calcResultValue().toLocaleString("id-ID");
   };
 
-  const { data } = useQuery({
-    queryKey: ["transaction", tx?.id],
-    queryFn: async () => {
-      if (!tx?.id) return null;
-      return await transactionService.getById(String(tx.id));
-    },
-    enabled: !!tx?.id,
-  });
-
-  useEffect(() => {
-    if (!tx) {
-      setTimeout(() => setOpen(false), 0);
-      return;
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (!newOpen) {
+      form.reset();
+      setCalcExpr("0");
+      setShowDatePicker(false);
     }
-    const initialDate = new Date(tx.date);
-    const initialDateStr = !Number.isNaN(initialDate.getTime())
-      ? `${pad(initialDate.getDate())}/${pad(initialDate.getMonth() + 1)}/${initialDate.getFullYear()}`
-      : defaultDateStr;
-
-    form.reset({
-      name: tx.name,
-      type:
-        (tx?.type as "Expense" | "Income" | "Transfer" | "Invest") ?? "Expense",
-      date: initialDateStr,
-      amount: tx.amount,
-      budget_id: tx?.budget_id ? String(tx.budget_id) : undefined,
-      wallet_id: tx?.wallet_id ? String(tx.wallet_id) : undefined,
-      transfer_id: tx?.transfer_id ? String(tx.transfer_id) : undefined,
-      portfolio_id: tx?.portfolio_id ? String(tx.portfolio_id) : undefined,
-      admin_fee: tx?.admin_fee ?? 0,
-    });
-    setTimeout(() => setOpen(true), 0);
-  }, [tx, defaultDateStr, form]);
-
-  useEffect(() => {
-    if (data) {
-      const d = new Date(data.date);
-      const dateStr = !Number.isNaN(d.getTime())
-        ? `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`
-        : defaultDateStr;
-
-      form.reset({
-        name: data.name,
-        type:
-          (data.type as "Expense" | "Income" | "Transfer" | "Invest") ??
-          "Expense",
-        date: dateStr,
-        amount: data.amount,
-        budget_id: data.budget_id ? String(data.budget_id) : undefined,
-        wallet_id: data.wallet_id ? String(data.wallet_id) : undefined,
-        transfer_id: data.transfer_id ? String(data.transfer_id) : undefined,
-        portfolio_id: data.portfolio_id ? String(data.portfolio_id) : undefined,
-        admin_fee: data.admin_fee ?? 0,
-      });
-    }
-  }, [data, defaultDateStr, form]);
+  };
 
   const mutation = useMutation({
-    mutationFn: async ({ id, dto }: { id: string; dto: TransactionDto }) =>
-      await transactionService.edit(id, dto),
+    mutationFn: async (dto: SchedulerDto) =>
+      await schedulerService.add(dto),
     onSuccess: () => {
       toast.success("Success", {
-        description: "Transaction updated.",
+        description: "Scheduler added.",
         duration: 3000,
       });
-      form.reset();
-      setOpen(false);
-      onClose?.();
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      setTab("Expense");
+      handleOpenChange(false);
       queryClient.invalidateQueries({
-        queryKey: ["budgets"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["enriched-budgets"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["wallets"],
+        queryKey: ["schedulers"],
       });
     },
     onError: (err: Error | unknown) => {
@@ -278,58 +205,130 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
   });
 
   async function onSubmit(values: FormValues) {
-    if (!tx) return;
-    const isoDate = toIsoDate(values.date);
+    const toIsoDate = (d: string) => {
+      const [dd, mm, yyyy] = d.split("/");
+      const day = Number(dd);
+      const month = Number(mm);
+      const year = Number(yyyy);
+      const dt = new Date(year, month - 1, day);
+      if (
+        dt.getFullYear() !== year ||
+        dt.getMonth() !== month - 1 ||
+        dt.getDate() !== day
+      ) {
+        throw new Error("Invalid date");
+      }
+      return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    };
+
+    const isoDate = toIsoDate(values.next_run_date);
+
+    if (
+      tab !== "Transfer" &&
+      tab !== "Invest" &&
+      (!values.name || !values.name.trim())
+    ) {
+      toast.error("Name is required.", { duration: 3000 });
+      return;
+    }
+
+    if (tab === "Transfer") {
+      if (!values.wallet_id || !values.transfer_id) {
+        toast.error("Please select both source and destination wallets.", {
+          duration: 3000,
+        });
+        return;
+      }
+
+      if (values.wallet_id === values.transfer_id) {
+        toast.error("Source and destination wallets must be different.", {
+          duration: 3000,
+        });
+        return;
+      }
+    }
+
+    if (tab === "Invest") {
+      if (!values.wallet_id || !values.portfolio_id) {
+        toast.error("Please select both wallet and portfolio.", {
+          duration: 3000,
+        });
+        return;
+      }
+    }
+
     mutation.mutate({
-      id: String(tx.id),
-      dto: {
-        name:
-          values.type === "Transfer" || values.type === "Invest"
-            ? values.type
+      name:
+        tab === "Transfer"
+          ? "Transfer"
+          : tab === "Invest"
+            ? "Invest"
             : (values.name ?? ""),
-        date: isoDate,
-        amount: values.amount,
-        type: values.type,
-        budget_id: values.budget_id ?? null,
-        wallet_id: values.wallet_id ?? null,
-        transfer_id: values.transfer_id ?? null,
-        portfolio_id: values.portfolio_id ?? null,
-        admin_fee: values.admin_fee ?? 0,
-      },
+      amount: values.amount,
+      type: tab,
+      budget_id: values.budget_id ?? null,
+      wallet_id: values.wallet_id ?? null,
+      transfer_id: values.transfer_id ?? null,
+      portfolio_id: values.portfolio_id ?? null,
+      admin_fee: values.admin_fee ?? 0,
+      frequency: values.frequency,
+      next_run_date: isoDate,
+      status: "Active", // default to active
     });
   }
-  const [showDelete, setShowDelete] = useState(false);
 
   return (
-    <>
-      <AlertDialog
-        open={open}
-        onOpenChange={(v) => {
-          setOpen(v);
-          if (!v) onClose?.();
-        }}
-      >
-        <AlertDialogTrigger asChild>
-          <div />
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Edit Transaction</AlertDialogTitle>
-          </AlertDialogHeader>
+    <Drawer open={open} onOpenChange={handleOpenChange} direction={isMobile ? "bottom" : "right"}>
+      <DrawerTrigger asChild>
+        <Button className="cursor-pointer">
+          <IconPlus />
+          <span className="hidden sm:block">
+            Add Scheduler
+          </span>
+        </Button>
+      </DrawerTrigger>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>Add Scheduler</DrawerTitle>
+        </DrawerHeader>
 
+        <div className="flex flex-col overflow-y-auto px-4 pb-6">
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            <FieldGroup className="gap-4">
-              {currentType !== "Transfer" && currentType !== "Invest" && (
+            <Tabs
+              value={tab}
+              onValueChange={(v) =>
+                setTab(v as "Expense" | "Income" | "Transfer" | "Invest")
+              }
+              className="mb-6"
+            >
+              <TabsList className="mx-auto">
+                <TabsTrigger value="Expense" className="cursor-pointer">
+                  Expense
+                </TabsTrigger>
+                <TabsTrigger value="Income" className="cursor-pointer">
+                  Income
+                </TabsTrigger>
+                <TabsTrigger value="Transfer" className="cursor-pointer">
+                  Transfer
+                </TabsTrigger>
+                <TabsTrigger value="Invest" className="cursor-pointer">
+                  Invest
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <FieldGroup className="gap-6">
+              {tab !== "Transfer" && tab !== "Invest" && (
                 <Controller
                   name="name"
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="transaction-name">Name</FieldLabel>
+                      <FieldLabel htmlFor="scheduler-name">Name</FieldLabel>
                       <Input
                         {...field}
-                        id="transaction-name"
-                        placeholder="Example: Tomoro"
+                        id="scheduler-name"
+                        placeholder="Example: Monthly Rent"
+                        autoComplete="off"
                       />
                       {fieldState.error && (
                         <FieldError errors={[fieldState.error]} />
@@ -340,12 +339,39 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
               )}
 
               <Controller
-                name="date"
+                name="frequency"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel>Frequency</FieldLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={(v) => field.onChange(v as "Daily" | "Weekly" | "Monthly" | "Yearly")}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select frequency" />
+                      </SelectTrigger>
+                      <SelectContent position="popper">
+                        <SelectItem value="Daily">Daily</SelectItem>
+                        <SelectItem value="Weekly">Weekly</SelectItem>
+                        <SelectItem value="Monthly">Monthly</SelectItem>
+                        <SelectItem value="Yearly">Yearly</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {fieldState.error && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="next_run_date"
                 control={form.control}
                 render={({ field, fieldState }) => {
                   const format = (v: string) => {
                     const digits = v.replace(/\D/g, "").slice(0, 8);
-                    const parts: string[] = [];
+                    const parts = [];
                     if (digits.length >= 2) {
                       parts.push(digits.slice(0, 2));
                       if (digits.length >= 4) {
@@ -362,27 +388,30 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
 
                   return (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="transaction-date">Date</FieldLabel>
+                      <FieldLabel htmlFor="scheduler-date">Next Run Date</FieldLabel>
                       <div className="relative" ref={datePickerRef}>
                         <div className="flex items-center">
-                          <InputGroup>
-                            <InputGroupInput
-                              id="transaction-date"
-                              value={field.value}
-                              placeholder="dd/mm/yyyy"
-                              onChange={(e) =>
-                                field.onChange(format(e.target.value))
-                              }
-                              autoComplete="off"
-                              className="flex-1"
-                            />
-                            <InputGroupAddon align="inline-end">
-                              <IconCalendar
-                                className="cursor-pointer"
-                                onClick={() => setShowDatePicker(true)}
-                              />
-                            </InputGroupAddon>
-                          </InputGroup>
+                          <Input
+                            id="scheduler-date"
+                            value={field.value}
+                            placeholder="dd/mm/yyyy"
+                            onChange={(e) =>
+                              field.onChange(format(e.target.value))
+                            }
+                            autoComplete="off"
+                            className="flex-1"
+                          />
+
+                          <button
+                            type="button"
+                            aria-label="Open date picker"
+                            onClick={() => {
+                              setShowDatePicker(true);
+                            }}
+                            className="w-9 h-10 flex items-center justify-center ml-2 cursor-pointer"
+                          >
+                            <IconCalendar />
+                          </button>
                         </div>
 
                         {showDatePicker && (
@@ -392,7 +421,7 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                               selected={(() => {
                                 try {
                                   const [dd, mm, yyyy] = String(
-                                    field.value || defaultDateStr,
+                                    field.value || defaultDate,
                                   ).split("/");
                                   const d = new Date(
                                     Number(yyyy),
@@ -409,10 +438,7 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                               onSelect={(d) => {
                                 if (!d) return;
                                 const day = Array.isArray(d) ? d[0] : d;
-                                const dd = String(day.getDate()).padStart(
-                                  2,
-                                  "0",
-                                );
+                                const dd = String(day.getDate()).padStart(2, "0");
                                 const mm = String(day.getMonth() + 1).padStart(
                                   2,
                                   "0",
@@ -423,6 +449,8 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                               }}
                               className="rounded-lg border"
                               captionLayout="dropdown"
+                              fromYear={new Date().getFullYear()}
+                              toYear={new Date().getFullYear() + 10}
                             />
                           </div>
                         )}
@@ -440,7 +468,7 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="transaction-amount">Amount</FieldLabel>
+                    <FieldLabel htmlFor="scheduler-amount">Amount</FieldLabel>
                     <div className="flex items-center gap-2">
                       <Input
                         value={
@@ -448,7 +476,7 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                             ? field.value.toLocaleString("id-ID")
                             : ""
                         }
-                        id="transaction-amount"
+                        id="scheduler-amount"
                         type="text"
                         inputMode="numeric"
                         placeholder="0"
@@ -561,7 +589,7 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                 )}
               />
 
-              {currentType === "Expense" && (
+              {tab === "Expense" && (
                 <Controller
                   name="budget_id"
                   control={form.control}
@@ -569,7 +597,7 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel>Budget</FieldLabel>
                       <Select
-                        value={field.value ?? ""}
+                        value={field.value ? String(field.value) : ""}
                         onValueChange={(v) => field.onChange(v || undefined)}
                       >
                         <SelectTrigger>
@@ -577,8 +605,8 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                         </SelectTrigger>
                         <SelectContent position="popper">
                           {budgets?.map((b) => (
-                            <SelectItem key={b.id} value={String(b.id)} disabled={!!b.deleted_at}>
-                              {b.name} {!!b.deleted_at ? "(Deleted)" : ""}
+                            <SelectItem key={b.id} value={String(b.id)}>
+                              {b.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -591,7 +619,7 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                 />
               )}
 
-              {currentType === "Transfer" ? (
+              {tab === "Transfer" ? (
                 <>
                   <Controller
                     name="wallet_id"
@@ -654,11 +682,11 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                     control={form.control}
                     render={({ field, fieldState }) => (
                       <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel htmlFor="transaction-admin-fee">
+                        <FieldLabel htmlFor="scheduler-admin-fee">
                           Admin Fee (optional)
                         </FieldLabel>
                         <Input
-                          id="transaction-admin-fee"
+                          id="scheduler-admin-fee"
                           type="text"
                           inputMode="numeric"
                           placeholder="0"
@@ -676,7 +704,7 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                     )}
                   />
                 </>
-              ) : currentType === "Invest" ? (
+              ) : tab === "Invest" ? (
                 <>
                   <Controller
                     name="wallet_id"
@@ -739,11 +767,11 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                     control={form.control}
                     render={({ field, fieldState }) => (
                       <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel htmlFor="transaction-admin-fee">
+                        <FieldLabel htmlFor="scheduler-admin-fee">
                           Admin Fee (optional)
                         </FieldLabel>
                         <Input
-                          id="transaction-admin-fee"
+                          id="scheduler-admin-fee"
                           type="text"
                           inputMode="numeric"
                           placeholder="0"
@@ -791,47 +819,24 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                 />
               )}
 
-              <AlertDialogFooter>
-                <AlertDialogCancel type="button" className="cursor-pointer">
-                  Cancel
-                </AlertDialogCancel>
-                <Button
-                  variant="destructive"
-                  type="button"
-                  onClick={() => {
-                    setOpen(false);
-                    setShowDelete(true);
-                  }}
-                  className="cursor-pointer bg-rose-500!"
-                >
-                  Delete
-                </Button>
+              <DrawerFooter className="px-0 pt-4 pb-0 flex gap-2">
                 <Button
                   type="submit"
                   disabled={mutation.isPending}
-                  className="cursor-pointer"
+                  className="cursor-pointer flex-1"
                 >
                   {mutation.isPending ? "Saving..." : "Save"}
                 </Button>
-              </AlertDialogFooter>
+                <DrawerClose asChild>
+                  <Button type="button" variant="outline" className="cursor-pointer flex-1">
+                    Cancel
+                  </Button>
+                </DrawerClose>
+              </DrawerFooter>
             </FieldGroup>
           </form>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {showDelete && tx && (
-        <DeleteTransactionDialog
-          tx={tx}
-          onDeleted={() => {
-            setShowDelete(false);
-            onClose?.();
-          }}
-          onClose={() => {
-            setShowDelete(false);
-            setOpen(true);
-          }}
-        />
-      )}
-    </>
+        </div>
+      </DrawerContent>
+    </Drawer>
   );
 }

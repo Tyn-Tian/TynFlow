@@ -569,7 +569,7 @@ export function AddTransactionDialog() {
                       <SelectTrigger>
                         <SelectValue placeholder="Select budget" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent position="popper">
                         {budgets?.map((b) => (
                           <SelectItem key={b.id} value={String(b.id)}>
                             {b.name}
@@ -600,7 +600,7 @@ export function AddTransactionDialog() {
                         <SelectTrigger>
                           <SelectValue placeholder="Select source wallet" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent position="popper">
                           {wallets?.map((w) => (
                             <SelectItem key={w.id} value={String(w.id)}>
                               {w.name}
@@ -628,7 +628,7 @@ export function AddTransactionDialog() {
                         <SelectTrigger>
                           <SelectValue placeholder="Select destination wallet" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent position="popper">
                           {wallets?.map((w) => (
                             <SelectItem key={w.id} value={String(w.id)}>
                               {w.name}
@@ -685,7 +685,7 @@ export function AddTransactionDialog() {
                         <SelectTrigger>
                           <SelectValue placeholder="Select source wallet" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent position="popper">
                           {wallets?.map((w) => (
                             <SelectItem key={w.id} value={String(w.id)}>
                               {w.name}
@@ -713,7 +713,7 @@ export function AddTransactionDialog() {
                         <SelectTrigger>
                           <SelectValue placeholder="Select destination portfolio" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent position="popper">
                           {portfolios?.map((p) => (
                             <SelectItem key={p.id} value={String(p.id)}>
                               {p.name}
@@ -769,7 +769,7 @@ export function AddTransactionDialog() {
                       <SelectTrigger>
                         <SelectValue placeholder="Select wallet" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent position="popper">
                         {wallets?.map((w) => (
                           <SelectItem key={w.id} value={String(w.id)}>
                             {w.name}

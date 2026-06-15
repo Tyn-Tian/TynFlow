@@ -56,7 +56,7 @@ function TransactionContent() {
 export default function Page() {
   return (
     <>
-      <SiteHeader title="Transaction" />
+      <SiteHeader title="Transaction List" />
       <section className="p-6">
         <Suspense fallback={<div />}>
           <TransactionContent />
