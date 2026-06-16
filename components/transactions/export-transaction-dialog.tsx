@@ -129,9 +129,11 @@ export function ExportTransactionDialog() {
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="outline" className="cursor-pointer">
+        <Button className="cursor-pointer">
           <IconDownload />
-          Export
+          <span className="hidden sm:block">
+            Export
+          </span>
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

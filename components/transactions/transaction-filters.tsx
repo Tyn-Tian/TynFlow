@@ -33,7 +33,7 @@ export function TransactionFilters() {
   }
 
   return (
-    <div className="flex items-end gap-2 my-4">
+    <div className="flex items-end gap-2 mt-2 mb-4">
       <Select value={walletId || "all"} onValueChange={(v) => updateFilter("walletId", v)}>
         <SelectTrigger id="wallet-filter" className="w-full sm:w-fit">
           <SelectValue placeholder="All Wallets" />

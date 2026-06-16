@@ -6,7 +6,7 @@ export default async function Page() {
     return (
         <>
             <SiteHeader title="Live" />
-            <section className="p-6">
+            <section className="p-4 md:p-6">
                 <div className="mx-auto max-w-7xl">
                     <div className="mb-4 flex justify-end">
                         <AddLiveDialog />

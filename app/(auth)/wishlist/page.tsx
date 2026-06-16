@@ -61,7 +61,7 @@ export default function Page() {
     return (
         <>
             <SiteHeader title="Wishlist" />
-            <section className="p-6">
+            <section className="p-4 md:p-6">
                 <div className="mx-auto max-w-7xl">
                     <div className="flex flex-wrap md:flex-nowrap items-center gap-2 mb-4 w-full">
                         <div className="flex-1 min-w-[150px] order-1 md:flex-none md:w-[250px]">

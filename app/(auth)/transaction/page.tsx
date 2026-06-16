@@ -57,7 +57,7 @@ export default function Page() {
   return (
     <>
       <SiteHeader title="Transaction List" />
-      <section className="p-6">
+      <section className="p-4 md:p-6">
         <Suspense fallback={<div />}>
           <TransactionContent />
         </Suspense>

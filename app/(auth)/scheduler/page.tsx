@@ -18,7 +18,7 @@ export default function Page() {
     return (
         <>
             <SiteHeader title="Transaction Scheduler" />
-            <section className="p-6">
+            <section className="p-4 md:p-6">
                 <div className="mx-auto max-w-7xl">
                     <div className="flex justify-end gap-2 mb-4">
                         <AddSchedulerDialog />

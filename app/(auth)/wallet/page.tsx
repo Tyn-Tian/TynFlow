@@ -18,7 +18,7 @@ export default async function Page() {
     return (
         <>
             <SiteHeader title="Wallet" />
-            <section className="p-6">
+            <section className="p-4 md:p-6">
                 <div className="mx-auto max-w-7xl space-y-4">
                     <div className="flex justify-end">
                         <AddWalletDialog />
