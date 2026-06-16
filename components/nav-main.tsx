@@ -10,6 +10,7 @@ import {
   IconLivePhoto,
   IconBriefcase,
   IconLayoutDashboard,
+  IconBasketHeart,
 } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -50,6 +51,7 @@ const IconMap: Record<string, Icon> = {
   portfolio: IconChartPie,
   live: IconLivePhoto,
   job: IconBriefcase,
+  wishlist: IconBasketHeart
 };
 
 export function NavMain({
