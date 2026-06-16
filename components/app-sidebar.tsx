@@ -68,6 +68,11 @@ const data = {
       url: "/job",
       icon: "job",
     },
+    {
+      title: "Wishlist",
+      url: "/wishlist",
+      icon: "wishlist",
+    },
   ],
 };
 
