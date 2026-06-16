@@ -1,11 +1,11 @@
 "use client"
 
-import { cn, formatDate, formatRupiah } from "@/lib/utils"
+import { formatDate, formatRupiah } from "@/lib/utils"
 import { ColumnDef } from "@tanstack/react-table"
 import { Wishlist } from "@/types/wishlist-type"
 import { Badge } from "@/components/ui/badge"
 import { ActionCell } from "./action-cell"
-import { IconCircleCheckFilled, IconCircleX, IconLoader } from "@tabler/icons-react"
+import { IconArrowBadgeDown, IconArrowBadgeRight, IconArrowBadgeUp, IconCircleCheckFilled, IconCircleX, IconLoader } from "@tabler/icons-react"
 
 export const columns: ColumnDef<Wishlist>[] = [
     {
@@ -18,11 +18,14 @@ export const columns: ColumnDef<Wishlist>[] = [
         cell: ({ row }) => {
             const priority = row.getValue("priority") as string;
             return (
-                <Badge className={cn(
-                    priority === "High" && "bg-rose-100 text-rose-700",
-                    priority === "Medium" && "bg-amber-100 text-amber-700",
-                    priority === "Low" && "bg-emerald-100 text-emerald-700",
-                )}>
+                <Badge variant="outline" className="px-1.5 text-muted-foreground">
+                    {priority === "High" ? (
+                        <IconArrowBadgeUp className="text-rose-700" />
+                    ) : priority === "Medium" ? (
+                        <IconArrowBadgeRight className="text-amber-500" />
+                    ) : (
+                        <IconArrowBadgeDown className="text-emerald-500" />
+                    )}
                     {priority}
                 </Badge>
             )
