@@ -17,8 +17,11 @@ import { Skeleton } from "../ui/skeleton";
 import { formatRupiah } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { portfolioService } from "@/services/portfolio-service";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function PortfolioOverviewChart() {
+    const isMobile = useIsMobile();
+
     const { data: snapshots, isLoading } = useQuery({
         queryKey: ["portfolio-snapshots"],
         queryFn: async () => await portfolioService.getSnapshots(),
@@ -48,7 +51,7 @@ export default function PortfolioOverviewChart() {
                 {chartData.length > 0 ? (
                     <LineChart
                         data={chartData}
-                        margin={{ top: 10, right: 30, bottom: 10, left: 30 }}
+                        margin={{ top: 10, right: isMobile ? 10 : 30, bottom: 10, left: isMobile ? 10 : 30 }}
                         className="h-[300px] w-full"
                         aspectRatio="auto"
                         yDomainFromData={true}
