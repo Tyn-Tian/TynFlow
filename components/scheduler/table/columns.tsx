@@ -1,10 +1,11 @@
 "use client"
 
-import { cn, formatDate, formatRupiah } from "@/lib/utils"
+import { formatDate, formatRupiah } from "@/lib/utils"
 import { ColumnDef } from "@tanstack/react-table"
 import { Scheduler } from "@/types/scheduler-type"
 import { Badge } from "@/components/ui/badge"
 import { ActionCell } from "./action-cell"
+import { IconCircleCheckFilled, IconCircleX } from "@tabler/icons-react"
 
 export const columns: ColumnDef<Scheduler>[] = [
     {
@@ -42,10 +43,12 @@ export const columns: ColumnDef<Scheduler>[] = [
             const status = row.getValue("status") as string;
 
             return (
-                <Badge className={cn(
-                    status === "Active" && "bg-emerald-100 text-emerald-700",
-                    status === "Inactive" && "bg-rose-100 text-rose-700",
-                )}>
+                <Badge variant="outline" className="px-1.5 text-muted-foreground">
+                    {status === "Active" ? (
+                        <IconCircleCheckFilled className="text-emerald-500" />
+                    ) : (
+                        <IconCircleX className="text-rose-500" />
+                    )}
                     {status}
                 </Badge>
             )
