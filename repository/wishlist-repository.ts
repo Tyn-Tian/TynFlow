@@ -8,7 +8,8 @@ export const wishlistRepository = {
             .from("wishlists")
             .select("id, user_id, created_at, name, priority, status, price")
             .eq("user_id", userId)
-            .order("created_at", { ascending: false });
+            .order("priority", { ascending: true })
+            .order("price", { ascending: true });
     },
     add: async (data: WishlistDto) => {
         const { supabase, userId } = await getSupabase();
