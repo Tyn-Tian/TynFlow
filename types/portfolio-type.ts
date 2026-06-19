@@ -1,4 +1,4 @@
-export type PortfolioType = "Reksadana" | "Saham" | "Crypto" | "Emas";
+export type PortfolioType = "Reksadana" | "Saham" | "Crypto" | "Emas" | "Obligasi";
 
 export interface Portfolio {
   id: string;

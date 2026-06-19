@@ -41,6 +41,7 @@ const portfolioTypes: PortfolioType[] = [
   "Saham",
   "Crypto",
   "Emas",
+  "Obligasi"
 ];
 
 const formSchema = z.object({

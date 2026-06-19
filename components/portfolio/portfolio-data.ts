@@ -37,6 +37,11 @@ export const portfolioTypeConfig: Record<
         iconClassName: "text-yellow-500",
         badgeClassName: "border-yellow-500/20 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400",
     },
+    Obligasi: {
+        icon: IconBuildingBank,
+        iconClassName: "text-green-500",
+        badgeClassName: "border-green-500/20 bg-green-500/10 text-green-600 dark:text-green-400",
+    }
 }
 
 export function getProgressWidthClass(value: number) {
