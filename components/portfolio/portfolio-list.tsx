@@ -27,6 +27,7 @@ import {
 import { formatRupiah } from "@/lib/utils";
 import {
   getProgressWidthClass,
+  PortfolioType,
   portfolioTypeConfig,
 } from "@/components/portfolio/portfolio-data";
 import usePortfolio from "@/hooks/use-portfolio";
@@ -121,7 +122,11 @@ export function PortfolioList() {
             item.invested > 0 ? (profitLoss / item.invested) * 100 : 0;
           const profitLossLabel = `${profitLossPct >= 0 ? "+" : ""}${profitLossPct.toFixed(1)}%`;
           const isOpen = openId === item.id;
-          const typeConfig = portfolioTypeConfig[item.type];
+          const typeKey = (Object.keys(portfolioTypeConfig).find(
+            (k) => k.toLowerCase() === (item.type || "").toLowerCase()
+          ) || "Reksadana") as PortfolioType;
+          
+          const typeConfig = portfolioTypeConfig[typeKey] || portfolioTypeConfig["Reksadana"];
           const TypeIcon = typeConfig.icon;
           const progressWidthClass = getProgressWidthClass(safeProgress);
 
