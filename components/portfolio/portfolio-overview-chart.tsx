@@ -19,7 +19,12 @@ import { useQuery } from "@tanstack/react-query";
 import { portfolioService } from "@/services/portfolio-service";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-export default function PortfolioOverviewChart() {
+interface PortfolioOverviewChartProps {
+    variant?: "default" | "minimal";
+    className?: string;
+}
+
+export default function PortfolioOverviewChart({ variant = "default", className }: PortfolioOverviewChartProps) {
     const isMobile = useIsMobile();
 
     const { data: snapshots, isLoading } = useQuery({
@@ -33,10 +38,53 @@ export default function PortfolioOverviewChart() {
         current_value: snapshot.current_value,
     })) || [];
 
+    const chartHeightClass = className || "h-[300px]";
+
     if (isLoading) {
         return (
-            <Skeleton className="h-[300px] w-full rounded-xl" />
+            <Skeleton className={`${chartHeightClass} w-full rounded-xl`} />
         )
+    }
+
+    const chartMargin = variant === "minimal" 
+        ? { top: 10, right: 0, bottom: 0, left: 0 } 
+        : { top: 10, right: isMobile ? 10 : 30, bottom: 10, left: isMobile ? 10 : 30 };
+
+    const content = chartData.length > 0 ? (
+        <LineChart
+            data={chartData}
+            margin={chartMargin}
+            className={`${chartHeightClass} w-full`}
+            aspectRatio="auto"
+            yDomainFromData={true}
+        >
+            <Grid horizontal />
+            <Line curve={curveLinear} dataKey="invested" stroke="#10b981" strokeWidth={2} />
+            <Line curve={curveLinear} dataKey="current_value" stroke="#d946ef" strokeWidth={2} />
+            {variant !== "minimal" && <XAxis />}
+            <ChartTooltip
+                rows={(point) => [
+                    {
+                        color: "#10b981",
+                        label: "Invested",
+                        value: formatRupiah(point.invested as number)
+                    },
+                    {
+                        color: "#d946ef",
+                        label: "Current Value",
+                        value: formatRupiah(point.current_value as number)
+                    }
+                ]}
+            />
+        </LineChart>
+    ) : (
+        <div className={`flex ${chartHeightClass} w-full items-center justify-center text-sm text-muted-foreground`}>
+            No data available
+        </div>
+    );
+
+    if (variant === "minimal") {
+        return <div className="w-full">{content}</div>;
     }
 
     return (
@@ -48,38 +96,7 @@ export default function PortfolioOverviewChart() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                {chartData.length > 0 ? (
-                    <LineChart
-                        data={chartData}
-                        margin={{ top: 10, right: isMobile ? 10 : 30, bottom: 10, left: isMobile ? 10 : 30 }}
-                        className="h-[300px] w-full"
-                        aspectRatio="auto"
-                        yDomainFromData={true}
-                    >
-                        <Grid horizontal />
-                        <Line curve={curveLinear} dataKey="invested" stroke="#10b981" strokeWidth={2} />
-                        <Line curve={curveLinear} dataKey="current_value" stroke="#d946ef" strokeWidth={2} />
-                        <XAxis />
-                        <ChartTooltip
-                            rows={(point) => [
-                                {
-                                    color: "#10b981",
-                                    label: "Invested",
-                                    value: formatRupiah(point.invested as number)
-                                },
-                                {
-                                    color: "#d946ef",
-                                    label: "Current Value",
-                                    value: formatRupiah(point.current_value as number)
-                                }
-                            ]}
-                        />
-                    </LineChart>
-                ) : (
-                    <div className="flex h-[300px] w-full items-center justify-center text-sm text-muted-foreground">
-                        No data available
-                    </div>
-                )}
+                {content}
             </CardContent>
         </Card>
     )

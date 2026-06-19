@@ -2,6 +2,7 @@ import { ChartConfig } from "@/components/ui/chart";
 import { Budget } from "@/types/budget-type";
 import { MonthData } from "@/types/dashboard-type";
 import { Transaction } from "@/types/transaction-type";
+import { Portfolio } from "@/types/portfolio-type";
 
 export const dashboardService = {
   getSummaries: ({
@@ -227,5 +228,47 @@ export const dashboardService = {
     };
 
     return { chartData, chartConfig };
+  },
+  getPortfolioChartData: ({
+    portfolios = [],
+  }: {
+    portfolios?: Portfolio[];
+  }) => {
+    const grouped = portfolios.reduce<Record<string, number>>((acc, p) => {
+      const type = p.type ?? "Unknown";
+      acc[type] = (acc[type] ?? 0) + (Number(p.current_value) || 0);
+      return acc;
+    }, {});
+
+    const paletteSize = 5;
+    const entries = Object.entries(grouped);
+    const total = entries.reduce((sum, [, value]) => sum + value, 0);
+
+    const chartData = entries.map(([name, value], idx) => {
+      const pct = total > 0 ? (value / total) * 100 : 0;
+      const key = `p_${idx}`;
+      return {
+        name,
+        value,
+        percentage: `${pct.toFixed(1)}%`,
+        fill: `var(--color-${key})`,
+        [key]: name,
+        __key: key,
+      };
+    });
+
+    const chartConfig: ChartConfig = { value: { label: "Current Value" } };
+    chartData.forEach((d, idx) => {
+      const key = d.__key;
+      chartConfig[key] = {
+        label: `${d.name}`,
+        color: `var(--chart-${(idx % paletteSize) + 1})`,
+      };
+    });
+
+    return {
+      chartData,
+      chartConfig,
+    };
   },
 };

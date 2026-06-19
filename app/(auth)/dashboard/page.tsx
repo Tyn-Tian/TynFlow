@@ -5,6 +5,7 @@ import { ChartExpenses } from "@/components/dashboard/chart-expenses"
 import { ChartIncome } from "@/components/dashboard/chart-income"
 import { ChartBarTransactions } from "@/components/dashboard/chart-bar-transactions"
 import { ChartWeeklyExpense } from "@/components/dashboard/chart-weekly-expense"
+import { ChartPortfolioAllocation } from "@/components/dashboard/chart-portfolio-allocation"
 
 import { DashboardFilter } from "@/components/dashboard/dashboard-filter"
 
@@ -23,7 +24,7 @@ export default async function Page() {
             <Suspense>
               <SectionCards />
             </Suspense>
-            <div className="px-4 lg:px-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="px-4 lg:px-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
               <Suspense>
                 <ChartIncome />
               </Suspense>
@@ -34,8 +35,9 @@ export default async function Page() {
             <div className="px-4 lg:px-6">
               <ChartBarTransactions />
             </div>
-            <div className="px-4 lg:px-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="px-4 lg:px-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
               <ChartWeeklyExpense />
+              <ChartPortfolioAllocation />
             </div>
           </div>
         </div>

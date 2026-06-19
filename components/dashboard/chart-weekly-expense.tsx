@@ -73,7 +73,7 @@ export function ChartWeeklyExpense() {
     if (isLoading) return <ChartWeeklyExpenseSkeleton />
 
     return (
-        <Card className="flex-1 flex flex-col py-4 sm:py-6 md:col-span-2">
+        <Card className="flex-1 flex flex-col py-4 sm:py-6 lg:col-span-2">
             <CardHeader className="px-4 sm:px-6">
                 <CardTitle>Weekly Expense Overview</CardTitle>
                 <CardDescription>{rangeLabel}</CardDescription>
