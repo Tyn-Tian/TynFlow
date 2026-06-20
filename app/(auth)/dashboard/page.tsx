@@ -6,6 +6,7 @@ import { ChartIncome } from "@/components/dashboard/chart-income"
 import { ChartBarTransactions } from "@/components/dashboard/chart-bar-transactions"
 import { ChartWeeklyExpense } from "@/components/dashboard/chart-weekly-expense"
 import { ChartPortfolioAllocation } from "@/components/dashboard/chart-portfolio-allocation"
+import { ChartHeatmapTransactions } from "@/components/dashboard/chart-heatmap-transactions"
 
 import { DashboardFilter } from "@/components/dashboard/dashboard-filter"
 
@@ -38,6 +39,11 @@ export default async function Page() {
             <div className="px-4 lg:px-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
               <ChartWeeklyExpense />
               <ChartPortfolioAllocation />
+            </div>
+            <div className="px-4 lg:px-6">
+              <Suspense>
+                <ChartHeatmapTransactions />
+              </Suspense>
             </div>
           </div>
         </div>

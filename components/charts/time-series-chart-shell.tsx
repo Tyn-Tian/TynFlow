@@ -241,16 +241,23 @@ const TimeSeriesChartCore = memo(function TimeSeriesChartCore({
   // biome-ignore lint/correctness/useExhaustiveDependencies: revealSignature
   useEffect(() => {
     if (staticPreview) {
-      setIsLoaded(true);
+      // isLoaded is already initialized to staticPreview, so we don't need to call setIsLoaded(true) here
       return;
     }
 
-    setRevealEpoch((n) => n + 1);
-    setIsLoaded(false);
+    const frame = requestAnimationFrame(() => {
+      setRevealEpoch((n) => n + 1);
+      setIsLoaded(false);
+    });
+
     const timer = setTimeout(() => {
       setIsLoaded(true);
     }, animationDuration);
-    return () => clearTimeout(timer);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(timer);
+    };
   }, [animationDuration, revealSignature, staticPreview]);
 
   const canInteract = isLoaded;
@@ -265,6 +272,7 @@ const TimeSeriesChartCore = memo(function TimeSeriesChartCore({
   } = useChartInteraction({
     xScale,
     yScale,
+    yScales: { default: yScale },
     data,
     lines,
     margin,
@@ -302,6 +310,13 @@ const TimeSeriesChartCore = memo(function TimeSeriesChartCore({
       renderData,
       xScale,
       yScale,
+      yScales: { default: yScale },
+      referenceAreas: [],
+      chartPhase: isLoaded ? 'ready' as const : 'loading' as const,
+      chartStatus: isLoaded ? 'ready' as const : 'loading' as const,
+      yDomainTweenDuration: 0,
+      yDomainSkeletonByAxis: {},
+      yDomainTargetByAxis: {},
       width,
       height,
       innerWidth,
