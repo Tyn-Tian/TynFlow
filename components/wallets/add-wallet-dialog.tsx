@@ -89,7 +89,9 @@ export function AddWalletDialog() {
       <AlertDialogTrigger asChild>
         <Button className="cursor-pointer">
           <IconPlus />
-          Add Wallet
+          <span className="hidden sm:block">
+            Add Wallet
+          </span>
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

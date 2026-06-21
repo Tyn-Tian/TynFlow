@@ -195,7 +195,9 @@ export function AddPortfolioDialog() {
       <AlertDialogTrigger asChild>
         <Button className="cursor-pointer">
           <IconPlus />
-          Add Portfolio
+          <span className="hidden sm:block">
+            Add Portfolio
+          </span>
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

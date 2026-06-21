@@ -84,7 +84,9 @@ export function AddBudgetDialog() {
       <AlertDialogTrigger asChild>
         <Button className="cursor-pointer">
           <IconPlus />
-          Add Budget
+          <span className="hidden sm:block">
+            Add Budget
+          </span>
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
