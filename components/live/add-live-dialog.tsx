@@ -132,7 +132,9 @@ export function AddLiveDialog() {
       <AlertDialogTrigger asChild>
         <Button className="cursor-pointer">
           <IconPlus />
-          Add Live
+          <span className="hidden sm:block">
+            Add Live
+          </span>
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

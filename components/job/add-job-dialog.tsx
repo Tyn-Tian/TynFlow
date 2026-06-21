@@ -174,7 +174,7 @@ export function AddJobDialog() {
             <AlertDialogTrigger asChild>
                 <Button variant="outline" size="sm" className="cursor-pointer">
                     <IconPlus />
-                    <span className="hidden lg:inline">Add Job</span>
+                    <span className="hidden sm:block">Add Job</span>
                 </Button>
             </AlertDialogTrigger>
             <AlertDialogContent className="sm:max-w-[500px]">
