@@ -104,28 +104,28 @@ export const transactionService = {
     await transactionRepository.create(dto);
 
     if (dto.type === "Expense" && dto.wallet_id && dto.budget_id) {
-      await budgetService.updateLeftover(dto.budget_id, -dto.amount);
-      await walletService.updateBalance(dto.wallet_id, -dto.amount);
+      await budgetService.updateLeftover(dto.budget_id, -Number(dto.amount));
+      await walletService.updateBalance(dto.wallet_id, -Number(dto.amount));
     }
 
     if (dto.type === "Income" && dto.wallet_id) {
-      await walletService.updateBalance(dto.wallet_id, dto.amount);
+      await walletService.updateBalance(dto.wallet_id, Number(dto.amount));
     }
 
     if (dto.type === "Transfer" && dto.wallet_id && dto.transfer_id) {
       await walletService.updateBalance(
         dto.wallet_id,
-        -(dto.amount + (dto?.admin_fee ?? 0)),
+        -(Number(dto.amount) + Number(dto.admin_fee ?? 0)),
       );
-      await walletService.updateBalance(dto.transfer_id, dto.amount);
+      await walletService.updateBalance(dto.transfer_id, Number(dto.amount));
     }
 
     if (dto.type === "Invest" && dto.wallet_id && dto.portfolio_id) {
       await walletService.updateBalance(
         dto.wallet_id,
-        -(dto.amount + (dto.admin_fee ?? 0)),
+        -(Number(dto.amount) + Number(dto.admin_fee ?? 0)),
       );
-      await portfolioService.updateValue(dto.portfolio_id, dto.amount);
+      await portfolioService.updateValue(dto.portfolio_id, Number(dto.amount));
     }
   },
   addMany: async (dtos: TransactionDto[]) => {
@@ -137,83 +137,83 @@ export const transactionService = {
     const { data: tx } = await transactionRepository.getById(id);
 
     if (tx?.type === "Expense" && tx?.wallet_id && tx?.budget_id) {
-      await budgetService.updateLeftover(tx.budget_id, tx.amount);
-      await walletService.updateBalance(tx.wallet_id, tx.amount);
+      await budgetService.updateLeftover(tx.budget_id, Number(tx.amount));
+      await walletService.updateBalance(tx.wallet_id, Number(tx.amount));
     }
 
     if (tx?.type === "Income" && tx?.wallet_id) {
-      await walletService.updateBalance(tx?.wallet_id, -tx?.amount);
+      await walletService.updateBalance(tx.wallet_id, -Number(tx.amount));
     }
 
     if (tx?.type === "Transfer" && tx?.wallet_id && tx?.transfer_id) {
       await walletService.updateBalance(
-        tx?.wallet_id,
-        tx?.amount + (tx?.admin_fee ?? 0),
+        tx.wallet_id,
+        Number(tx.amount) + Number(tx.admin_fee ?? 0),
       );
-      await walletService.updateBalance(tx?.transfer_id, -tx?.amount);
+      await walletService.updateBalance(tx.transfer_id, -Number(tx.amount));
     }
 
     if (tx?.type === "Invest" && tx?.wallet_id && tx?.portfolio_id) {
-      await budgetService.updateLeftover(
-        tx?.budget_id,
-        tx?.amount + (tx?.admin_fee ?? 0),
+      await walletService.updateBalance(
+        tx.wallet_id,
+        Number(tx.amount) + Number(tx.admin_fee ?? 0),
       );
-      await portfolioService.updateValue(tx?.portfolio_id, -tx?.amount);
+      await portfolioService.updateValue(tx.portfolio_id, -Number(tx.amount));
     }
 
     await transactionRepository.update(id, dto);
 
     if (dto.type === "Expense" && dto.wallet_id && dto.budget_id) {
-      await budgetService.updateLeftover(dto.budget_id, -dto.amount);
-      await walletService.updateBalance(dto.wallet_id, -dto.amount);
+      await budgetService.updateLeftover(dto.budget_id, -Number(dto.amount));
+      await walletService.updateBalance(dto.wallet_id, -Number(dto.amount));
     }
 
     if (dto.type === "Income" && dto.wallet_id) {
-      await walletService.updateBalance(dto.wallet_id, dto.amount);
+      await walletService.updateBalance(dto.wallet_id, Number(dto.amount));
     }
 
     if (dto.type === "Transfer" && dto.wallet_id && dto.transfer_id) {
       await walletService.updateBalance(
         dto.wallet_id,
-        -(dto.amount + (dto?.admin_fee ?? 0)),
+        -(Number(dto.amount) + Number(dto.admin_fee ?? 0)),
       );
-      await walletService.updateBalance(dto.transfer_id, dto.amount);
+      await walletService.updateBalance(dto.transfer_id, Number(dto.amount));
     }
 
     if (dto.type === "Invest" && dto.wallet_id && dto.portfolio_id) {
       await walletService.updateBalance(
         dto.wallet_id,
-        -(dto.amount + (dto.admin_fee ?? 0)),
+        -(Number(dto.amount) + Number(dto.admin_fee ?? 0)),
       );
-      await portfolioService.updateValue(dto.portfolio_id, dto.amount);
+      await portfolioService.updateValue(dto.portfolio_id, Number(dto.amount));
     }
   },
   delete: async (id: string) => {
     const { data: tx } = await transactionRepository.getById(id);
 
     if (tx?.type === "Expense" && tx?.wallet_id && tx?.budget_id) {
-      await budgetService.updateLeftover(tx.budget_id, tx.amount);
-      await walletService.updateBalance(tx.wallet_id, tx.amount);
+      await budgetService.updateLeftover(tx.budget_id, Number(tx.amount));
+      await walletService.updateBalance(tx.wallet_id, Number(tx.amount));
     }
 
     if (tx?.type === "Income" && tx?.wallet_id) {
-      await walletService.updateBalance(tx?.wallet_id, -tx?.amount);
+      await walletService.updateBalance(tx.wallet_id, -Number(tx.amount));
     }
 
     if (tx?.type === "Transfer" && tx?.wallet_id && tx?.transfer_id) {
       await walletService.updateBalance(
-        tx?.wallet_id,
-        tx?.amount + (tx?.admin_fee ?? 0),
+        tx.wallet_id,
+        Number(tx.amount) + Number(tx.admin_fee ?? 0),
       );
-      await walletService.updateBalance(tx?.transfer_id, -tx?.amount);
+      await walletService.updateBalance(tx.transfer_id, -Number(tx.amount));
     }
 
     if (tx?.type == "Invest" && tx?.wallet_id && tx?.portfolio_id) {
-      await budgetService.updateLeftover(
-        tx?.budget_id,
-        tx?.amount + (tx?.admin_fee ?? 0),
+      await walletService.updateBalance(
+        tx.wallet_id,
+        Number(tx.amount) + Number(tx.admin_fee ?? 0),
       );
-      await portfolioService.updateValue(tx?.portfolio_id, -tx?.amount);
+      await portfolioService.updateValue(tx.portfolio_id, -Number(tx.amount));
     }
 
     await transactionRepository.delete(id);

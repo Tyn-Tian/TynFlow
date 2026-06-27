@@ -18,8 +18,8 @@ export const budgetService = {
   },
   updateLeftover: async (id: string, delta: number) => {
     const { data } = await budgetRepository.getById(id);
-    const currentLeftover = data?.leftover ?? 0;
-    const newLeftover = currentLeftover + delta;
+    const currentLeftover = Number(data?.leftover ?? 0);
+    const newLeftover = currentLeftover + Number(delta);
 
     await budgetRepository.update(id, {
       name: data?.name,

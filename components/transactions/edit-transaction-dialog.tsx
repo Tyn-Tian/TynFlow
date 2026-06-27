@@ -215,6 +215,9 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
       queryClient.invalidateQueries({
         queryKey: ["wallets"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["portfolios"],
+      });
     },
     onError: (err: Error | unknown) => {
       toast.error("Failed", {

@@ -17,7 +17,7 @@ export const walletService = {
   },
   updateBalance: async (id: string, delta: number) => {
     const { data } = await walletRepository.getById(id);
-    const newBalance = data?.balance + delta;
+    const newBalance = Number(data?.balance || 0) + Number(delta);
 
     await walletRepository.update(id, {
       name: data?.name,

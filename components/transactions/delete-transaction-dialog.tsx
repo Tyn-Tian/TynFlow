@@ -57,6 +57,9 @@ export function DeleteTransactionDialog({
       queryClient.invalidateQueries({
         queryKey: ["wallets"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["portfolios"],
+      });
       onDeleted?.();
     },
     onError: (err: Error | unknown) => {

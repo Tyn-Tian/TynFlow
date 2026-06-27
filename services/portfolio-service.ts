@@ -18,8 +18,8 @@ export const portfolioService = {
   updateValue: async (id: string, delta: number) => {
     const { data } = await portfolioRepository.getById(id);
 
-    const newInvested = data?.invested + delta;
-    const newValue = data?.current_value + delta;
+    const newInvested = Number(data?.invested || 0) + Number(delta);
+    const newValue = Number(data?.current_value || 0) + Number(delta);
 
     await portfolioRepository.update(id, {
       name: data?.name,

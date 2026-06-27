@@ -141,6 +141,9 @@ export function AddTransactionDialog() {
       queryClient.invalidateQueries({
         queryKey: ["wallets"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["portfolios"],
+      });
     },
     onError: (err: Error | unknown) => {
       toast.error("Failed", {
