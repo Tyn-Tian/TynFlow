@@ -448,7 +448,7 @@ export function AddTransactionDialog() {
                       <SelectContent position="popper">
                         {budgets?.map((b) => (
                           <SelectItem key={b.id} value={String(b.id)}>
-                            <span className="truncate max-w-[300px] sm:max-w-[500px] lg:max-w-full">
+                            <span className="truncate max-w-[250px] sm:max-w-[500px] lg:max-w-full">
                               {b.name}
                             </span>
                           </SelectItem>

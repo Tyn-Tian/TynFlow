@@ -454,7 +454,7 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
                         <SelectContent position="popper">
                           {budgets?.map((b) => (
                             <SelectItem key={b.id} value={String(b.id)} disabled={!!b.deleted_at}>
-                              <span className="truncate max-w-[300px] sm:max-w-[500px] lg:max-w-full">
+                              <span className="truncate max-w-[250px] sm:max-w-[500px] lg:max-w-full">
                                 {b.name} {!!b.deleted_at ? "(Deleted)" : ""}
                               </span>
                             </SelectItem>

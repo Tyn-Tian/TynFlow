@@ -428,25 +428,25 @@ export function AddSchedulerDialog() {
                         className="flex-1"
                       />
 
-                    <Button
-                      type="button"
-                      aria-label="Open calculator"
-                      onClick={() => {
-                        setCalcInitialValue(field.value ?? 0);
-                        setCalcOpen(true);
-                      }}
-                      className="w-9 h-10 flex items-center justify-center cursor-pointer"
-                    >
-                      <IconCalculator />
-                    </Button>
+                      <Button
+                        type="button"
+                        aria-label="Open calculator"
+                        onClick={() => {
+                          setCalcInitialValue(field.value ?? 0);
+                          setCalcOpen(true);
+                        }}
+                        className="w-9 h-10 flex items-center justify-center cursor-pointer"
+                      >
+                        <IconCalculator />
+                      </Button>
 
-                    <CalculatorDialog
-                      open={calcOpen}
-                      onOpenChange={setCalcOpen}
-                      onInsert={handleCalculatorInsert}
-                      initialValue={calcInitialValue}
-                      title="Calculator"
-                    />
+                      <CalculatorDialog
+                        open={calcOpen}
+                        onOpenChange={setCalcOpen}
+                        onInsert={handleCalculatorInsert}
+                        initialValue={calcInitialValue}
+                        title="Calculator"
+                      />
                     </div>
                     {fieldState.error && (
                       <FieldError errors={[fieldState.error]} />
@@ -472,7 +472,9 @@ export function AddSchedulerDialog() {
                         <SelectContent position="popper">
                           {budgets?.map((b) => (
                             <SelectItem key={b.id} value={String(b.id)}>
-                              {b.name}
+                              <span className="truncate max-w-[250px] sm:max-w-[500px] lg:max-w-full">
+                                {b.name}
+                              </span>
                             </SelectItem>
                           ))}
                         </SelectContent>
