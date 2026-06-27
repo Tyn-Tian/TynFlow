@@ -35,6 +35,7 @@ import { type PortfolioType } from "@/components/portfolio/portfolio-data";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { PortfolioDto } from "@/types/portfolio-type";
 import { portfolioService } from "@/services/portfolio-service";
+import { CalculatorDialog } from "@/components/ui/calculator-dialog";
 
 const portfolioTypes: PortfolioType[] = [
   "Reksadana",
@@ -58,10 +59,10 @@ export function AddPortfolioDialog() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [calcOpen, setCalcOpen] = useState(false);
-  const [calcExpr, setCalcExpr] = useState<string>("0");
   const [calcField, setCalcField] = useState<
     "invested" | "currentValue" | null
   >(null);
+  const [calcInitialValue, setCalcInitialValue] = useState<number>(0);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -74,73 +75,22 @@ export function AddPortfolioDialog() {
     },
   });
 
-  const pressCalc = (value: string) => {
-    if (value === "C") return setCalcExpr("0");
-    if (value === "DEL")
-      return setCalcExpr((current) =>
-        current.length <= 1 ? "0" : current.slice(0, -1),
-      );
-    setCalcExpr((current) => (current === "0" ? value : current + value));
-  };
-
-  const evalCalc = () => {
-    try {
-      const result = Function(`"use strict";return (${calcExpr})`)();
-      setCalcExpr(String(Number.isFinite(result) ? result : 0));
-    } catch {
-      setCalcExpr("0");
-    }
-  };
-
-  const calcResultValue = () => {
-    try {
-      let expression = String(calcExpr);
-      while (expression.length && /[+\-*/\.]$/.test(expression))
-        expression = expression.slice(0, -1);
-      if (!expression) return 0;
-      const result = Function(`"use strict";return (${expression})`)();
-      return Math.max(
-        0,
-        Math.round(Number.isFinite(result) ? Number(result) : 0),
-      );
-    } catch {
-      return 0;
-    }
-  };
-
-  const formatExprForDisplay = (expression: string) => {
-    return expression.replace(/\d+(?:\.\d+)?/g, (match) => {
-      try {
-        const number = Number(match);
-        if (Number.isNaN(number)) return match;
-        return number.toLocaleString("id-ID");
-      } catch {
-        return match;
-      }
-    });
-  };
-
-  const formatCalcResult = () => calcResultValue().toLocaleString("id-ID");
-
   const openCalculator = (
     fieldName: "invested" | "currentValue",
     value: number,
   ) => {
     setCalcField(fieldName);
-    setCalcExpr(String(value ?? 0));
+    setCalcInitialValue(value ?? 0);
     setCalcOpen(true);
   };
 
-  const insertCalc = () => {
-    const fieldName = calcField;
-    if (!fieldName) return;
+  const handleCalculatorInsert = (value: number) => {
+    if (!calcField) return;
 
-    form.setValue(fieldName, calcResultValue(), {
+    form.setValue(calcField, value, {
       shouldValidate: true,
       shouldDirty: true,
     });
-    setCalcOpen(false);
-    setCalcExpr("0");
     setCalcField(null);
   };
 
@@ -155,7 +105,6 @@ export function AddPortfolioDialog() {
         currentValue: 0,
       });
       setCalcOpen(false);
-      setCalcExpr("0");
       setCalcField(null);
     }
   };
@@ -375,93 +324,16 @@ export function AddPortfolioDialog() {
               )}
             />
 
-            <AlertDialog
+            <CalculatorDialog
               open={calcOpen}
-              onOpenChange={(value) => {
-                setCalcOpen(value);
-                if (!value) {
-                  setCalcExpr("0");
-                  setCalcField(null);
-                }
+              onOpenChange={(isOpen) => {
+                setCalcOpen(isOpen);
+                if (!isOpen) setCalcField(null);
               }}
-            >
-              <AlertDialogContent className="w-96">
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Calculator</AlertDialogTitle>
-                </AlertDialogHeader>
-
-                <div className="mb-4 text-right text-2xl font-medium">
-                  {formatExprForDisplay(calcExpr)}
-                </div>
-
-                <div className="grid grid-cols-4 gap-2">
-                  {[
-                    "C",
-                    "DEL",
-                    "/",
-                    "*",
-                    "7",
-                    "8",
-                    "9",
-                    "-",
-                    "4",
-                    "5",
-                    "6",
-                    "+",
-                    "1",
-                    "2",
-                    "3",
-                    "=",
-                    "0",
-                  ].map((key) => (
-                    <Button
-                      key={key}
-                      type="button"
-                      onClick={() => {
-                        if (key === "DEL") pressCalc("DEL");
-                        else if (key === "C") pressCalc("C");
-                        else if (key === "=") evalCalc();
-                        else pressCalc(key);
-                      }}
-                      className={
-                        key === "C"
-                          ? "bg-rose-500 text-white hover:bg-rose-500 hover:text-white"
-                          : ""
-                      }
-                    >
-                      {key}
-                    </Button>
-                  ))}
-                  <Button
-                    type="button"
-                    className="col-span-3 cursor-pointer"
-                    onClick={insertCalc}
-                  >
-                    Rp {formatCalcResult()}
-                  </Button>
-                </div>
-
-                <div className="mt-4 flex justify-end gap-2">
-                  <AlertDialogCancel
-                    onClick={() => {
-                      setCalcOpen(false);
-                      setCalcExpr("0");
-                      setCalcField(null);
-                    }}
-                    className="cursor-pointer"
-                  >
-                    Close
-                  </AlertDialogCancel>
-                  <Button
-                    type="button"
-                    onClick={insertCalc}
-                    className="cursor-pointer"
-                  >
-                    Insert
-                  </Button>
-                </div>
-              </AlertDialogContent>
-            </AlertDialog>
+              onInsert={handleCalculatorInsert}
+              initialValue={calcInitialValue}
+              title="Calculator"
+            />
 
             <AlertDialogFooter>
               <AlertDialogCancel type="button" className="cursor-pointer">

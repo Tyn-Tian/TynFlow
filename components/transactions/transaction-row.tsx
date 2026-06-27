@@ -1,18 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Controller, Control, UseFormWatch, UseFormSetValue } from "react-hook-form";
 import { IconTrash, IconCalendar, IconCalculator } from "@tabler/icons-react";
+import { CalculatorDialog } from "@/components/ui/calculator-dialog";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "../ui/input-group";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import {
   Field,
   FieldError,
@@ -52,7 +46,7 @@ export function TransactionRow({
   setValue: UseFormSetValue<FormValues>;
 }) {
   const [calcOpen, setCalcOpen] = useState(false);
-  const [calcExpr, setCalcExpr] = useState<string>("0");
+  const [calcInitialValue, setCalcInitialValue] = useState(0);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const datePickerRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -76,70 +70,11 @@ export function TransactionRow({
     };
   }, [showDatePicker]);
 
-  const pressCalc = (v: string) => {
-    if (v === "C") return setCalcExpr("0");
-    if (v === "DEL")
-      return setCalcExpr((s) => (s.length <= 1 ? "0" : s.slice(0, -1)));
-    setCalcExpr((s) => (s === "0" ? v : s + v));
-  };
-
-  const evalCalc = () => {
-    try {
-      const res = Function(`"use strict";return (${calcExpr})`)();
-      setCalcExpr(String(Number.isFinite(res) ? res : 0));
-    } catch {
-      setCalcExpr("0");
-    }
-  };
-
-  const insertCalc = () => {
-    try {
-      const res = Function(`"use strict";return (${calcExpr})`)();
-      const val = Math.max(
-        0,
-        Math.round(Number.isFinite(res) ? Number(res) : 0),
-      );
-      setValue(`transactions.${index}.amount`, val, {
-        shouldValidate: true,
-        shouldDirty: true,
-      });
-    } catch {
-      setValue(`transactions.${index}.amount`, 0, {
-        shouldValidate: true,
-        shouldDirty: true,
-      });
-    } finally {
-      setCalcOpen(false);
-      setCalcExpr("0");
-    }
-  };
-
-  const formatExprForDisplay = (expr: string) => {
-    return expr.replace(/\d+(?:\.\d+)?/g, (m) => {
-      try {
-        const n = Number(m);
-        if (Number.isNaN(n)) return m;
-        return n.toLocaleString("id-ID");
-      } catch {
-        return m;
-      }
+  const handleCalculatorInsert = (value: number) => {
+    setValue(`transactions.${index}.amount`, value, {
+      shouldValidate: true,
+      shouldDirty: true,
     });
-  };
-
-  const calcResultValue = () => {
-    try {
-      let expr = String(calcExpr);
-      while (expr.length && /[+\-*/\.]$/.test(expr)) expr = expr.slice(0, -1);
-      if (!expr) return 0;
-      const res = Function(`"use strict";return (${expr})`)();
-      return Math.max(0, Math.round(Number.isFinite(res) ? Number(res) : 0));
-    } catch {
-      return 0;
-    }
-  };
-
-  const formatCalcResult = () => {
-    return calcResultValue().toLocaleString("id-ID");
   };
 
   return (
@@ -297,7 +232,7 @@ export function TransactionRow({
                   type="button"
                   aria-label="Open calculator"
                   onClick={() => {
-                    setCalcExpr(String(field.value ?? 0));
+                    setCalcInitialValue(field.value ?? 0);
                     setCalcOpen(true);
                   }}
                   className="w-9 h-10 flex items-center justify-center cursor-pointer px-0"
@@ -305,60 +240,13 @@ export function TransactionRow({
                   <IconCalculator size={18} />
                 </Button>
 
-                <AlertDialog
+                <CalculatorDialog
                   open={calcOpen}
-                  onOpenChange={(v) => {
-                    setCalcOpen(v);
-                    if (v) setCalcExpr(String(field.value ?? 0));
-                  }}
-                >
-                  <AlertDialogContent className="w-96" onClick={(e) => e.stopPropagation()}>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Calculator</AlertDialogTitle>
-                    </AlertDialogHeader>
-
-                    <div className="mb-4 text-right text-2xl font-medium">
-                      {formatExprForDisplay(calcExpr)}
-                    </div>
-
-                    <div className="grid grid-cols-4 gap-2">
-                      {[
-                        "C", "DEL", "/", "*",
-                        "7", "8", "9", "-",
-                        "4", "5", "6", "+",
-                        "1", "2", "3", "=",
-                        "0",
-                      ].map((k) => (
-                        <Button
-                          key={k}
-                          type="button"
-                          onClick={() => {
-                            if (k === "DEL") pressCalc("DEL");
-                            else if (k === "C") pressCalc("C");
-                            else if (k === "+") pressCalc("+");
-                            else if (k === "=") evalCalc();
-                            else pressCalc(k);
-                          }}
-                          className={k === "C" ? "bg-rose-500 text-white hover:bg-rose-500 hover:text-white" : ""}
-                        >
-                          {k}
-                        </Button>
-                      ))}
-                      <Button className="col-span-3 cursor-pointer" type="button" onClick={() => insertCalc()}>
-                        Rp {formatCalcResult()}
-                      </Button>
-                    </div>
-
-                    <div className="mt-4 flex justify-end gap-2">
-                      <AlertDialogCancel onClick={() => setCalcOpen(false)} className="cursor-pointer">
-                        Close
-                      </AlertDialogCancel>
-                      <Button onClick={() => insertCalc()} type="button" className="cursor-pointer">
-                        Insert
-                      </Button>
-                    </div>
-                  </AlertDialogContent>
-                </AlertDialog>
+                  onOpenChange={setCalcOpen}
+                  onInsert={handleCalculatorInsert}
+                  initialValue={calcInitialValue}
+                  title="Calculator"
+                />
               </div>
               {fieldState.error && <FieldError errors={[fieldState.error]} />}
             </Field>
