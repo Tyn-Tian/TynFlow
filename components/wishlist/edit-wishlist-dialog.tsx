@@ -25,8 +25,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { wishlistService } from "@/services/wishlist-service";
 import { Wishlist, WishlistDto } from "@/types/wishlist-type";
+import { wishlistApi } from "@/lib/api/wishlist-api";
 
 const formSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -77,7 +77,7 @@ export function EditWishlistDialog({ wishlist, open, onOpenChange }: EditWishlis
     const mutation = useMutation({
         mutationFn: async (dto: WishlistDto) => {
             if (!wishlist) throw new Error("No wishlist selected");
-            return await wishlistService.update(wishlist.id, dto);
+            return await wishlistApi.update(wishlist.id, dto);
         },
         onSuccess: () => {
             toast.success("Success", {

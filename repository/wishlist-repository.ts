@@ -1,4 +1,4 @@
-import { getSupabase } from "@/lib/api";
+import { getSupabase } from "@/lib/apiServer";
 import { WishlistDto } from "@/types/wishlist-type";
 
 export const wishlistRepository = {
