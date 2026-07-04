@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/select";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LiveDto } from "@/types/live-type";
-import { liveService } from "@/services/live-service";
+import { liveApi } from "@/lib/api/live-api";
 
 const formSchema = z.object({
   date: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/, "Date must be in dd/mm/yyyy"),
@@ -108,7 +108,7 @@ export function EditLiveDialog({ live }: EditLiveDialogProps) {
 
   const mutation = useMutation({
     mutationFn: async ({ id, dto }: { id: string; dto: LiveDto }) =>
-      await liveService.edit(id, dto),
+      await liveApi.update(id, dto),
     onSuccess: () => {
       toast.success("Updated", {
         description: "Live has been updated.",

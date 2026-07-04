@@ -14,7 +14,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { transactionService } from "@/services/transaction-service";
+import { transactionApi } from "@/lib/api/transaction-api";
 
 type TxItem = {
   id: number | string;
@@ -43,7 +43,7 @@ export function DeleteTransactionDialog({
   }
 
   const mutation = useMutation({
-    mutationFn: async (id: string) => await transactionService.delete(id),
+    mutationFn: async (id: string) => await transactionApi.delete(id),
     onSuccess: () => {
       toast.success("Deleted", { description: "Transaction deleted." });
       setOpen(false);

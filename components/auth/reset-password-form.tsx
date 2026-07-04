@@ -19,7 +19,7 @@ import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation } from "@tanstack/react-query"
 import { createClient } from "@/lib/supabase/client"
-import { authService } from "@/services/auth-service"
+import { authApi } from "@/lib/api/auth-api"
 
 const formSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters").regex(/[a-zA-Z]/, { message: "Password must contain at least one letter." }).regex(/[0-9]/, { message: "Password must contain at least one number." }),
@@ -64,7 +64,7 @@ export function ResetPasswordForm({
   })
 
   const mutation = useMutation({
-    mutationFn: async (data: z.infer<typeof formSchema>) => await authService.resetPassword(data.password),
+    mutationFn: async (data: z.infer<typeof formSchema>) => await authApi.resetPassword(data.password),
     onSuccess: () => {
       toast.success("Success", {
         description: "Your password has been reset successfully.",

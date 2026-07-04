@@ -26,7 +26,7 @@ import {
 import { IconPlus } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BudgetDto } from "@/types/budget-type";
-import { budgetService } from "@/services/budget-service";
+import { budgetApi } from "@/lib/api/budget-api";
 
 const formSchema = z.object({
   name: z.string().min(3, "Name is required"),
@@ -48,7 +48,7 @@ export function AddBudgetDialog() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (dto: BudgetDto) => await budgetService.add(dto),
+    mutationFn: async (dto: BudgetDto) => await budgetApi.add(dto),
     onSuccess: () => {
       toast.success("Success", {
         description: "Budget has been added.",

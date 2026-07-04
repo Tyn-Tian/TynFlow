@@ -1,4 +1,4 @@
-import { getSupabase } from "@/lib/api";
+import { getSupabase } from "@/lib/apiServer";
 import { BudgetDto } from "@/types/budget-type";
 
 export const budgetRepository = {

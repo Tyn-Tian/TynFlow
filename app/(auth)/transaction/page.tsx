@@ -11,7 +11,7 @@ import { TransactionPaginationSkeleton } from "@/components/transactions/skeleto
 
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { transactionService } from "@/services/transaction-service";
+import { transactionApi } from "@/lib/api/transaction-api";
 import { TransactionFilters } from "@/components/transactions/transaction-filters";
 
 function TransactionContent() {
@@ -23,7 +23,7 @@ function TransactionContent() {
   const { data: metadata = { totalPages: 1 }, isLoading } = useQuery({
     queryKey: ["transactions", "metadata", currentPage, walletId, budgetId],
     queryFn: async () =>
-      await transactionService.getTransactionPaginationMetadata({
+      await transactionApi.getTransactionPaginationMetadata({
         page: currentPage,
         walletId,
         budgetId,

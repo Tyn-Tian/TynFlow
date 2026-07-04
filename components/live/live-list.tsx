@@ -38,7 +38,7 @@ import {
     type HydratedLiveItem,
 } from "@/components/live/live-data"
 import { useQuery } from "@tanstack/react-query"
-import { liveService } from "@/services/live-service"
+import { liveApi } from "@/lib/api/live-api"
 import { useIsMobile } from "@/hooks/use-mobile"
 
 type FlatItem = 
@@ -52,7 +52,7 @@ export function LiveList() {
 
     const { data: lives, isLoading } = useQuery({
         queryKey: ["lives"],
-        queryFn: async () => await liveService.getAll(),
+        queryFn: async () => await liveApi.getAll(),
     })
 
     const transactions = useMemo(() => hydrateLiveItems(lives ?? []), [lives])

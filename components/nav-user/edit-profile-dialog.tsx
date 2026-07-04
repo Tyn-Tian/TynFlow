@@ -26,7 +26,7 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { authService } from "@/services/auth-service";
+import { authApi } from "@/lib/api/auth-api";
 import { UpdateProfileDto } from "@/types/auth-type";
 import useProfile from "@/hooks/use-profile";
 
@@ -123,7 +123,7 @@ export function EditProfileDialog({
 
   const mutation = useMutation({
     mutationFn: async (dto: UpdateProfileDto) =>
-      await authService.updateProfile(dto),
+      await authApi.updateProfile(dto),
     onSuccess: () => {
       toast.success("Success", {
         description: "Profile has been updated.",

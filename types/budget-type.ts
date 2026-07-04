@@ -3,6 +3,7 @@ export interface Budget {
   name: string;
   total: number;
   leftover: number;
+  deleted_at?: string | null;
 }
 
 export interface BudgetDto {

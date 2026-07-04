@@ -27,7 +27,7 @@ import useWallet from "@/hooks/use-wallet";
 import useBudget from "@/hooks/use-budget";
 import usePortfolio from "@/hooks/use-portfolio";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { transactionService } from "@/services/transaction-service";
+import { transactionApi } from "@/lib/api/transaction-api";
 import { TransactionDto } from "@/types/transaction-type";
 import { TransactionRow } from "./transaction-row";
 
@@ -101,7 +101,7 @@ export function AddMultipleTransactionDialog() {
   };
 
   const mutation = useMutation({
-    mutationFn: async (dtos: TransactionDto[]) => await transactionService.addMany(dtos),
+    mutationFn: async (dtos: TransactionDto[]) => await transactionApi.addMany(dtos),
     onSuccess: () => {
       toast.success("Success", {
         description: "Multiple transactions added.",

@@ -37,7 +37,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { authService } from "@/services/auth-service";
+import { authApi } from "@/lib/api/auth-api";
 import { useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
@@ -73,7 +73,7 @@ export function NavMain({
   const queryClient = useQueryClient();
 
   const handleLogout = async () => {
-    await authService.logout();
+    await authApi.logout();
     queryClient.clear();
     router.push("/login");
   };

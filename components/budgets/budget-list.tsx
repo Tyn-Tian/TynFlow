@@ -18,7 +18,7 @@ import { DeleteBudgetDialog } from "@/components/budgets/delete-budget-dialog"
 import { formatRupiah } from "@/lib/utils"
 import useRange from "@/hooks/use-range"
 import { useQuery } from "@tanstack/react-query"
-import { budgetService } from "@/services/budget-service"
+import { budgetApi } from "@/lib/api/budget-api"
 import { Badge } from "../ui/badge"
 
 export function BudgetList() {
@@ -29,7 +29,7 @@ export function BudgetList() {
         queryKey: ["enriched-budgets", range?.start_date, range?.end_date],
         queryFn: async () => {
             if (!range) return [];
-            return await budgetService.getBudgets(range.start_date, range.end_date);
+            return await budgetApi.getBudgets(range.start_date, range.end_date);
         },
         enabled: !!range,
     })

@@ -16,7 +16,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { walletRepository } from "@/repository/wallet-repository";
+import { walletApi } from "@/lib/api/wallet-api";
 
 export function DeleteWalletDialog({ walletId }: { walletId?: string | null }) {
   const queryClient = useQueryClient()
@@ -24,7 +24,7 @@ export function DeleteWalletDialog({ walletId }: { walletId?: string | null }) {
   const [open, setOpen] = useState(false);
 
   const mutation = useMutation({
-    mutationFn: (id: string) => walletRepository.delete(id),
+    mutationFn: (id: string) => walletApi.delete(id),
     onSuccess: () => {
       toast.success("Success", {
         description: "Wallet has been added.",

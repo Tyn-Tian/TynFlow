@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { DataTable } from "@/components/wishlist/table/data-table";
 import { SiteHeader } from "@/components/site-header";
-import { wishlistService } from "@/services/wishlist-service";
 import { useQuery } from "@tanstack/react-query";
 
 import { AddWishlistDialog } from "@/components/wishlist/add-wishlist-dialog";
@@ -16,12 +15,13 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/select"
+import { wishlistApi } from "@/lib/api/wishlist-api";
 
 export default function Page() {
     const { data, isLoading } = useQuery({
         queryKey: ["wishlists"],
-        queryFn: async () => await wishlistService.getAll(),
+        queryFn: async () => await wishlistApi.getAll(),
     });
 
     const [search, setSearch] = useState("");

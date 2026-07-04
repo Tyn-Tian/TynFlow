@@ -40,7 +40,7 @@ import useBudget from "@/hooks/use-budget";
 import usePortfolio from "@/hooks/use-portfolio";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { SchedulerDto } from "@/types/scheduler-type";
-import { schedulerService } from "@/services/scheduler-service";
+import { schedulerApi } from "@/lib/api/scheduler-api";
 
 const formSchema = z.object({
   name: z.string().optional(),
@@ -124,7 +124,7 @@ export function AddSchedulerDialog() {
 
   const mutation = useMutation({
     mutationFn: async (dto: SchedulerDto) =>
-      await schedulerService.add(dto),
+      await schedulerApi.add(dto),
     onSuccess: () => {
       toast.success("Success", {
         description: "Scheduler added.",

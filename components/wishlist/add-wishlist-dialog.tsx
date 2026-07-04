@@ -27,8 +27,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { wishlistService } from "@/services/wishlist-service";
 import { WishlistDto } from "@/types/wishlist-type";
+import { wishlistApi } from "@/lib/api/wishlist-api";
 
 const formSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -61,7 +61,7 @@ export function AddWishlistDialog() {
     };
 
     const mutation = useMutation({
-        mutationFn: async (dto: WishlistDto) => await wishlistService.add(dto),
+        mutationFn: async (dto: WishlistDto) => await wishlistApi.add(dto),
         onSuccess: () => {
             toast.success("Success", {
                 description: "Wishlist added.",

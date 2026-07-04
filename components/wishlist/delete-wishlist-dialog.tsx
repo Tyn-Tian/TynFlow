@@ -10,10 +10,10 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { wishlistService } from "@/services/wishlist-service";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Wishlist } from "@/types/wishlist-type";
+import { wishlistApi } from "@/lib/api/wishlist-api";
 
 interface DeleteWishlistDialogProps {
     wishlist: Wishlist | null;
@@ -29,7 +29,7 @@ export function DeleteWishlistDialog({
     const queryClient = useQueryClient();
 
     const mutation = useMutation({
-        mutationFn: async (id: string) => await wishlistService.delete(id),
+        mutationFn: async (id: string) => await wishlistApi.delete(id),
         onSuccess: () => {
             toast.success("Success", {
                 description: "Wishlist deleted successfully.",

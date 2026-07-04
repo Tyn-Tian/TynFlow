@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { schedulerService } from "@/services/scheduler-service"
+import { schedulerApi } from "@/lib/api/scheduler-api"
 import { toast } from "sonner"
 import { Scheduler } from "@/types/scheduler-type"
 import { Button } from "../../ui/button"
@@ -17,7 +17,7 @@ export const ActionCell = ({ scheduler }: { scheduler: Scheduler }) => {
     const queryClient = useQueryClient();
     
     const deactivateMutation = useMutation({
-        mutationFn: async () => await schedulerService.deactivate(scheduler.id),
+        mutationFn: async () => await schedulerApi.deactivate(scheduler.id),
         onSuccess: () => {
             toast.success("Success", {
                 description: "Scheduler deactivated.",
@@ -35,7 +35,7 @@ export const ActionCell = ({ scheduler }: { scheduler: Scheduler }) => {
     });
 
     const activateMutation = useMutation({
-        mutationFn: async () => await schedulerService.activate(scheduler.id),
+        mutationFn: async () => await schedulerApi.activate(scheduler.id),
         onSuccess: () => {
             toast.success("Success", {
                 description: "Scheduler activated.",
@@ -53,7 +53,7 @@ export const ActionCell = ({ scheduler }: { scheduler: Scheduler }) => {
     });
 
     const deleteMutation = useMutation({
-        mutationFn: async () => await schedulerService.delete(scheduler.id),
+        mutationFn: async () => await schedulerApi.delete(scheduler.id),
         onSuccess: () => {
             toast.success("Success", {
                 description: "Scheduler deleted.",

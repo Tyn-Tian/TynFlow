@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/select";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Wallet, WalletDto } from "@/types/wallet-type";
-import { walletService } from "@/services/wallet-service";
+import { walletApi } from "@/lib/api/wallet-api";
 
 const walletTypes = ["Bank", "Bank Digital", "E-Wallet", "Cash"] as const;
 
@@ -78,7 +78,7 @@ export function EditWalletDialog({
 
   const mutation = useMutation({
     mutationFn: async ({ id, dto }: { id: string; dto: WalletDto }) =>
-      await walletService.edit(id, dto),
+      await walletApi.update(id, dto),
     onSuccess: async () => {
       toast.success("Success", {
         description: "Wallet has been updated.",

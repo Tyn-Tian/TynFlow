@@ -16,7 +16,7 @@ import { Skeleton } from "../ui/skeleton";
 
 import { formatRupiah } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { portfolioService } from "@/services/portfolio-service";
+import { portfolioApi } from "@/lib/api/portfolio-api";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PortfolioOverviewChartProps {
@@ -29,7 +29,7 @@ export default function PortfolioOverviewChart({ variant = "default", className 
 
     const { data: snapshots, isLoading } = useQuery({
         queryKey: ["portfolio-snapshots"],
-        queryFn: async () => await portfolioService.getSnapshots(),
+        queryFn: async () => await portfolioApi.getSnapshots(),
     });
 
     const chartData = snapshots?.map(snapshot => ({

@@ -1,4 +1,4 @@
-import { getSupabase } from "@/lib/api";
+import { getSupabase } from "@/lib/apiServer";
 import { LiveDto } from "@/types/live-type";
 
 export type Live = {
