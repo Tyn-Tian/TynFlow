@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/field";
 import { Budget, BudgetDto } from "@/types/budget-type";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { budgetService } from "@/services/budget-service";
+import { budgetApi } from "@/lib/api/budget-api";
 
 const formSchema = z
   .object({
@@ -72,7 +72,7 @@ export function EditBudgetDialog({
 
   const mutation = useMutation({
     mutationFn: async ({ id, dto }: { id: string; dto: BudgetDto }) =>
-      await budgetService.edit(id, dto),
+      await budgetApi.update(id, dto),
     onSuccess: () => {
       toast.success("Success", {
         description: "Budget has been updated.",

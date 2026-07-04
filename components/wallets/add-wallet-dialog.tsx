@@ -34,7 +34,7 @@ import {
 import { IconPlus } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { WalletDto } from "@/types/wallet-type";
-import { walletService } from "@/services/wallet-service";
+import { walletApi } from "@/lib/api/wallet-api";
 
 const walletTypes = ["Bank", "Bank Digital", "E-Wallet", "Cash"] as const;
 
@@ -62,7 +62,7 @@ export function AddWalletDialog() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (dto: WalletDto) => await walletService.add(dto),
+    mutationFn: async (dto: WalletDto) => await walletApi.add(dto),
     onSuccess: () => {
       toast.success("Success", {
         description: "Wallet has been added.",

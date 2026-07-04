@@ -16,14 +16,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { budgetService } from "@/services/budget-service";
+import { budgetApi } from "@/lib/api/budget-api";
 
 export function DeleteBudgetDialog({ budgetId }: { budgetId?: string | null }) {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
 
   const mutation = useMutation({
-    mutationFn: async (id: string) => await budgetService.delete(id),
+    mutationFn: async (id: string) => await budgetApi.delete(id),
     onSuccess: () => {
       toast.success("Deleted", {
         description: "Budget has been deleted.",

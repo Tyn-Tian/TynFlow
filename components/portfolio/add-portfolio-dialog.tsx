@@ -34,7 +34,7 @@ import {
 import { type PortfolioType } from "@/components/portfolio/portfolio-data";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { PortfolioDto } from "@/types/portfolio-type";
-import { portfolioService } from "@/services/portfolio-service";
+import { portfolioApi } from "@/lib/api/portfolio-api";
 import { CalculatorDialog } from "@/components/ui/calculator-dialog";
 
 const portfolioTypes: PortfolioType[] = [
@@ -110,7 +110,7 @@ export function AddPortfolioDialog() {
   };
 
   const mutation = useMutation({
-    mutationFn: async (dto: PortfolioDto) => await portfolioService.add(dto),
+    mutationFn: async (dto: PortfolioDto) => await portfolioApi.add(dto),
     onSuccess: () => {
       toast.success("Success", {
         description: "Portfolio has been added.",

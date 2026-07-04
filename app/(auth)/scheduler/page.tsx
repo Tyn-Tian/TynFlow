@@ -2,7 +2,7 @@
 
 import { DataTable } from "@/components/scheduler/table/data-table";
 import { SiteHeader } from "@/components/site-header";
-import { schedulerService } from "@/services/scheduler-service";
+import { schedulerApi } from "@/lib/api/scheduler-api";
 import { useQuery } from "@tanstack/react-query";
 
 import { AddSchedulerDialog } from "@/components/scheduler/add-scheduler-dialog";
@@ -12,7 +12,7 @@ import { SchedulerTableSkeleton } from "@/components/scheduler/skeleton/schedule
 export default function Page() {
     const { data, isLoading } = useQuery({
         queryKey: ["schedulers"],
-        queryFn: async () => await schedulerService.getAll(),
+        queryFn: async () => await schedulerApi.getAll(),
     })
 
     return (

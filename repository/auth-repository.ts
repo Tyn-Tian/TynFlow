@@ -1,10 +1,10 @@
-import { getSupabase } from "@/lib/api";
-import { createClient } from "@/lib/supabase/client";
+import { getSupabase } from "@/lib/apiServer";
+import { createClient } from "@/lib/supabase/server";
 import { LoginDto, UpdateProfileDto } from "@/types/auth-type";
 
 export const authRepository = {
-  login: (dto: LoginDto) => {
-    const supabase = createClient();
+  login: async (dto: LoginDto) => {
+    const supabase = await createClient();
     return supabase.auth.signInWithPassword({
       email: dto.email,
       password: dto.password,
@@ -42,26 +42,26 @@ export const authRepository = {
       .single();
   },
 
-  googleLogin: () => {
-    const supabase = createClient();
+  googleLogin: async () => {
+    const supabase = await createClient();
     return supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${location.origin}/auth/callback`,
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/auth/callback`,
         queryParams: {
           prompt: 'consent',
         },
       },
     })
   },
-  forgotPassword: (email: string) => {
-    const supabase = createClient();
+  forgotPassword: async (email: string) => {
+    const supabase = await createClient();
     return supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/reset-password`,
     });
   },
-  resetPassword: (password: string) => {
-    const supabase = createClient();
+  resetPassword: async (password: string) => {
+    const supabase = await createClient();
     return supabase.auth.updateUser({ password });
   },
 };

@@ -17,7 +17,7 @@ import * as z from "zod"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation } from "@tanstack/react-query"
-import { authService } from "@/services/auth-service"
+import { authApi } from "@/lib/api/auth-api"
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -35,7 +35,7 @@ export function ForgotPasswordForm({
   })
 
   const mutation = useMutation({
-    mutationFn: async (data: z.infer<typeof formSchema>) => await authService.forgotPassword(data.email),
+    mutationFn: async (data: z.infer<typeof formSchema>) => authApi.forgotPassword(data.email),
     onSuccess: () => {
       toast.success("Check your email", {
         description: "We've sent you a link to reset your password.",

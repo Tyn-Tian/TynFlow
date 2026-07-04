@@ -1,9 +1,9 @@
-import { portfolioService } from "@/services/portfolio-service";
+import { portfolioApi } from "@/lib/api/portfolio-api";
 import { useQuery } from "@tanstack/react-query";
 
 export default function usePortfolio() {
   return useQuery({
     queryKey: ["portfolios"],
-    queryFn: async () => await portfolioService.getAll(),
+    queryFn: async () => await portfolioApi.getAll(),
   });
 }

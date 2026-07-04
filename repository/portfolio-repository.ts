@@ -1,4 +1,4 @@
-import { getSupabase } from "@/lib/api";
+import { getSupabase } from "@/lib/apiServer";
 import { PortfolioDto } from "@/types/portfolio-type";
 
 export const portfolioRepository = {

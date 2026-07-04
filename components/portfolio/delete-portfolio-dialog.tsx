@@ -16,7 +16,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { portfolioService } from "@/services/portfolio-service"
+import { portfolioApi } from "@/lib/api/portfolio-api"
 
 type DeletePortfolioDialogProps = {
     portfolioId?: string | null
@@ -27,7 +27,7 @@ export function DeletePortfolioDialog({ portfolioId }: DeletePortfolioDialogProp
     const [open, setOpen] = useState(false)
 
     const mutation = useMutation({
-        mutationFn: async (id: string) => await portfolioService.delete(id),
+        mutationFn: async (id: string) => await portfolioApi.delete(id),
         onSuccess: () => {
             toast.success("Deleted", {
                 description: "Portfolio has been deleted.",

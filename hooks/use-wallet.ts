@@ -1,9 +1,9 @@
-import { walletService } from "@/services/wallet-service";
+import { walletApi } from "@/lib/api/wallet-api";
 import { useQuery } from "@tanstack/react-query";
 
 export default function useWallet() {
   return useQuery({
     queryKey: ["wallets"],
-    queryFn: async () => await walletService.getAll(),
+    queryFn: async () => await walletApi.getAll(),
   });
 }

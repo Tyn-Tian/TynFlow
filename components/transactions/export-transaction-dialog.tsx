@@ -28,7 +28,7 @@ import useWallet from "@/hooks/use-wallet";
 import useBudget from "@/hooks/use-budget";
 import usePortfolio from "@/hooks/use-portfolio";
 import { useMutation } from "@tanstack/react-query";
-import { transactionService } from "@/services/transaction-service";
+import { transactionApi } from "@/lib/api/transaction-api";
 import { Wallet } from "@/types/wallet-type";
 import { Budget } from "@/types/budget-type";
 import { Portfolio } from "@/types/portfolio-type";
@@ -65,7 +65,7 @@ export function ExportTransactionDialog() {
       portfolios: Portfolio[];
       filters: { startDate?: string; endDate?: string };
     }) =>
-      await transactionService.exportExcel({
+      await transactionApi.exportExcel({
         wallets,
         budgets,
         portfolios,

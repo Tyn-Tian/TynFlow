@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { EditTransactionDialog } from "./edit-transaction-dialog";
 import { useQuery } from "@tanstack/react-query";
-import { transactionService } from "@/services/transaction-service";
+import { transactionApi } from "@/lib/api/transaction-api";
 import useWallet from "@/hooks/use-wallet";
 import useBudget from "@/hooks/use-budget";
 import usePortfolio from "@/hooks/use-portfolio";
@@ -51,7 +51,7 @@ export function TransactionList() {
   const { data: transactions, isLoading } = useQuery({
     queryKey: ["transactions", currentPage, walletId, budgetId],
     queryFn: async () =>
-      await transactionService.getPaginatedTransactions({
+      await transactionApi.getPaginatedTransactions({
         wallets: wallets ?? [],
         budgets: budgets ?? [],
         portfolios: portfolios ?? [],

@@ -1,4 +1,4 @@
-import { getSupabase } from "@/lib/api";
+import { getSupabase } from "@/lib/apiServer";
 import { Filters, TransactionDto } from "@/types/transaction-type";
 
 export const transactionRepository = {

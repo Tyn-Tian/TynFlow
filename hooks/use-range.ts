@@ -1,9 +1,9 @@
-import { authService } from "@/services/auth-service";
+import { authApi } from "@/lib/api/auth-api";
 import { useQuery } from "@tanstack/react-query";
 
 export default function useRange() {
   return useQuery({
     queryKey: ["range-date"],
-    queryFn: async () => await authService.getRangeDate(),
+    queryFn: async () => await authApi.getRangeDate(),
   });
 }

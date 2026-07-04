@@ -1,4 +1,4 @@
-import { getSupabase } from "@/lib/api";
+import { getSupabase } from "@/lib/apiServer";
 import { WalletDto } from "@/types/wallet-type";
 
 export const walletRepository = {

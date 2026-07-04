@@ -1,4 +1,4 @@
-import { getSupabase } from "@/lib/api";
+import { getSupabase } from "@/lib/apiServer";
 import { SchedulerDto } from "@/types/scheduler-type";
 
 export const schedulerRepository = {

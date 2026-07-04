@@ -16,7 +16,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { liveService } from "@/services/live-service";
+import { liveApi } from "@/lib/api/live-api";
 
 type DeleteLiveDialogProps = {
   liveId?: string | null;
@@ -27,7 +27,7 @@ export function DeleteLiveDialog({ liveId }: DeleteLiveDialogProps) {
   const [open, setOpen] = useState(false);
 
   const mutation = useMutation({
-    mutationFn: async (id: string) => await liveService.delete(id),
+    mutationFn: async (id: string) => await liveApi.delete(id),
     onSuccess: () => {
       toast.success("Deleted", {
         description: "Live has been deleted.",

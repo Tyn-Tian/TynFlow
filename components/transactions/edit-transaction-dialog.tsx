@@ -38,7 +38,7 @@ import useWallet from "@/hooks/use-wallet";
 import useBudget from "@/hooks/use-budget";
 import usePortfolio from "@/hooks/use-portfolio";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { transactionService } from "@/services/transaction-service";
+import { transactionApi } from "@/lib/api/transaction-api";
 import { TransactionDto } from "@/types/transaction-type";
 
 const formSchema = z.object({
@@ -141,7 +141,7 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
     queryKey: ["transaction", tx?.id],
     queryFn: async () => {
       if (!tx?.id) return null;
-      return await transactionService.getById(String(tx.id));
+      return await transactionApi.getById(String(tx.id));
     },
     enabled: !!tx?.id,
   });
@@ -196,7 +196,7 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
 
   const mutation = useMutation({
     mutationFn: async ({ id, dto }: { id: string; dto: TransactionDto }) =>
-      await transactionService.edit(id, dto),
+      await transactionApi.update(id, dto),
     onSuccess: () => {
       toast.success("Success", {
         description: "Transaction updated.",

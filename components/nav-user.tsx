@@ -36,7 +36,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { EditProfileDialog } from "@/components/nav-user/edit-profile-dialog";
-import { authService } from "@/services/auth-service";
+import { authApi } from "@/lib/api/auth-api";
 import { useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -68,7 +68,7 @@ export function NavUser({
   };
 
   const handleLogout = async () => {
-    await authService.logout();
+    await authApi.logout();
     queryClient.clear();
     router.push("/login");
   };

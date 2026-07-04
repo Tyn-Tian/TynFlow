@@ -39,7 +39,7 @@ import useBudget from "@/hooks/use-budget";
 import usePortfolio from "@/hooks/use-portfolio";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { TransactionDto } from "@/types/transaction-type";
-import { transactionService } from "@/services/transaction-service";
+import { transactionApi } from "@/lib/api/transaction-api";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "../ui/input-group";
 
 const formSchema = z.object({
@@ -121,7 +121,7 @@ export function AddTransactionDialog() {
 
   const mutation = useMutation({
     mutationFn: async (dto: TransactionDto) =>
-      await transactionService.add(dto),
+      await transactionApi.add(dto),
     onSuccess: () => {
       toast.success("Success", {
         description: "Transaction added.",

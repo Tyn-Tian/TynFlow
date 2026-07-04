@@ -34,7 +34,7 @@ import {
 import { type PortfolioType } from "@/components/portfolio/portfolio-data";
 import { Portfolio, PortfolioDto } from "@/types/portfolio-type";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { portfolioService } from "@/services/portfolio-service";
+import { portfolioApi } from "@/lib/api/portfolio-api";
 import { CalculatorDialog } from "@/components/ui/calculator-dialog";
 
 const portfolioTypes: PortfolioType[] = [
@@ -117,7 +117,7 @@ export function EditPortfolioDialog({
 
   const mutation = useMutation({
     mutationFn: async ({ id, dto }: { id: string; dto: PortfolioDto }) =>
-      await portfolioService.edit(id, dto),
+      await portfolioApi.update(id, dto),
     onSuccess: () => {
       toast.success("Success", {
         description: "Portfolio has been updated.",

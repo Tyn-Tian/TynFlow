@@ -19,7 +19,7 @@ import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation } from "@tanstack/react-query"
 import { LoginDto } from "@/types/auth-type"
-import { authService } from "@/services/auth-service"
+import { authApi } from "@/lib/api/auth-api"
 import Link from "next/link"
 
 const formSchema = z.object({
@@ -59,7 +59,7 @@ export function LoginForm({
   })
 
   const mutation = useMutation({
-    mutationFn: async (dto: LoginDto) => authService.login(dto),
+    mutationFn: async (dto: LoginDto) => authApi.login(dto),
     onSuccess: () => {
       toast.success("Success", {
         description: "You have successfully logged in.",
@@ -76,7 +76,7 @@ export function LoginForm({
   })
 
   const googleMutation = useMutation({
-    mutationFn: async () => authService.googleLogin(),
+    mutationFn: async () => authApi.googleLogin(),
     onError: (error) => {
       toast.error("Failed", {
         description: error.message,
