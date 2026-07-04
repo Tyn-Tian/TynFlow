@@ -31,8 +31,9 @@ export const authService = {
   },
 
   googleLogin: async () => {
-    const { error } = await authRepository.googleLogin();
+    const { data, error } = await authRepository.googleLogin();
     if (error) throw error;
+    return data;
   },
   forgotPassword: async (email: string) => {
     const { error } = await authRepository.forgotPassword(email)
