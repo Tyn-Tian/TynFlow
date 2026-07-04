@@ -2,11 +2,10 @@
 
 import { BudgetListSkeleton } from "@/components/budgets/skeleton/budget-list-skeleton"
 
-import { useState, useMemo, useRef, useEffect } from "react"
+import { useState } from "react"
 import { IconCalendarDollar } from "@tabler/icons-react"
 import { IconLockDollar } from "@tabler/icons-react"
-import { useWindowVirtualizer } from "@tanstack/react-virtual"
-import { useIsMobile } from "@/hooks/use-mobile"
+import { motion, AnimatePresence } from "motion/react"
 
 import {
     Card,
@@ -25,7 +24,6 @@ import { Badge } from "../ui/badge"
 
 export function BudgetList() {
     const [openId, setOpenId] = useState<string | null>(null)
-    const isMobile = useIsMobile()
 
     const { data: range } = useRange();
     const { data: budgets, isLoading } = useQuery({
@@ -37,45 +35,14 @@ export function BudgetList() {
         enabled: !!range,
     })
 
-    const rows = useMemo(() => {
-        if (!budgets) return [];
-        const result = [];
-        if (!isMobile) {
-            for (let i = 0; i < budgets.length; i += 2) {
-                result.push(budgets.slice(i, i + 2));
-            }
-        } else {
-            budgets.forEach(b => {
-                result.push([b]);
-            });
-        }
-        return result;
-    }, [budgets, isMobile]);
-
-    const listRef = useRef<HTMLDivElement>(null);
-    const [scrollMargin, setScrollMargin] = useState(0);
-
-    useEffect(() => {
-        if (listRef.current) {
-            setScrollMargin(listRef.current.offsetTop);
-        }
-    }, []);
-
-    const virtualizer = useWindowVirtualizer({
-        count: rows.length,
-        estimateSize: () => 180,
-        overscan: 5,
-        scrollMargin,
-    });
-
     const monthYear = new Date().toLocaleString("en-US", { month: "long", year: "numeric" })
 
     if (isLoading || !budgets) return <BudgetListSkeleton />;
     if (budgets.length === 0) return <div className="text-sm text-center text-muted-foreground">No budgets yet.</div>
 
     return (
-        <>
-            <div className="col-span-full xl:col-span-3 flex items-center justify-between rounded-xl border bg-card px-4 py-3">
+        <div className="space-y-4 w-full">
+            <div className="flex items-center justify-between rounded-xl border bg-card px-4 py-3">
                 <div className="flex items-center gap-2 text-sm font-medium">
                     <span className="inline-flex size-7 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                         <IconCalendarDollar className="size-4" />
@@ -90,136 +57,124 @@ export function BudgetList() {
                 </p>
             </div>
 
-            <div ref={listRef} className="col-span-full xl:col-span-3 relative w-full" style={{ height: `${virtualizer.getTotalSize()}px` }}>
-                {virtualizer.getVirtualItems().map((virtualRow) => {
-                    const rowItems = rows[virtualRow.index];
-                    
+            <div className="columns-1 lg:columns-2 gap-4">
+                {budgets.map((b) => {
+                    const leftover = b.leftover
+                    const used = Math.max(0, b.total - leftover)
+                    const remainingPct = b.total > 0 ? Math.round((leftover / b.total) * 100) : 0
+
+                    const progressColor =
+                        remainingPct >= 66
+                            ? "bg-emerald-500 dark:bg-emerald-400"
+                            : remainingPct >= 34
+                                ? "bg-amber-400 dark:bg-amber-500"
+                                : "bg-rose-500 dark:bg-rose-400"
+
+                    const progressWidth = Math.max(0, Math.min(remainingPct, 100))
+
+                    const key = b.id ?? b.name
+                    const isOpen = openId === key
+
                     return (
-                        <div
-                            key={virtualRow.key}
-                            data-index={virtualRow.index}
-                            ref={virtualizer.measureElement}
-                            style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                width: '100%',
-                                transform: `translateY(${virtualRow.start}px)`,
+                        <Card
+                            key={key}
+                            className="break-inside-avoid mb-4 @container/card cursor-pointer transition-all hover:shadow-md gap-2 py-4 sm:py-6"
+                            onClick={() => setOpenId(isOpen ? null : key)}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(event) => {
+                                if (event.key === "Enter" || event.key === " ") {
+                                    event.preventDefault()
+                                    setOpenId(isOpen ? null : key)
+                                }
                             }}
-                            className="pb-4"
                         >
-                            <div className={`grid grid-cols-1 ${!isMobile ? 'sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-2' : ''} gap-4`}>
-                                {rowItems.map((b) => {
-                                    const leftover = b.leftover
-                                    const used = Math.max(0, b.total - leftover)
-                                    const remainingPct = b.total > 0 ? Math.round((leftover / b.total) * 100) : 0
+                            <CardHeader className="flex items-center justify-between gap-3 px-4 sm:px-6">
+                                <div className="flex items-center gap-3">
+                                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-emerald-500/10">
+                                        <IconLockDollar size={20} className="text-emerald-400" />
+                                    </span>
+                                    <CardTitle>{b.name}</CardTitle>
+                                </div>
+                                <CardAction className="text-sm font-bold tabular-nums self-center">{formatRupiah(leftover)}</CardAction>
+                            </CardHeader>
+                            <CardContent className="px-4 sm:px-6">
+                                <div className="my-2 space-y-2">
+                                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                        <span>Remaining</span>
+                                        <span>{remainingPct}%</span>
+                                    </div>
+                                    <div className="h-1 w-full rounded-full bg-muted/30">
+                                        <div
+                                            className={`h-1 rounded-full transition-all ${progressColor}`}
+                                            style={{ width: `${progressWidth}%` }}
+                                        />
+                                    </div>
+                                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                        <span>Used: {formatRupiah(used)}</span>
+                                        <span>Total: {formatRupiah(b.total)}</span>
+                                    </div>
+                                </div>
+                            </CardContent>
 
-                                    const progressColor =
-                                        remainingPct >= 66
-                                            ? "bg-emerald-500 dark:bg-emerald-400"
-                                            : remainingPct >= 34
-                                                ? "bg-amber-400 dark:bg-amber-500"
-                                                : "bg-rose-500 dark:bg-rose-400"
-
-                                    const progressWidth = Math.max(0, Math.min(remainingPct, 100))
-
-                                    const key = b.id ?? b.name
-                                    const isOpen = openId === key
-
-                                    return (
-                                        <Card
-                                            key={key}
-                                            className="@container/card cursor-pointer transition-shadow hover:shadow-md gap-2 self-start py-4 sm:py-6"
-                                            onClick={() => setOpenId(isOpen ? null : key)}
-                                            role="button"
-                                            tabIndex={0}
-                                            onKeyDown={(event) => {
-                                                if (event.key === "Enter" || event.key === " ") {
-                                                    event.preventDefault()
-                                                    setOpenId(isOpen ? null : key)
-                                                }
-                                            }}
-                                        >
-                                            <CardHeader className="flex items-center justify-between gap-3 px-4 sm:px-6">
-                                                <div className="flex items-center gap-3">
-                                                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-emerald-500/10">
-                                                        <IconLockDollar size={20} className="text-emerald-400" />
-                                                    </span>
-                                                    <CardTitle>{b.name}</CardTitle>
+                            <AnimatePresence initial={false}>
+                                {isOpen && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                                        className="overflow-hidden"
+                                    >
+                                        <CardContent>
+                                            <div className="rounded-xl border bg-muted/20 p-4">
+                                                <div className="mb-4 flex items-start justify-between gap-3">
+                                                    <div>
+                                                        <p className="text-sm font-medium">Budget Summary</p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            Performance based on profile date range.
+                                                        </p>
+                                                    </div>
+                                                    <Badge
+                                                        variant={b.totalRealization! <= b.total ? "default" : "destructive"}
+                                                        className={b.totalRealization! <= b.total ? "bg-emerald-500 hover:bg-emerald-600" : "bg-rose-500 hover:bg-rose-600"}
+                                                    >
+                                                        {b.totalRealization! <= b.total ? "Good" : "Bad"}
+                                                    </Badge>
                                                 </div>
-                                                <CardAction className="text-sm font-bold tabular-nums self-center">{formatRupiah(leftover)}</CardAction>
-                                            </CardHeader>
-                                            <CardContent className="px-4 sm:px-6">
-                                                <div className="my-2 space-y-2">
-                                                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                                        <span>Remaining</span>
-                                                        <span>{remainingPct}%</span>
+
+                                                <div className="space-y-3 text-sm">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-muted-foreground">Daily Spending</span>
+                                                        <span className="font-medium">{formatRupiah(b.dailySpending || 0)}</span>
                                                     </div>
-                                                    <div className="h-1 w-full rounded-full bg-muted/30">
-                                                        <div
-                                                            className={`h-1 rounded-full transition-all ${progressColor}`}
-                                                            style={{ width: `${progressWidth}%` }}
-                                                        />
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-muted-foreground">Total Realization</span>
+                                                        <span className="font-medium">{formatRupiah(b.totalRealization || 0)}</span>
                                                     </div>
-                                                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                                        <span>Used: {formatRupiah(used)}</span>
-                                                        <span>Total: {formatRupiah(b.total)}</span>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-muted-foreground">Budget Limit</span>
+                                                        <span className="font-medium">{formatRupiah(b.total)}</span>
                                                     </div>
                                                 </div>
-                                            </CardContent>
 
-                                            {isOpen && (
-                                                <CardContent>
-                                                    <div className="rounded-xl border bg-muted/20 p-4">
-                                                        <div className="mb-4 flex items-start justify-between gap-3">
-                                                            <div>
-                                                                <p className="text-sm font-medium">Budget Summary</p>
-                                                                <p className="text-xs text-muted-foreground">
-                                                                    Performance based on profile date range.
-                                                                </p>
-                                                            </div>
-                                                            <Badge
-                                                                variant={b.totalRealization! <= b.total ? "default" : "destructive"}
-                                                                className={b.totalRealization! <= b.total ? "bg-emerald-500 hover:bg-emerald-600" : "bg-rose-500 hover:bg-rose-600"}
-                                                            >
-                                                                {b.totalRealization! <= b.total ? "Good" : "Bad"}
-                                                            </Badge>
-                                                        </div>
-
-                                                        <div className="space-y-3 text-sm">
-                                                            <div className="flex items-center justify-between">
-                                                                <span className="text-muted-foreground">Daily Spending</span>
-                                                                <span className="font-medium">{formatRupiah(b.dailySpending || 0)}</span>
-                                                            </div>
-                                                            <div className="flex items-center justify-between">
-                                                                <span className="text-muted-foreground">Total Realization</span>
-                                                                <span className="font-medium">{formatRupiah(b.totalRealization || 0)}</span>
-                                                            </div>
-                                                            <div className="flex items-center justify-between">
-                                                                <span className="text-muted-foreground">Budget Limit</span>
-                                                                <span className="font-medium">{formatRupiah(b.total)}</span>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="mt-4 flex justify-end gap-2">
-                                                            <EditBudgetDialog
-                                                                budget={{ id: b.id, name: b.name, total: b.total, leftover: b.leftover }}
-                                                                onSuccess={() => setOpenId(null)}
-                                                            />
-                                                            <DeleteBudgetDialog budgetId={b.id} />
-                                                        </div>
-                                                    </div>
-                                                </CardContent>
-                                            )}
-                                        </Card>
-                                    )
-                                })}
-                            </div>
-                        </div>
+                                                <div className="mt-4 flex justify-end gap-2">
+                                                    <EditBudgetDialog
+                                                        budget={{ id: b.id, name: b.name, total: b.total, leftover: b.leftover }}
+                                                        onSuccess={() => setOpenId(null)}
+                                                    />
+                                                    <DeleteBudgetDialog budgetId={b.id} />
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </Card>
                     )
                 })}
             </div>
-        </>
+        </div>
     )
 }
 
