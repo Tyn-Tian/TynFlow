@@ -66,8 +66,8 @@ bun install
 ### 3. Configure Environment Variables
 The application requires Supabase configuration to run. Create a new file named `.env.local` in the root directory of your project, then copy and fill in the following variables:
 ```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url_here
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key_here
+SUPABASE_URL=your_supabase_url_here
+SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key_here
 ```
 *(Note: You can check the `.env` file for references to other supporting variables if any)*
 

@@ -47,7 +47,7 @@ export const authRepository = {
     return supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/auth/callback`,
+        redirectTo: `${process.env.APP_URL || "http://localhost:3000"}/auth/callback`,
         queryParams: {
           prompt: 'consent',
         },
@@ -57,7 +57,7 @@ export const authRepository = {
   forgotPassword: async (email: string) => {
     const supabase = await createClient();
     return supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/reset-password`,
+      redirectTo: `${process.env.APP_URL || "http://localhost:3000"}/reset-password`,
     });
   },
   resetPassword: async (password: string) => {
