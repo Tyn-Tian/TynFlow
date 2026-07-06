@@ -1,8 +1,8 @@
 import { Wishlist, WishlistDto } from "@/types/wishlist-type";
 
 export const wishlistApi = {
-    getAll: async (): Promise<Wishlist[]> => {
-        const res = await fetch("/api/wishlists");
+    getAll: async (page: number = 1, limit: number = 10): Promise<{ data: Wishlist[], count: number }> => {
+        const res = await fetch(`/api/wishlists?page=${page}&limit=${limit}`);
         if (!res.ok) {
             throw new Error("Failed to fetch wishlists");
         }

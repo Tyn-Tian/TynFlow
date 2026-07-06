@@ -19,9 +19,12 @@ import {
 import { wishlistApi } from "@/lib/api/wishlist-api";
 
 export default function Page() {
-    const { data, isLoading } = useQuery({
-        queryKey: ["wishlists"],
-        queryFn: async () => await wishlistApi.getAll(),
+    const [page, setPage] = useState(1);
+    const limit = 10;
+
+    const { data: response, isLoading } = useQuery({
+        queryKey: ["wishlists", page],
+        queryFn: async () => await wishlistApi.getAll(page, limit),
     });
 
     const [search, setSearch] = useState("");
@@ -37,8 +40,8 @@ export default function Page() {
     }, [search]);
 
     const filteredData = useMemo(() => {
-        if (!data) return [];
-        let filtered = data;
+        if (!response?.data) return [];
+        let filtered = response.data;
 
         if (debouncedSearch) {
             const lowerSearch = debouncedSearch.toLowerCase();
@@ -56,7 +59,9 @@ export default function Page() {
         }
 
         return filtered;
-    }, [data, debouncedSearch, priority, status]);
+    }, [response, debouncedSearch, priority, status]);
+
+    const pageCount = response?.count ? Math.ceil(response.count / limit) : 1;
 
     return (
         <>
@@ -105,7 +110,13 @@ export default function Page() {
                     {isLoading ? (
                         <WishlistTableSkeleton />
                     ) : (
-                        <DataTable columns={columns} data={filteredData} />
+                        <DataTable 
+                            columns={columns} 
+                            data={filteredData}
+                            page={page}
+                            pageCount={pageCount}
+                            onPageChange={setPage}
+                        />
                     )}
                 </div>
             </section>
