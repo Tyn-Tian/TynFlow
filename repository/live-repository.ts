@@ -9,6 +9,7 @@ export type Live = {
   shopee: number;
   remark?: string;
   user_id: string;
+  created_at?: string;
 };
 
 export const liveRepository = {
@@ -16,7 +17,7 @@ export const liveRepository = {
     const { supabase, userId } = await getSupabase();
     return supabase
       .from("lives")
-      .select("id, date, type, tiktok, shopee, remark, user_id")
+      .select("id, date, type, tiktok, shopee, remark, user_id, created_at")
       .eq("user_id", userId)
       .order("date", { ascending: false })
       .order("created_at", { ascending: false });
@@ -25,7 +26,7 @@ export const liveRepository = {
     const { supabase, userId } = await getSupabase();
     return supabase
       .from("lives")
-      .select("id, date, type, tiktok, shopee, remark, user_id")
+      .select("id, date, type, tiktok, shopee, remark, user_id, created_at")
       .eq("id", id)
       .eq("user_id", userId)
       .single();

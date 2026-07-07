@@ -3,6 +3,7 @@
 import { LiveListSkeleton } from "@/components/live/skeleton/live-list-skeleton"
 
 import { useMemo, useState, useRef, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import {
     IconBolt,
     IconCheck,
@@ -55,7 +56,23 @@ export function LiveList() {
         queryFn: async () => await liveApi.getAll(),
     })
 
-    const transactions = useMemo(() => hydrateLiveItems(lives ?? []), [lives])
+    const searchParams = useSearchParams()
+    const monthParam = searchParams.get("month")
+    const activeMonth = useMemo(() => {
+        if (monthParam) return monthParam
+        const now = new Date()
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
+    }, [monthParam])
+
+    const transactions = useMemo(() => {
+        const allItems = hydrateLiveItems(lives ?? [])
+        return allItems.filter((item) => {
+            const date = new Date(item.date)
+            const itemMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`
+            return itemMonth === activeMonth
+        })
+    }, [lives, activeMonth])
+
     const groupedMonths = useMemo(() => {
         const groups = transactions.reduce<Record<string, HydratedLiveItem[]>>((acc, item) => {
             const date = new Date(item.date)
@@ -154,6 +171,12 @@ export function LiveList() {
             .sort((a, b) => {
                 const dateDiff = new Date(a.date).getTime() - new Date(b.date).getTime()
                 if (dateDiff !== 0) return dateDiff
+                
+                const timeA = a.created_at ? new Date(a.created_at).getTime() : 0
+                const timeB = b.created_at ? new Date(b.created_at).getTime() : 0
+                const timeDiff = timeA - timeB
+                if (timeDiff !== 0) return timeDiff
+
                 if (a.type === b.type) return a.id.localeCompare(b.id)
                 return a.type === "Biasa" ? -1 : 1
             })

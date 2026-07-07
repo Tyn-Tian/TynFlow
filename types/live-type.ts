@@ -7,6 +7,7 @@ export interface Live {
   tiktok: number;
   shopee: number;
   remark?: string;
+  created_at?: string;
 };
 
 export interface LiveDto {
@@ -15,4 +16,5 @@ export interface LiveDto {
   tiktok: number;
   shopee: number;
   remark?: string;
+  created_at?: string;
 }
