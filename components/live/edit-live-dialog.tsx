@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LiveDto } from "@/types/live-type";
 import { liveApi } from "@/lib/api/live-api";
@@ -43,6 +44,7 @@ const formSchema = z.object({
   type: z.enum(["Lembur", "Biasa"]),
   tiktok: z.number().int().min(0, "Sales must be at least 0"),
   shopee: z.number().int().min(0, "Sales must be at least 0"),
+  remark: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -92,6 +94,7 @@ export function EditLiveDialog({ live }: EditLiveDialogProps) {
       type: live.type,
       tiktok: live.tiktok,
       shopee: live.shopee,
+      remark: live.remark || "",
     },
   });
 
@@ -102,6 +105,7 @@ export function EditLiveDialog({ live }: EditLiveDialogProps) {
         type: live.type,
         tiktok: live.tiktok,
         shopee: live.shopee,
+        remark: live.remark || "",
       });
     }
   }, [defaultDateStr, form, live, open]);
@@ -280,6 +284,26 @@ export function EditLiveDialog({ live }: EditLiveDialogProps) {
                 />
               ))}
             </div>
+
+            <Controller
+              name="remark"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={`edit-live-remark-${live.id}`}>Remark</FieldLabel>
+                  <Textarea
+                    {...field}
+                    id={`edit-live-remark-${live.id}`}
+                    placeholder="Optional notes for this live"
+                    aria-invalid={fieldState.invalid}
+                    className="resize-none"
+                  />
+                  {fieldState.error && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
 
             <AlertDialogFooter>
               <AlertDialogCancel type="button" className="cursor-pointer">

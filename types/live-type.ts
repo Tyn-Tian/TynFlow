@@ -6,6 +6,7 @@ export interface Live {
   type: LiveType;
   tiktok: number;
   shopee: number;
+  remark?: string;
 };
 
 export interface LiveDto {
@@ -13,4 +14,5 @@ export interface LiveDto {
   type: LiveType;
   tiktok: number;
   shopee: number;
+  remark?: string;
 }

@@ -162,8 +162,9 @@ export function LiveList() {
                 const day = String(liveDate.getDate()).padStart(2, "0")
                 const monthLabel = liveDate.toLocaleDateString("id-ID", { month: "long" })
                 const typeLabel = item.type === "Lembur" ? ` (${item.type})` : ""
+                const remarkLabel = item.remark ? ` (${item.remark})` : ""
 
-                return `${day} ${monthLabel}${typeLabel}: Shopee ${item.shopee} pcs, TikTok ${item.tiktok} pcs`
+                return `${day} ${monthLabel}${remarkLabel}${typeLabel}: Shopee ${item.shopee} pcs, TikTok ${item.tiktok} pcs`
             })
             .join("\n")
 
@@ -304,6 +305,13 @@ export function LiveList() {
                                                                 ))}
                                                             </div>
                                                         </div>
+
+                                                        {item.remark && (
+                                                            <div className="mb-4 rounded-lg border border-border/50 bg-background/50 px-3 py-2.5 shadow-sm">
+                                                                <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Catatan Tambahan</p>
+                                                                <p className="text-sm text-foreground/90">{item.remark}</p>
+                                                            </div>
+                                                        )}
 
                                                         <div className="space-y-3 text-sm">
                                                             <div className="flex items-center justify-between">

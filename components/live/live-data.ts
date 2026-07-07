@@ -15,6 +15,7 @@ export type LiveItem = {
     type: LiveType
     tiktok: number
     shopee: number
+    remark?: string
 }
 
 export type HydratedLiveItem = LiveItem & {
@@ -60,6 +61,7 @@ export function normalizeLiveItems(
         type: string | null
         tiktok?: number | string | null
         shopee?: number | string | null
+        remark?: string | null
     }>
 ): LiveItem[] {
     return items.map((item) => ({
@@ -68,6 +70,7 @@ export function normalizeLiveItems(
         type: getLiveType(item.type),
         tiktok: getNumericValue(item.tiktok),
         shopee: getNumericValue(item.shopee),
+        remark: item.remark || "",
     }))
 }
 
