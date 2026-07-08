@@ -1,4 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar";
+import NotificationRegister from "@/components/NotificationRegister";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export default function AuthLayout({
@@ -18,6 +19,7 @@ export default function AuthLayout({
             <AppSidebar variant="inset" />
             <SidebarInset>
                 {children}
+                <NotificationRegister />
             </SidebarInset>
         </SidebarProvider>
     )
