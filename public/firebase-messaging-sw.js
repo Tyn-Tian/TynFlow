@@ -17,9 +17,13 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  const notificationTitle = payload.notification.title;
+  if (payload.notification) {
+    return;
+  }
+
+  const notificationTitle = payload.data?.title || "Pemberitahuan";
   const notificationOptions = {
-    body: payload.notification.body,
+    body: payload.data?.body || "",
     icon: "/icon-512x512.png",
   };
 
