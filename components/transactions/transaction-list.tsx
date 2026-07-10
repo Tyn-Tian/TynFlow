@@ -46,7 +46,7 @@ export function TransactionList() {
 
   const { data: walletData } = useWallet();
   const { data: budgetData } = useBudget(true);
-  const { data: portfolios } = usePortfolio();
+  const { data: portfolioData } = usePortfolio();
 
   const { data: transactions, isLoading } = useQuery({
     queryKey: ["transactions", currentPage, walletId, budgetId],
@@ -54,7 +54,7 @@ export function TransactionList() {
       await transactionApi.getPaginatedTransactions({
         wallets: walletData?.data ?? [],
         budgets: budgetData?.data ?? [],
-        portfolios: portfolios ?? [],
+        portfolios: portfolioData?.data ?? [],
         params: {
           page: currentPage,
           walletId,
@@ -64,7 +64,7 @@ export function TransactionList() {
     enabled:
       walletData !== undefined &&
       budgetData !== undefined &&
-      portfolios !== undefined,
+      portfolioData !== undefined,
   });
 
   if (isLoading || !transactions) return <TransactionListSkeleton />;

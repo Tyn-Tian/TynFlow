@@ -34,7 +34,9 @@ import usePortfolio from "@/hooks/use-portfolio";
 
 export function PortfolioList() {
   const [openId, setOpenId] = useState<string | null>(null);
-  const { data: portfolios, isLoading } = usePortfolio();
+  const { data, isLoading } = usePortfolio();
+
+  const portfolios = useMemo(() => data?.data ?? [], [data?.data]);
 
   const summary = useMemo(() => {
     const items = portfolios ?? [];
