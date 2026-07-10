@@ -26,7 +26,7 @@ export default function Page() {
                     {isLoading ? (
                         <SchedulerTableSkeleton />
                     ) : (
-                        <DataTable columns={columns} data={data ?? []} />
+                        <DataTable columns={columns} data={data?.data ?? []} />
                     )}
                 </div>
             </section>

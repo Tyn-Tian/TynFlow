@@ -128,7 +128,7 @@ export function AddSchedulerDialog() {
 
   const mutation = useMutation({
     mutationFn: async (dto: SchedulerDto) =>
-      await schedulerApi.add(dto),
+      await schedulerApi.create(dto),
     onSuccess: () => {
       toast.success("Success", {
         description: "Scheduler added.",
