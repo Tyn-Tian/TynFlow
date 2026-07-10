@@ -33,7 +33,8 @@ const iconByType = {
 export function WalletList() {
   const [openId, setOpenId] = useState<string | null>(null);
 
-  const { data: wallets, isLoading } = useWallet();
+  const { data, isLoading } = useWallet();
+  const wallets = data?.data || [];
 
   const monthYear = new Date().toLocaleString("en-US", {
     month: "long",
