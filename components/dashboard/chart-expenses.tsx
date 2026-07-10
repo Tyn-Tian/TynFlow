@@ -43,7 +43,8 @@ export function useExpenseChartData() {
     endDate: activeEndDate,
   });
 
-  const { data: budgets, isLoading: isBudgetsLoading } = useBudget(true);
+  const { data: budgetData, isLoading: isBudgetsLoading } = useBudget(true);
+  const budgets = budgetData?.data;
 
   const isLoading = isRangeLoading || isTransactionsLoading || isBudgetsLoading;
 
