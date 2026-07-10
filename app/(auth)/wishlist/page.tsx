@@ -40,8 +40,8 @@ export default function Page() {
     }, [search]);
 
     const filteredData = useMemo(() => {
-        if (!response?.data) return [];
-        let filtered = response.data;
+        if (!response?.data?.wishlists) return [];
+        let filtered = response.data.wishlists;
 
         if (debouncedSearch) {
             const lowerSearch = debouncedSearch.toLowerCase();
@@ -61,7 +61,7 @@ export default function Page() {
         return filtered;
     }, [response, debouncedSearch, priority, status]);
 
-    const pageCount = response?.count ? Math.ceil(response.count / limit) : 1;
+    const pageCount = response?.data?.count ? Math.ceil(response.data.count / limit) : 1;
 
     return (
         <>
