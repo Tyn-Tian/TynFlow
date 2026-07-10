@@ -27,10 +27,12 @@ interface PortfolioOverviewChartProps {
 export default function PortfolioOverviewChart({ variant = "default", className }: PortfolioOverviewChartProps) {
     const isMobile = useIsMobile();
 
-    const { data: snapshots, isLoading } = useQuery({
+    const { data, isLoading } = useQuery({
         queryKey: ["portfolio-snapshots"],
         queryFn: async () => await portfolioApi.getSnapshots(),
     });
+
+    const snapshots = data?.data ?? [];
 
     const chartData = snapshots?.map(snapshot => ({
         date: new Date(snapshot.created_at),
@@ -46,8 +48,8 @@ export default function PortfolioOverviewChart({ variant = "default", className 
         )
     }
 
-    const chartMargin = variant === "minimal" 
-        ? { top: 10, right: 0, bottom: 0, left: 0 } 
+    const chartMargin = variant === "minimal"
+        ? { top: 10, right: 0, bottom: 0, left: 0 }
         : { top: 10, right: isMobile ? 10 : 30, bottom: 10, left: isMobile ? 10 : 30 };
 
     const content = chartData.length > 0 ? (
