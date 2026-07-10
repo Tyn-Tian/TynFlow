@@ -63,9 +63,12 @@ export function AddTransactionDialog() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const datePickerRef = React.useRef<HTMLDivElement | null>(null);
 
-  const { data: wallets } = useWallet();
-  const { data: budgets } = useBudget();
+  const { data: walletData } = useWallet();
+  const { data: budgetData } = useBudget();
   const { data: portfolios } = usePortfolio();
+
+  const wallets = walletData?.data;
+  const budgets = budgetData?.data;
 
   useEffect(() => {
     function onClick(e: MouseEvent) {

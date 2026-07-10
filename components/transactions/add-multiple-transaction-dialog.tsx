@@ -63,9 +63,12 @@ export function AddMultipleTransactionDialog() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
 
-  const { data: wallets } = useWallet();
-  const { data: budgets } = useBudget();
+  const { data: walletData } = useWallet();
+  const { data: budgetData } = useBudget();
   const { data: portfolios } = usePortfolio();
+
+  const wallets = walletData?.data;
+  const budgets = budgetData?.data;
 
   const defaultValues = {
     transactions: [
