@@ -25,7 +25,9 @@ import { dashboardService } from "@/services/dashboard-service";
 import PortfolioOverviewChart from "@/components/portfolio/portfolio-overview-chart";
 
 export function usePortfolioAllocationChartData() {
-  const { data: portfolios, isLoading } = usePortfolio();
+  const { data, isLoading } = usePortfolio();
+
+  const portfolios = useMemo(() => data?.data ?? [], [data?.data]);
 
   const { chartData, chartConfig } = useMemo(() => {
     if (!portfolios || portfolios.length === 0) {

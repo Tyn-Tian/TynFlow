@@ -67,10 +67,11 @@ export function AddSchedulerDialog() {
 
   const { data: walletData } = useWallet();
   const { data: budgetData } = useBudget();
-  const { data: portfolios } = usePortfolio();
+  const { data: portfolioData } = usePortfolio();
 
   const wallets = walletData?.data;
   const budgets = budgetData?.data;
+  const portfolios = portfolioData?.data;
 
   useEffect(() => {
     function onClick(e: MouseEvent) {

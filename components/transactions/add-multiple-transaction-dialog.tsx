@@ -65,10 +65,11 @@ export function AddMultipleTransactionDialog() {
 
   const { data: walletData } = useWallet();
   const { data: budgetData } = useBudget();
-  const { data: portfolios } = usePortfolio();
+  const { data: portfolioData } = usePortfolio();
 
   const wallets = walletData?.data;
   const budgets = budgetData?.data;
+  const portfolios = portfolioData?.data;
 
   const defaultValues = {
     transactions: [
