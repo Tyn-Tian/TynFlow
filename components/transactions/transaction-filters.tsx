@@ -14,8 +14,10 @@ export function TransactionFilters() {
   const walletId = searchParams.get("walletId") || ""
   const budgetId = searchParams.get("budgetId") || ""
 
-  const { data: wallets, isLoading: isWalletsLoading } = useWallet();
+  const { data: walletData, isLoading: isWalletsLoading } = useWallet();
   const { data: budgets, isLoading: isBudgetsLoading } = useBudget();
+
+  const wallets = walletData?.data ?? [];
   
   const isLoading = isWalletsLoading || isBudgetsLoading;
   

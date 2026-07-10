@@ -44,7 +44,7 @@ export function TransactionList() {
   const walletId = searchParams.get("walletId") ?? undefined;
   const budgetId = searchParams.get("budgetId") ?? undefined;
 
-  const { data: wallets } = useWallet();
+  const { data: walletData } = useWallet();
   const { data: budgets } = useBudget(true);
   const { data: portfolios } = usePortfolio();
 
@@ -52,7 +52,7 @@ export function TransactionList() {
     queryKey: ["transactions", currentPage, walletId, budgetId],
     queryFn: async () =>
       await transactionApi.getPaginatedTransactions({
-        wallets: wallets ?? [],
+        wallets: walletData?.data ?? [],
         budgets: budgets ?? [],
         portfolios: portfolios ?? [],
         params: {
@@ -62,7 +62,7 @@ export function TransactionList() {
         },
       }),
     enabled:
-      wallets !== undefined &&
+      walletData !== undefined &&
       budgets !== undefined &&
       portfolios !== undefined,
   });
