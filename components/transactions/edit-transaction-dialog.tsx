@@ -177,23 +177,23 @@ export function EditTransactionDialog({ tx, onClose }: Props) {
 
   useEffect(() => {
     if (data) {
-      const d = new Date(data.date);
+      const d = new Date(data?.data?.date);
       const dateStr = !Number.isNaN(d.getTime())
         ? `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`
         : defaultDateStr;
 
       form.reset({
-        name: data.name,
+        name: data.data?.name,
         type:
-          (data.type as "Expense" | "Income" | "Transfer" | "Invest") ??
+          (data.data?.type as "Expense" | "Income" | "Transfer" | "Invest") ??
           "Expense",
         date: dateStr,
-        amount: data.amount,
-        budget_id: data.budget_id ? String(data.budget_id) : undefined,
-        wallet_id: data.wallet_id ? String(data.wallet_id) : undefined,
-        transfer_id: data.transfer_id ? String(data.transfer_id) : undefined,
-        portfolio_id: data.portfolio_id ? String(data.portfolio_id) : undefined,
-        admin_fee: data.admin_fee ?? 0,
+        amount: data.data?.amount,
+        budget_id: data.data?.budget_id ? String(data.data?.budget_id) : undefined,
+        wallet_id: data.data?.wallet_id ? String(data.data?.wallet_id) : undefined,
+        transfer_id: data.data?.transfer_id ? String(data.data?.transfer_id) : undefined,
+        portfolio_id: data.data?.portfolio_id ? String(data.data?.portfolio_id) : undefined,
+        admin_fee: data.data?.admin_fee ?? 0,
       });
     }
   }, [data, defaultDateStr, form]);
