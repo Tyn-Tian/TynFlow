@@ -2,6 +2,8 @@ import { Filters, Params, Transaction, TransactionDto } from "@/types/transactio
 import { Wallet } from "@/types/wallet-type";
 import { Budget } from "@/types/budget-type";
 import { Portfolio } from "@/types/portfolio-type";
+import { apiClient } from "../apiClient";
+import { BaseResponse } from "@/types/type";
 
 export const transactionApi = {
     findTransactions: async (filters: Filters): Promise<Transaction[]> => {
@@ -50,43 +52,9 @@ export const transactionApi = {
         if (!res.ok) throw new Error("Failed to export transactions");
         return res.json();
     },
-    getById: async (id: string): Promise<Transaction> => {
-        const res = await fetch(`/api/transactions/${id}`);
-        if (!res.ok) throw new Error("Failed to fetch transaction");
-        return res.json();
-    },
-    add: async (data: TransactionDto) => {
-        const res = await fetch("/api/transactions", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-        });
-        if (!res.ok) throw new Error("Failed to add transaction");
-        return res.json();
-    },
-    addMany: async (data: TransactionDto[]) => {
-        const res = await fetch("/api/transactions/bulk", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-        });
-        if (!res.ok) throw new Error("Failed to add multiple transactions");
-        return res.json();
-    },
-    update: async (id: string, data: TransactionDto) => {
-        const res = await fetch(`/api/transactions/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-        });
-        if (!res.ok) throw new Error("Failed to update transaction");
-        return res.json();
-    },
-    delete: async (id: string) => {
-        const res = await fetch(`/api/transactions/${id}`, {
-            method: "DELETE",
-        });
-        if (!res.ok) throw new Error("Failed to delete transaction");
-        return res.json();
-    }
+    getById: (id: string) => apiClient.get<BaseResponse<Transaction>>(`/transactions/${id}`),
+    add: (dto: TransactionDto) => apiClient.post<BaseResponse<null>>("/transactions", dto),
+    addMany: (dtos: TransactionDto[]) => apiClient.post<BaseResponse<null>>("/transactions/bulk", dtos),
+    update: (id: string, dto: TransactionDto) => apiClient.put<BaseResponse<null>>(`/transactions/${id}`, dto),
+    delete: (id: string) => apiClient.delete<BaseResponse<null>>(`/transactions/${id}`)
 };
