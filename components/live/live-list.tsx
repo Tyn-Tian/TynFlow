@@ -42,19 +42,21 @@ import { useQuery } from "@tanstack/react-query"
 import { liveApi } from "@/lib/api/live-api"
 import { useIsMobile } from "@/hooks/use-mobile"
 
-type FlatItem = 
-  | { type: "header"; monthKey: string; items: HydratedLiveItem[] }
-  | { type: "row"; items: HydratedLiveItem[] };
+type FlatItem =
+    | { type: "header"; monthKey: string; items: HydratedLiveItem[] }
+    | { type: "row"; items: HydratedLiveItem[] };
 
 export function LiveList() {
     const [openId, setOpenId] = useState<string | null>(null)
     const [copiedMonth, setCopiedMonth] = useState<string | null>(null)
     const isMobile = useIsMobile()
 
-    const { data: lives, isLoading } = useQuery({
+    const { data, isLoading } = useQuery({
         queryKey: ["lives"],
         queryFn: async () => await liveApi.getAll(),
     })
+
+    const lives = useMemo(() => data?.data ?? [], [data])
 
     const searchParams = useSearchParams()
     const monthParam = searchParams.get("month")
@@ -77,7 +79,7 @@ export function LiveList() {
         const groups = transactions.reduce<Record<string, HydratedLiveItem[]>>((acc, item) => {
             const date = new Date(item.date)
             const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`
-            ;(acc[monthKey] ??= []).push(item)
+                ; (acc[monthKey] ??= []).push(item)
             return acc
         }, {})
 
@@ -93,7 +95,7 @@ export function LiveList() {
         groupedMonths.sortedMonths.forEach(monthKey => {
             const monthItems = groupedMonths.groups[monthKey];
             flat.push({ type: 'header', monthKey, items: monthItems });
-            
+
             if (!isMobile) {
                 for (let i = 0; i < monthItems.length; i += 2) {
                     flat.push({ type: 'row', items: monthItems.slice(i, i + 2) });
@@ -171,7 +173,7 @@ export function LiveList() {
             .sort((a, b) => {
                 const dateDiff = new Date(a.date).getTime() - new Date(b.date).getTime()
                 if (dateDiff !== 0) return dateDiff
-                
+
                 const timeA = a.created_at ? new Date(a.created_at).getTime() : 0
                 const timeB = b.created_at ? new Date(b.created_at).getTime() : 0
                 const timeDiff = timeA - timeB
@@ -222,7 +224,7 @@ export function LiveList() {
         <div ref={listRef} className="relative w-full" style={{ height: `${virtualizer.getTotalSize()}px` }}>
             {virtualizer.getVirtualItems().map((virtualRow) => {
                 const rowData = flatData[virtualRow.index];
-                
+
                 return (
                     <div
                         key={virtualRow.key}
