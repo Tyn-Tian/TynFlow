@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { DataTable } from "@/components/wishlist/table/data-table";
 import { SiteHeader } from "@/components/site-header";
 import { useQuery } from "@tanstack/react-query";
@@ -17,15 +17,11 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { wishlistApi } from "@/lib/api/wishlist-api";
+import { Priority, Status } from "@/types/wishlist-type";
 
 export default function Page() {
     const [page, setPage] = useState(1);
     const limit = 10;
-
-    const { data: response, isLoading } = useQuery({
-        queryKey: ["wishlists", page],
-        queryFn: async () => await wishlistApi.getAll(page, limit),
-    });
 
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -39,27 +35,18 @@ export default function Page() {
         return () => clearTimeout(handler);
     }, [search]);
 
-    const filteredData = useMemo(() => {
-        if (!response?.data?.wishlists) return [];
-        let filtered = response.data.wishlists;
+    const { data: response, isLoading } = useQuery({
+        queryKey: ["wishlists", page, limit, debouncedSearch, priority, status],
+        queryFn: async () => await wishlistApi.getAll({
+            page,
+            limit,
+            search: debouncedSearch || undefined,
+            priority: priority !== "all" ? (priority as Priority) : undefined,
+            status: status !== "all" ? (status as Status) : undefined,
+        }),
+    });
 
-        if (debouncedSearch) {
-            const lowerSearch = debouncedSearch.toLowerCase();
-            filtered = filtered.filter((item) =>
-                item.name.toLowerCase().includes(lowerSearch)
-            );
-        }
-
-        if (priority !== "all") {
-            filtered = filtered.filter((item) => item.priority === priority);
-        }
-
-        if (status !== "all") {
-            filtered = filtered.filter((item) => item.status === status);
-        }
-
-        return filtered;
-    }, [response, debouncedSearch, priority, status]);
+    const filteredData = response?.data?.wishlists || [];
 
     const pageCount = response?.data?.count ? Math.ceil(response.data.count / limit) : 1;
 
