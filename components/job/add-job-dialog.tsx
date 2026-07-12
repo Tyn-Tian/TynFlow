@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { IconPlus, IconCalendar } from "@tabler/icons-react"
 
-import { addJobAction } from "@/actions/job-actions"
+import { useAddJob } from "@/hooks/use-job"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Calendar } from "@/components/ui/calendar"
@@ -66,8 +66,8 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>
 
 export function AddJobDialog() {
-    const router = useRouter()
     const [open, setOpen] = useState(false)
+    const { mutateAsync: addJob } = useAddJob()
     const [loading, setLoading] = useState(false)
     const [showAppliedDatePicker, setShowAppliedDatePicker] = useState(false)
     const [showUpdatedDatePicker, setShowUpdatedDatePicker] = useState(false)
@@ -133,7 +133,7 @@ export function AddJobDialog() {
                 return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`
             }
 
-            await addJobAction({
+            await addJob({
                 position: values.position,
                 company: values.company,
                 source: values.source,
@@ -144,7 +144,6 @@ export function AddJobDialog() {
 
             toast.success("Success", { description: "Job added successfully." })
             setOpen(false)
-            router.refresh()
         } catch (err) {
             toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
         } finally {

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const LIVE_ACCESS_USER_ID = "8017eb2d-1c88-4e83-ba13-80ce15477154";
-const JOB_ACCESS_USER_ID = "d4e69f3b-c49e-4b65-ad03-50f6cb803571";
+const JOB_ACCESS_USER_ID = "8017eb2d-1c88-4e83-ba13-80ce15477154";
 const PROTECTED_ROUTE_PREFIXES = [
   "/dashboard",
   "/wallet",

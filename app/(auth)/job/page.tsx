@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 
 import { DataTable } from "@/components/job/data-table"
-import { fetchAllJobsAction } from "@/actions/job-actions"
 
 export default async function Page() {
     const supabase = await createClient()
@@ -16,13 +15,11 @@ export default async function Page() {
         redirect("/login")
     }
 
-    const jobs = await fetchAllJobsAction()
-
     return (
         <>
             <SiteHeader title="Job" />
             <section className="p-6">
-                <DataTable data={jobs as any} />
+                <DataTable />
             </section>
         </>
     )

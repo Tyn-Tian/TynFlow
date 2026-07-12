@@ -5,16 +5,9 @@ import { z } from "zod"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
-import { useRouter } from "next/navigation"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart"
 import {
   Drawer,
   DrawerClose,
@@ -33,7 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
 import { IconCalendar } from "@tabler/icons-react"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -48,29 +40,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 
-import { Job } from "../../repository/job-repository"
-import { editJobAction } from "@/actions/job-actions"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
-
-const chartData = [
-  { month: "January", desktop: 186, mobile: 80 },
-  { month: "February", desktop: 305, mobile: 200 },
-  { month: "March", desktop: 237, mobile: 120 },
-  { month: "April", desktop: 73, mobile: 190 },
-  { month: "May", desktop: 209, mobile: 130 },
-  { month: "June", desktop: 214, mobile: 140 },
-]
-
-const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "var(--primary)",
-  },
-  mobile: {
-    label: "Mobile",
-    color: "var(--primary)",
-  },
-} satisfies ChartConfig
+import { useUpdateJob } from "@/hooks/use-job"
+import { Job } from "@/types/job-type"
 
 const SOURCES = [
   "Kalibr",
@@ -106,12 +77,23 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>
 
+const pad = (n: number) => String(n).padStart(2, "0")
+const toDisplayDate = (isoDate: string) => {
+  try {
+    const d = new Date(isoDate)
+    if (isNaN(d.getTime())) return ""
+    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`
+  } catch {
+    return ""
+  }
+}
+
 export function TableCellViewer({ item }: { item: Job }) {
   const isMobile = useIsMobile()
-  const router = useRouter()
   const [open, setOpen] = React.useState(false)
   const [confirmOpen, setConfirmOpen] = React.useState(false)
   const [loading, setLoading] = React.useState(false)
+  const { mutateAsync: updateJob } = useUpdateJob()
 
   const [showAppliedDatePicker, setShowAppliedDatePicker] = React.useState(false)
   const [showUpdatedDatePicker, setShowUpdatedDatePicker] = React.useState(false)
@@ -141,17 +123,6 @@ export function TableCellViewer({ item }: { item: Job }) {
       document.removeEventListener("keydown", onKey)
     }
   }, [showAppliedDatePicker, showUpdatedDatePicker])
-
-  const pad = (n: number) => String(n).padStart(2, "0")
-  const toDisplayDate = (isoDate: string) => {
-    try {
-      const d = new Date(isoDate)
-      if (isNaN(d.getTime())) return ""
-      return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`
-    } catch {
-      return ""
-    }
-  }
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -185,18 +156,20 @@ export function TableCellViewer({ item }: { item: Job }) {
         return `${yyyy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`
       }
 
-      await editJobAction(item.id, {
-        position: values.position,
-        company: values.company,
-        source: values.source,
-        status: values.status,
-        applied_at: toIsoDate(values.applied_at),
-        updated_at: toIsoDate(values.updated_at),
+      await updateJob({
+        id: item.id.toString(),
+        data: {
+          position: values.position,
+          company: values.company,
+          source: values.source,
+          status: values.status,
+          applied_at: toIsoDate(values.applied_at),
+          updated_at: toIsoDate(values.updated_at),
+        }
       })
 
       toast.success("Success", { description: "Job updated successfully." })
       setOpen(false)
-      router.refresh()
     } catch (err) {
       toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
     } finally {
@@ -237,51 +210,6 @@ export function TableCellViewer({ item }: { item: Job }) {
           </DrawerDescription>
         </DrawerHeader>
         <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
-          {!isMobile && (
-            <>
-              <ChartContainer config={chartConfig}>
-                <AreaChart
-                  accessibilityLayer
-                  data={chartData}
-                  margin={{
-                    left: 0,
-                    right: 10,
-                  }}
-                >
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    tickFormatter={(value) => value.slice(0, 3)}
-                    hide
-                  />
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent indicator="dot" />}
-                  />
-                  <Area
-                    dataKey="mobile"
-                    type="natural"
-                    fill="var(--color-mobile)"
-                    fillOpacity={0.6}
-                    stroke="var(--color-mobile)"
-                    stackId="a"
-                  />
-                  <Area
-                    dataKey="desktop"
-                    type="natural"
-                    fill="var(--color-desktop)"
-                    fillOpacity={0.4}
-                    stroke="var(--color-desktop)"
-                    stackId="a"
-                  />
-                </AreaChart>
-              </ChartContainer>
-              <Separator />
-            </>
-          )}
           <form className="flex flex-col gap-4" id="edit-job-form" onSubmit={form.handleSubmit(() => setConfirmOpen(true))}>
             <FieldGroup className="gap-4">
               <Controller
