@@ -9,12 +9,10 @@ import {
   TouchSensor,
   useSensor,
   useSensors,
-  type DragEndEvent,
   type UniqueIdentifier,
 } from "@dnd-kit/core"
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers"
 import {
-  arrayMove,
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
@@ -25,7 +23,6 @@ import {
   IconChevronsLeft,
   IconChevronsRight,
   IconLayoutColumns,
-  IconPlus,
 } from "@tabler/icons-react"
 import {
   flexRender,
@@ -64,16 +61,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Job } from "../../repository/job-repository"
 import { columns } from "./columns"
 import { DraggableRow } from "./draggable-row"
 import { AddJobDialog } from "./add-job-dialog"
+import { useJobs } from "@/hooks/use-job"
 
-export function DataTable({
-  data: initialData,
-}: {
-  data: Job[]
-}) {
+export function DataTable() {
+  const { data: response } = useJobs(1, 100)
+  const initialData = React.useMemo(() => response?.jobs || [], [response?.jobs])
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})

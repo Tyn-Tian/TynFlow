@@ -1,7 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState } from "react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,9 +11,8 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { deleteJobAction } from "@/actions/job-actions"
+import { useDeleteJob } from "@/hooks/use-job"
 
 export function DeleteJobDialog({ jobId, jobPosition, open, setOpen, onDeleted }: { 
     jobId?: number | string | null; 
@@ -23,17 +21,16 @@ export function DeleteJobDialog({ jobId, jobPosition, open, setOpen, onDeleted }
     setOpen: (open: boolean) => void;
     onDeleted?: () => void;
 }) {
-    const router = useRouter()
     const [loading, setLoading] = useState(false)
+    const { mutateAsync: deleteJob } = useDeleteJob()
 
     async function handleDelete() {
         if (!jobId) return
         setLoading(true)
         try {
-            await deleteJobAction(jobId)
+            await deleteJob(jobId.toString())
             toast.success("Deleted", { description: "Job entry deleted." })
             setOpen(false)
-            router.refresh()
             onDeleted?.()
         } catch (err) {
             toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })

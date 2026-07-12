@@ -8,7 +8,7 @@ import { flexRender, type Row } from "@tanstack/react-table"
 
 import { Button } from "@/components/ui/button"
 import { TableCell, TableRow } from "@/components/ui/table"
-import { Job } from "../../repository/job-repository"
+import { Job } from "@/types/job-type"
 
 export function DragHandle({ id }: { id: number }) {
   const { attributes, listeners } = useSortable({
