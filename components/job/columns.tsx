@@ -20,10 +20,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { formatDate } from "@/lib/utils"
-import { Job } from "../../repository/job-repository"
 import { TableCellViewer } from "./table-cell-viewer"
 import { DragHandle } from "./draggable-row"
 import { DeleteJobDialog } from "./delete-job-dialog"
+import { Job } from "@/types/job-type"
 
 function ActionCell({ job }: { job: Job }) {
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false)
