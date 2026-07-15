@@ -1,4 +1,6 @@
-import { LoginDto, UpdateProfileDto } from "@/types/auth-type";
+import { LoginDto, Profile, ProfileDto } from "@/types/auth-type";
+import { apiClient } from "../apiClient";
+import { BaseResponse } from "@/types/type";
 
 export const authApi = {
     login: async (data: LoginDto) => {
@@ -20,20 +22,8 @@ export const authApi = {
         if (!res.ok) throw new Error("Logout failed");
         return res.json();
     },
-    getProfile: async () => {
-        const res = await fetch("/api/auth/profile");
-        if (!res.ok) throw new Error("Failed to fetch profile");
-        return res.json();
-    },
-    updateProfile: async (data: UpdateProfileDto) => {
-        const res = await fetch("/api/auth/profile", {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-        });
-        if (!res.ok) throw new Error("Failed to update profile");
-        return res.json();
-    },
+    getProfile: () => apiClient.get<BaseResponse<Profile>>("/auth/profile"),
+    updateProfile: (data: ProfileDto) => apiClient.put<BaseResponse<Profile>>("/auth/profile", data),
     getRangeDate: async () => {
         const res = await fetch("/api/auth/range");
         if (!res.ok) throw new Error("Failed to fetch range date");

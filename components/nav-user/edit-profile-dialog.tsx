@@ -27,8 +27,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { authApi } from "@/lib/api/auth-api";
-import { UpdateProfileDto } from "@/types/auth-type";
 import useProfile from "@/hooks/use-profile";
+import { ProfileDto } from "@/types/auth-type";
 
 const datePattern = /^(\d{2})\/(\d{2})\/(\d{4})$/;
 
@@ -99,7 +99,9 @@ export function EditProfileDialog({
     return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
   };
 
-  const { data: profile } = useProfile(open);
+  const { data } = useProfile(open);
+
+  const profile = data?.data
 
   useEffect(() => {
     if (open) {
@@ -122,7 +124,7 @@ export function EditProfileDialog({
   }, [open, profile, form, user.name]);
 
   const mutation = useMutation({
-    mutationFn: async (dto: UpdateProfileDto) =>
+    mutationFn: async (dto: ProfileDto) =>
       await authApi.updateProfile(dto),
     onSuccess: () => {
       toast.success("Success", {

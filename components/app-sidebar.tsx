@@ -16,7 +16,7 @@ import {
 import useProfile from "@/hooks/use-profile";
 import Image from "next/image";
 
-const data = {
+const navData = {
   user: {
     name: "shadcn",
     email: "m@example.com",
@@ -80,7 +80,9 @@ const LIVE_NAV_USER_ID = "8017eb2d-1c88-4e83-ba13-80ce15477154";
 const JOB_NAV_USER_ID = "8017eb2d-1c88-4e83-ba13-80ce15477154";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { data: profile, isLoading } = useProfile();
+  const { data, isLoading } = useProfile();
+
+  const profile = data?.data;
 
   const user = {
     name: profile?.name ?? "",
@@ -88,7 +90,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     avatar: "/avatars/default.png",
   };
 
-  const navItems = data.navMain.filter((item) => {
+  const navItems = navData.navMain.filter((item) => {
     if (item.icon !== "live" && item.icon !== "job") {
       return true;
     }
