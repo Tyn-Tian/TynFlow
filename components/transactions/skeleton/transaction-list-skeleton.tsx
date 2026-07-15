@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 export function TransactionListSkeleton() {
   return (
     <div className="w-full">
-      <div className="flex flex-wrap md:flex-nowrap items-center gap-2 mb-4 w-full">
+      <div className="flex flex-wrap md:flex-nowrap items-center gap-2 mt-2 mb-4 w-full">
         <div className="w-full md:w-auto grid grid-cols-2 md:flex gap-2 items-center">
           <Skeleton className="h-10 w-full md:w-[140px] rounded-md" />
           <Skeleton className="h-10 w-full md:w-[140px] rounded-md" />
