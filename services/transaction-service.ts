@@ -30,7 +30,8 @@ export const transactionService = {
     });
 
     const uniqueDates = Array.from(new Set((data ?? []).map((d) => d.date)));
-    const pageDates = uniqueDates.slice((page - 1) * 10, page * 10);
+    const currentPage = page || 1;
+    const pageDates = uniqueDates.slice((currentPage - 1) * 10, currentPage * 10);
     if (pageDates.length === 0) return [];
 
     const rows = await transactionRepository.findTransactions({

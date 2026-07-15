@@ -6,6 +6,15 @@ import { apiClient } from "../apiClient";
 import { BaseResponse } from "@/types/type";
 
 export const transactionApi = {
+    getAll: (params: Params = { page: 1, limit: 10 }) => {
+        const queryParams = new URLSearchParams();
+        if (params.page) queryParams.append("page", params.page.toString());
+        if (params.limit) queryParams.append("limit", params.limit.toString());
+        if (params.walletId) queryParams.append("walletId", params.walletId);
+        if (params.budgetId) queryParams.append("budgetId", params.budgetId);
+
+        return apiClient.get<BaseResponse<{ transactions: Transaction[], count: number }>>(`/transactions?${queryParams.toString()}`);
+    },
     findTransactions: async (filters: Filters): Promise<Transaction[]> => {
         const res = await fetch("/api/transactions/query", {
             method: "POST",
@@ -15,35 +24,12 @@ export const transactionApi = {
         if (!res.ok) throw new Error("Failed to fetch transactions");
         return res.json();
     },
-    getPaginatedTransactions: async (payload: {
-        wallets: Wallet[];
-        budgets: Budget[];
-        portfolios: Portfolio[];
-        params: Params;
-    }): Promise<any[]> => {
-        const res = await fetch("/api/transactions/query", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "getPaginatedTransactions", ...payload }),
-        });
-        if (!res.ok) throw new Error("Failed to fetch paginated transactions");
-        return res.json();
-    },
-    getTransactionPaginationMetadata: async (params: Params): Promise<{ totalPages: number }> => {
-        const res = await fetch("/api/transactions/query", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "getTransactionPaginationMetadata", params }),
-        });
-        if (!res.ok) throw new Error("Failed to fetch transaction metadata");
-        return res.json();
-    },
     exportExcel: async (payload: {
         wallets: Wallet[];
         budgets: Budget[];
         portfolios: Portfolio[];
         filters: { startDate?: string; endDate?: string };
-    }): Promise<any[]> => {
+    }): Promise<Transaction[]> => {
         const res = await fetch("/api/transactions/query", {
             method: "POST",
             headers: { "Content-Type": "application/json" },

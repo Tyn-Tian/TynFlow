@@ -10,12 +10,6 @@ export async function POST(request: Request) {
             case "findTransactions":
                 const txs = await transactionService.findTransactions(payload.filters);
                 return NextResponse.json(txs);
-            case "getPaginatedTransactions":
-                const paginated = await transactionService.getPaginatedTransactions(payload);
-                return NextResponse.json(paginated);
-            case "getTransactionPaginationMetadata":
-                const meta = await transactionService.getTransactionPaginationMetadata(payload.params);
-                return NextResponse.json(meta);
             case "exportExcel":
                 const excelData = await transactionService.exportExcel(payload);
                 return NextResponse.json(excelData);

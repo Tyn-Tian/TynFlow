@@ -5,6 +5,23 @@ import { TransactionListSkeleton } from "@/components/transactions/skeleton/tran
 import { useState } from "react";
 import { IconWallet, IconTrendingUp } from "@tabler/icons-react";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationLink,
+} from "@/components/ui/pagination";
+import useWallet from "@/hooks/use-wallet";
+import useBudget from "@/hooks/use-budget";
+import {
   Card,
   CardAction,
   CardDescription,
@@ -14,58 +31,35 @@ import {
 import { EditTransactionDialog } from "./edit-transaction-dialog";
 import { useQuery } from "@tanstack/react-query";
 import { transactionApi } from "@/lib/api/transaction-api";
-import useWallet from "@/hooks/use-wallet";
-import useBudget from "@/hooks/use-budget";
-import usePortfolio from "@/hooks/use-portfolio";
-import { useSearchParams } from "next/navigation";
 
-type TxItem = {
-  id: number | string;
-  name: string;
-  date: string;
-  amount: number;
-  budgetName?: string | null;
-  walletName?: string | null;
-  budget_id?: string | null;
-  wallet_id?: string | null;
-  transfer_id?: string | null;
-  transferName?: string | null;
-  portfolioName?: string | null;
-  portfolio_id?: string | null;
-  admin_fee?: number | null;
-  type: "Income" | "Expense" | "Transfer" | "Invest";
-};
+import { Transaction } from "@/types/transaction-type";
 
 export function TransactionList() {
-  const [editTx, setEditTx] = useState<TxItem | null>(null);
+  const [editTx, setEditTx] = useState<Transaction | null>(null);
 
-  const searchParams = useSearchParams();
-  const currentPage = Number(searchParams.get("page")) || 1;
-  const walletId = searchParams.get("walletId") ?? undefined;
-  const budgetId = searchParams.get("budgetId") ?? undefined;
+  const [page, setPage] = useState(1);
+  const [walletId, setWalletId] = useState<string>("all");
+  const [budgetId, setBudgetId] = useState<string>("all");
 
   const { data: walletData } = useWallet();
   const { data: budgetData } = useBudget(true);
-  const { data: portfolioData } = usePortfolio();
 
-  const { data: transactions, isLoading } = useQuery({
-    queryKey: ["transactions", currentPage, walletId, budgetId],
+  const wallets = walletData?.data;
+  const budgets = budgetData?.data;
+
+  const { data: transactionsResponse, isLoading } = useQuery({
+    queryKey: ["transactions", page, walletId, budgetId],
     queryFn: async () =>
-      await transactionApi.getPaginatedTransactions({
-        wallets: walletData?.data ?? [],
-        budgets: budgetData?.data ?? [],
-        portfolios: portfolioData?.data ?? [],
-        params: {
-          page: currentPage,
-          walletId,
-          budgetId,
-        },
+      await transactionApi.getAll({
+        page: page,
+        limit: 10,
+        walletId: walletId !== "all" ? walletId : undefined,
+        budgetId: budgetId !== "all" ? budgetId : undefined,
       }),
-    enabled:
-      walletData !== undefined &&
-      budgetData !== undefined &&
-      portfolioData !== undefined,
   });
+
+  const transactions = transactionsResponse?.data?.transactions;
+  const pageCount = transactionsResponse?.data?.count ? Math.ceil(transactionsResponse.data.count / 10) : 1;
 
   if (isLoading || !transactions) return <TransactionListSkeleton />;
 
@@ -76,7 +70,7 @@ export function TransactionList() {
       </div>
     );
 
-  const groups = transactions.reduce<Record<string, TxItem[]>>((acc, t) => {
+  const groups = transactions.reduce<Record<string, Transaction[]>>((acc, t) => {
     const d = new Date(t.date);
     const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
       d.getDate(),
@@ -112,6 +106,39 @@ export function TransactionList() {
 
   return (
     <div>
+      <div className="flex flex-wrap md:flex-nowrap items-center gap-2 mt-2 mb-4 w-full">
+        <div className="w-full md:w-auto grid grid-cols-2 md:flex gap-2 items-center">
+          <Select value={walletId} onValueChange={(val) => { setWalletId(val); setPage(1); }}>
+            <SelectTrigger className="w-full md:w-[140px]">
+              <SelectValue placeholder="All Wallets" />
+            </SelectTrigger>
+            <SelectContent position="popper">
+              <SelectItem value="all">All Wallets</SelectItem>
+              {wallets?.map((w) => (
+                <SelectItem key={w.id} value={String(w.id)}>
+                  {w.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={budgetId} onValueChange={(val) => { setBudgetId(val); setPage(1); }}>
+            <SelectTrigger className="w-full md:w-[140px]">
+              <SelectValue placeholder="All Budgets" />
+            </SelectTrigger>
+            <SelectContent position="popper">
+              <SelectItem value="all">All Budgets</SelectItem>
+              {budgets?.map((b) => (
+                <SelectItem key={b.id} value={String(b.id)} disabled={!!b.deleted_at}>
+                  <span className="truncate max-w-[250px] sm:max-w-[500px] lg:max-w-full">
+                    {b.name} {!!b.deleted_at ? "(Deleted)" : ""}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       {sortedDates.map((date) => (
         <div key={date} className="mb-6">
           <div className="flex justify-between items-center">
@@ -156,12 +183,12 @@ export function TransactionList() {
                       <CardTitle>{tx.name}</CardTitle>
                       <CardDescription>
                         {tx.type === "Income"
-                          ? (tx.walletName ?? "-")
+                          ? (tx.wallet?.name ?? "-")
                           : tx.type === "Expense"
-                            ? (tx.budgetName ?? "-")
+                            ? (tx.budget?.name ?? "-")
                             : tx.type === "Invest"
-                              ? `${tx.walletName ?? "-"} → ${tx.portfolioName ?? "-"}`
-                              : `${tx.walletName ?? "-"} → ${tx.transferName ?? "-"}`}
+                              ? `${tx.wallet?.name ?? "-"} → ${tx.portfolio?.name ?? "-"}`
+                              : `${tx.wallet?.name ?? "-"} → ${tx.transfer?.name ?? "-"}`}
                       </CardDescription>
                     </div>
                   </div>
@@ -175,6 +202,65 @@ export function TransactionList() {
           </div>
         </div>
       ))}
+
+      <div className="mt-4 flex">
+          <Pagination className="sm:justify-end">
+              <PaginationContent>
+                  <PaginationItem>
+                      <PaginationPrevious 
+                          href="#" 
+                          onClick={(e) => {
+                              e.preventDefault();
+                              if (page > 1) setPage(page - 1);
+                          }}
+                          className={page <= 1 ? "pointer-events-none opacity-50" : ""}
+                      />
+                  </PaginationItem>
+                  
+                  {(() => {
+                      let startPage = Math.max(1, page - 1);
+                      let endPage = Math.min(pageCount, page + 1);
+
+                      if (page === 1) {
+                          endPage = Math.min(pageCount, 3);
+                      } else if (page === pageCount) {
+                          startPage = Math.max(1, pageCount - 2);
+                      }
+
+                      const pages = [];
+                      for (let i = startPage; i <= endPage; i++) {
+                          pages.push(i);
+                      }
+
+                      return pages.map((p) => (
+                          <PaginationItem key={p}>
+                              <PaginationLink 
+                                  href="#"
+                                  onClick={(e) => {
+                                      e.preventDefault();
+                                      setPage(p);
+                                  }}
+                                  isActive={p === page}
+                              >
+                                  {p}
+                              </PaginationLink>
+                          </PaginationItem>
+                      ));
+                  })()}
+
+                  <PaginationItem>
+                      <PaginationNext 
+                          href="#" 
+                          onClick={(e) => {
+                              e.preventDefault();
+                              if (page < pageCount) setPage(page + 1);
+                          }}
+                          className={page >= pageCount ? "pointer-events-none opacity-50" : ""}
+                      />
+                  </PaginationItem>
+              </PaginationContent>
+          </Pagination>
+      </div>
 
       {editTx && (
         <EditTransactionDialog tx={editTx} onClose={() => setEditTx(null)} />

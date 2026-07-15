@@ -86,8 +86,8 @@ export function ExportTransactionDialog() {
         Date: format(new Date(t.date), "dd-MM-yyyy"),
         Amount: t.amount,
         Type: t.type,
-        Budget: t.budgetName || "-",
-        Wallet: t.walletName || "-",
+        Budget: t.budget?.name || "-",
+        Wallet: t.wallet?.name || "-",
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(exportData);
