@@ -57,7 +57,7 @@ export function useExpenseChartData() {
     }
 
     const result = dashboardService.getExpenseChartData({
-      transactions,
+      transactions: transactions?.data,
       budgets,
     });
 

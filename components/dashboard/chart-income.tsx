@@ -53,7 +53,7 @@ export function useIncomeChartData() {
     }
 
     const result = dashboardService.getIncomeChartData({
-      transactions,
+      transactions: transactions.data,
     });
 
     if (!result) {

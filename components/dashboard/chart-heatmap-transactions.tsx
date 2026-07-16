@@ -62,7 +62,7 @@ export function ChartHeatmapTransactions() {
 
   const heatmapData = useMemo(() => {
     if (!transactions) return [];
-    return buildHeatmapData(transactions, startDate, endDate);
+    return buildHeatmapData(transactions?.data, startDate, endDate);
   }, [transactions, startDate, endDate]);
 
   if (isLoading) {

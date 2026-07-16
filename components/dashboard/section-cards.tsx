@@ -92,10 +92,10 @@ export function SectionCards() {
       }
 
       const result = dashboardService.getSummaries({
-        incomeTxs,
-        expenseTxs,
-        prevIncomeTxs,
-        prevExpenseTxs,
+        incomeTxs: incomeTxs?.data,
+        expenseTxs: expenseTxs?.data,
+        prevIncomeTxs: prevIncomeTxs?.data,
+        prevExpenseTxs: prevExpenseTxs?.data,
       });
 
       if (!result) {

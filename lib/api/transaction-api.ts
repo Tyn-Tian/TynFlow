@@ -12,14 +12,13 @@ export const transactionApi = {
 
         return apiClient.get<BaseResponse<{ transactions: Transaction[], count: number }>>(`/transactions?${queryParams.toString()}`);
     },
-    findTransactions: async (filters: Filters): Promise<Transaction[]> => {
-        const res = await fetch("/api/transactions/query", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "findTransactions", filters }),
-        });
-        if (!res.ok) throw new Error("Failed to fetch transactions");
-        return res.json();
+    findTransactions: (filters: Filters) => {
+        const queryParams = new URLSearchParams();
+        if (filters.type) queryParams.append("type", filters.type);
+        if (filters.startDate) queryParams.append("startDate", filters.startDate);
+        if (filters.endDate) queryParams.append("endDate", filters.endDate);
+
+        return apiClient.get<BaseResponse<Transaction[]>>(`/transactions/search?${queryParams.toString()}`);
     },
     exportExcel: (month: string, year: string) => apiClient.get<BaseResponse<Transaction[]>>(`/transactions/export?month=${month}&year=${year}`),
     getById: (id: string) => apiClient.get<BaseResponse<Transaction>>(`/transactions/${id}`),

@@ -71,7 +71,7 @@ export function useBarChartData() {
     }
 
     const result = dashboardService.getBarChartData({
-      transactions,
+      transactions: transactions?.data,
       months,
     });
 

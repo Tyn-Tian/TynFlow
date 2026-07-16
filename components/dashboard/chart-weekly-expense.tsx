@@ -53,7 +53,7 @@ export function useWeeklyExpenseChartData() {
             }
         }
 
-        return dashboardService.getWeeklyExpenseChartData({ transactions })
+        return dashboardService.getWeeklyExpenseChartData({ transactions: transactions?.data })
     }, [transactions])
 
     const fmt = (d: Date) => d.toLocaleString("en-US", { month: "short", day: "numeric" })
