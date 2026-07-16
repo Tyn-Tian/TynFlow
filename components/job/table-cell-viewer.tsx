@@ -74,6 +74,7 @@ const formSchema = z.object({
   status: z.string().min(1, "Status is required"),
   applied_at: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/, "Date must be in dd/mm/yyyy"),
   updated_at: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/, "Date must be in dd/mm/yyyy"),
+  deadline_at: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/, "Date must be in dd/mm/yyyy").optional().or(z.literal("")).or(z.null()),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -98,8 +99,10 @@ export function TableCellViewer({ item }: { item: Job }) {
 
   const [showAppliedDatePicker, setShowAppliedDatePicker] = React.useState(false)
   const [showUpdatedDatePicker, setShowUpdatedDatePicker] = React.useState(false)
+  const [showDeadlineDatePicker, setShowDeadlineDatePicker] = React.useState(false)
   const appliedDatePickerRef = React.useRef<HTMLDivElement | null>(null)
   const updatedDatePickerRef = React.useRef<HTMLDivElement | null>(null)
+  const deadlineDatePickerRef = React.useRef<HTMLDivElement | null>(null)
 
   React.useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -110,11 +113,15 @@ export function TableCellViewer({ item }: { item: Job }) {
       if (showUpdatedDatePicker && updatedDatePickerRef.current && !updatedDatePickerRef.current.contains(target)) {
         setShowUpdatedDatePicker(false)
       }
+      if (showDeadlineDatePicker && deadlineDatePickerRef.current && !deadlineDatePickerRef.current.contains(target)) {
+        setShowDeadlineDatePicker(false)
+      }
     }
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setShowAppliedDatePicker(false)
         setShowUpdatedDatePicker(false)
+        setShowDeadlineDatePicker(false)
       }
     }
     document.addEventListener("mousedown", onClick)
@@ -123,7 +130,7 @@ export function TableCellViewer({ item }: { item: Job }) {
       document.removeEventListener("mousedown", onClick)
       document.removeEventListener("keydown", onKey)
     }
-  }, [showAppliedDatePicker, showUpdatedDatePicker])
+  }, [showAppliedDatePicker, showUpdatedDatePicker, showDeadlineDatePicker])
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -134,6 +141,7 @@ export function TableCellViewer({ item }: { item: Job }) {
       status: item.status,
       applied_at: toDisplayDate(item.applied_at),
       updated_at: toDisplayDate(item.updated_at),
+      deadline_at: item.deadline_at ? toDisplayDate(item.deadline_at) : "",
     },
   })
 
@@ -146,6 +154,7 @@ export function TableCellViewer({ item }: { item: Job }) {
       status: item.status,
       applied_at: toDisplayDate(item.applied_at),
       updated_at: toDisplayDate(item.updated_at),
+      deadline_at: item.deadline_at ? toDisplayDate(item.deadline_at) : "",
     })
   }, [item, form])
 
@@ -166,6 +175,7 @@ export function TableCellViewer({ item }: { item: Job }) {
           status: values.status,
           applied_at: toIsoDate(values.applied_at),
           updated_at: toIsoDate(values.updated_at),
+          deadline_at: values.deadline_at ? toIsoDate(values.deadline_at) : null,
         }
       })
 
@@ -375,6 +385,58 @@ export function TableCellViewer({ item }: { item: Job }) {
                               const yyyy = d.getFullYear()
                               field.onChange(`${dd}/${mm}/${yyyy}`)
                               setShowUpdatedDatePicker(false)
+                            }}
+                            className="rounded-lg border bg-background"
+                          />
+                        </div>
+                      )}
+                    </div>
+                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="deadline_at"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="edit-deadline-at">Deadline At (Optional)</FieldLabel>
+                    <div className="relative" ref={deadlineDatePickerRef}>
+                      <div className="flex items-center">
+                        <InputGroup>
+                          <InputGroupInput
+                            id="edit-deadline-at"
+                            value={field.value || ""}
+                            onChange={(e) => field.onChange(formatDatePickerValue(e.target.value))}
+                            autoComplete="off"
+                            className="flex-1"
+                          />
+                          <InputGroupAddon align="inline-end">
+                            <IconCalendar
+                              className="cursor-pointer"
+                              onClick={() => setShowDeadlineDatePicker(!showDeadlineDatePicker)}
+                            />
+                          </InputGroupAddon>
+                        </InputGroup>
+                      </div>
+                      {showDeadlineDatePicker && (
+                        <div className="absolute z-50 mt-2 sm:mt-2 bottom-full sm:bottom-auto mb-2 sm:mb-0">
+                          <Calendar
+                            mode="single"
+                            selected={(() => {
+                              if (!field.value) return undefined
+                              const [dd, mm, yyyy] = field.value.split("/")
+                              const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd))
+                              return isNaN(d.getTime()) ? undefined : d
+                            })()}
+                            onSelect={(d) => {
+                              if (!d) return
+                              const dd = pad(d.getDate())
+                              const mm = pad(d.getMonth() + 1)
+                              const yyyy = d.getFullYear()
+                              field.onChange(`${dd}/${mm}/${yyyy}`)
+                              setShowDeadlineDatePicker(false)
                             }}
                             className="rounded-lg border bg-background"
                           />

@@ -6,6 +6,7 @@ export interface Job {
     status: string
     applied_at: string
     updated_at: string
+    deadline_at?: string | null
 }
 
 export interface JobDto {
@@ -15,4 +16,5 @@ export interface JobDto {
     status: string
     applied_at: string
     updated_at: string
+    deadline_at?: string | null
 }

@@ -128,6 +128,13 @@ export const columns: ColumnDef<Job>[] = [
     },
   },
   {
+    accessorKey: "deadline_at",
+    header: "Deadline at",
+    cell: ({ row }) => {
+      return <span>{row.original.deadline_at ? formatDate(row.original.deadline_at) : "-"}</span>
+    },
+  },
+  {
     id: "actions",
     cell: ({ row }) => <ActionCell job={row.original} />,
   },
