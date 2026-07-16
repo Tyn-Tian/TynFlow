@@ -19,6 +19,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer"
 import { Input } from "@/components/ui/input"
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 import {
   Select,
   SelectContent,
@@ -291,20 +292,21 @@ export function TableCellViewer({ item }: { item: Job }) {
                     <FieldLabel htmlFor="edit-applied-at">Applied At</FieldLabel>
                     <div className="relative" ref={appliedDatePickerRef}>
                       <div className="flex items-center">
-                        <Input
-                          id="edit-applied-at"
-                          value={field.value}
-                          onChange={(e) => field.onChange(formatDatePickerValue(e.target.value))}
-                          autoComplete="off"
-                          className="flex-1"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowAppliedDatePicker(!showAppliedDatePicker)}
-                          className="w-9 h-10 flex items-center justify-center ml-2 cursor-pointer"
-                        >
-                          <IconCalendar />
-                        </button>
+                        <InputGroup>
+                          <InputGroupInput
+                            id="edit-applied-at"
+                            value={field.value}
+                            onChange={(e) => field.onChange(formatDatePickerValue(e.target.value))}
+                            autoComplete="off"
+                            className="flex-1"
+                          />
+                          <InputGroupAddon align="inline-end">
+                            <IconCalendar
+                              className="cursor-pointer"
+                              onClick={() => setShowAppliedDatePicker(!showAppliedDatePicker)}
+                            />
+                          </InputGroupAddon>
+                        </InputGroup>
                       </div>
                       {showAppliedDatePicker && (
                         <div className="absolute z-50 mt-2">
@@ -341,23 +343,24 @@ export function TableCellViewer({ item }: { item: Job }) {
                     <FieldLabel htmlFor="edit-updated-at">Updated At</FieldLabel>
                     <div className="relative" ref={updatedDatePickerRef}>
                       <div className="flex items-center">
-                        <Input
-                          id="edit-updated-at"
-                          value={field.value}
-                          onChange={(e) => field.onChange(formatDatePickerValue(e.target.value))}
-                          autoComplete="off"
-                          className="flex-1"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowUpdatedDatePicker(!showUpdatedDatePicker)}
-                          className="w-9 h-10 flex items-center justify-center ml-2 cursor-pointer"
-                        >
-                          <IconCalendar />
-                        </button>
+                        <InputGroup>
+                          <InputGroupInput
+                            id="edit-updated-at"
+                            value={field.value}
+                            onChange={(e) => field.onChange(formatDatePickerValue(e.target.value))}
+                            autoComplete="off"
+                            className="flex-1"
+                          />
+                          <InputGroupAddon align="inline-end">
+                            <IconCalendar
+                              className="cursor-pointer"
+                              onClick={() => setShowUpdatedDatePicker(!showUpdatedDatePicker)}
+                            />
+                          </InputGroupAddon>
+                        </InputGroup>
                       </div>
                       {showUpdatedDatePicker && (
-                        <div className="absolute z-50 mt-2">
+                        <div className="absolute z-50 mt-2 sm:mt-2 bottom-full sm:bottom-auto mb-2 sm:mb-0">
                           <Calendar
                             mode="single"
                             selected={(() => {
@@ -396,15 +399,15 @@ export function TableCellViewer({ item }: { item: Job }) {
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Konfirmasi Perubahan</AlertDialogTitle>
+            <AlertDialogTitle>Confirm Changes</AlertDialogTitle>
             <AlertDialogDescription>
-              Apakah Anda yakin ingin menyimpan perubahan pada data pekerjaan ini?
+              Are you sure you want to save the changes to this job data?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="cursor-pointer">Batal</AlertDialogCancel>
+            <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={form.handleSubmit(handleSave)} disabled={loading} className="cursor-pointer">
-              {loading ? "Menyimpan..." : "Simpan"}
+              {loading ? "Saving..." : "Save"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

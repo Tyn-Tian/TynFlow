@@ -4,13 +4,13 @@ import React, { useEffect, useState } from "react"
 import { z } from "zod"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { IconPlus, IconCalendar } from "@tabler/icons-react"
 
 import { useAddJob } from "@/hooks/use-job"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 import { Calendar } from "@/components/ui/calendar"
 import {
     AlertDialog,
@@ -114,13 +114,14 @@ export function AddJobDialog() {
         },
     })
 
-    useEffect(() => {
-        if (!open) {
+    const handleOpenChange = (newOpen: boolean) => {
+        setOpen(newOpen)
+        if (!newOpen) {
             form.reset()
             setShowAppliedDatePicker(false)
             setShowUpdatedDatePicker(false)
         }
-    }, [open, form])
+    }
 
     async function onSubmit(values: FormValues) {
         setLoading(true)
@@ -169,14 +170,14 @@ export function AddJobDialog() {
     }
 
     return (
-        <AlertDialog open={open} onOpenChange={setOpen}>
+        <AlertDialog open={open} onOpenChange={handleOpenChange}>
             <AlertDialogTrigger asChild>
                 <Button variant="outline" size="sm" className="cursor-pointer">
                     <IconPlus />
                     <span className="hidden sm:block">Add Job</span>
                 </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent className="sm:max-w-[500px]">
+            <AlertDialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
                 <AlertDialogHeader>
                     <AlertDialogTitle>Add Job</AlertDialogTitle>
                 </AlertDialogHeader>
@@ -262,24 +263,25 @@ export function AddJobDialog() {
                                     <FieldLabel htmlFor="job-applied-at">Applied At</FieldLabel>
                                     <div className="relative" ref={appliedDatePickerRef}>
                                         <div className="flex items-center">
-                                            <Input
-                                                id="job-applied-at"
-                                                value={field.value}
-                                                placeholder="dd/mm/yyyy"
-                                                onChange={(e) => field.onChange(formatDate(e.target.value))}
-                                                autoComplete="off"
-                                                className="flex-1"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowAppliedDatePicker(!showAppliedDatePicker)}
-                                                className="w-9 h-10 flex items-center justify-center ml-2 cursor-pointer"
-                                            >
-                                                <IconCalendar />
-                                            </button>
+                                            <InputGroup>
+                                                <InputGroupInput
+                                                    id="job-applied-at"
+                                                    value={field.value}
+                                                    placeholder="dd/mm/yyyy"
+                                                    onChange={(e) => field.onChange(formatDate(e.target.value))}
+                                                    autoComplete="off"
+                                                    className="flex-1"
+                                                />
+                                                <InputGroupAddon align="inline-end">
+                                                    <IconCalendar
+                                                        className="cursor-pointer"
+                                                        onClick={() => setShowAppliedDatePicker(!showAppliedDatePicker)}
+                                                    />
+                                                </InputGroupAddon>
+                                            </InputGroup>
                                         </div>
                                         {showAppliedDatePicker && (
-                                            <div className="absolute z-50 mt-2">
+                                            <div className="absolute z-50 mt-2 sm:mt-2 bottom-full sm:bottom-auto mb-2 sm:mb-0">
                                                 <Calendar
                                                     mode="single"
                                                     selected={(() => {
@@ -313,24 +315,25 @@ export function AddJobDialog() {
                                     <FieldLabel htmlFor="job-updated-at">Updated At</FieldLabel>
                                     <div className="relative" ref={updatedDatePickerRef}>
                                         <div className="flex items-center">
-                                            <Input
-                                                id="job-updated-at"
-                                                value={field.value}
-                                                placeholder="dd/mm/yyyy"
-                                                onChange={(e) => field.onChange(formatDate(e.target.value))}
-                                                autoComplete="off"
-                                                className="flex-1"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowUpdatedDatePicker(!showUpdatedDatePicker)}
-                                                className="w-9 h-10 flex items-center justify-center ml-2 cursor-pointer"
-                                            >
-                                                <IconCalendar />
-                                            </button>
+                                            <InputGroup>
+                                                <InputGroupInput
+                                                    id="job-updated-at"
+                                                    value={field.value}
+                                                    placeholder="dd/mm/yyyy"
+                                                    onChange={(e) => field.onChange(formatDate(e.target.value))}
+                                                    autoComplete="off"
+                                                    className="flex-1"
+                                                />
+                                                <InputGroupAddon align="inline-end">
+                                                    <IconCalendar
+                                                        className="cursor-pointer"
+                                                        onClick={() => setShowUpdatedDatePicker(!showUpdatedDatePicker)}
+                                                    />
+                                                </InputGroupAddon>
+                                            </InputGroup>
                                         </div>
                                         {showUpdatedDatePicker && (
-                                            <div className="absolute z-50 mt-2">
+                                            <div className="absolute z-50 mt-2 sm:mt-2 bottom-full sm:bottom-auto mb-2 sm:mb-0">
                                                 <Calendar
                                                     mode="single"
                                                     selected={(() => {
