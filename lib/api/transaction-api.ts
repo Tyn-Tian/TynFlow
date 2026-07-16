@@ -1,7 +1,4 @@
 import { Filters, Params, Transaction, TransactionDto } from "@/types/transaction-type";
-import { Wallet } from "@/types/wallet-type";
-import { Budget } from "@/types/budget-type";
-import { Portfolio } from "@/types/portfolio-type";
 import { apiClient } from "../apiClient";
 import { BaseResponse } from "@/types/type";
 
@@ -24,20 +21,7 @@ export const transactionApi = {
         if (!res.ok) throw new Error("Failed to fetch transactions");
         return res.json();
     },
-    exportExcel: async (payload: {
-        wallets: Wallet[];
-        budgets: Budget[];
-        portfolios: Portfolio[];
-        filters: { startDate?: string; endDate?: string };
-    }): Promise<Transaction[]> => {
-        const res = await fetch("/api/transactions/query", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "exportExcel", ...payload }),
-        });
-        if (!res.ok) throw new Error("Failed to export transactions");
-        return res.json();
-    },
+    exportExcel: (month: string, year: string) => apiClient.get<BaseResponse<Transaction[]>>(`/transactions/export?month=${month}&year=${year}`),
     getById: (id: string) => apiClient.get<BaseResponse<Transaction>>(`/transactions/${id}`),
     add: (dto: TransactionDto) => apiClient.post<BaseResponse<null>>("/transactions", dto),
     addMany: (dtos: TransactionDto[]) => apiClient.post<BaseResponse<null>>("/transactions/bulk", dtos),

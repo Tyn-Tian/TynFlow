@@ -24,14 +24,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import useWallet from "@/hooks/use-wallet";
-import useBudget from "@/hooks/use-budget";
-import usePortfolio from "@/hooks/use-portfolio";
 import { useMutation } from "@tanstack/react-query";
 import { transactionApi } from "@/lib/api/transaction-api";
-import { Wallet } from "@/types/wallet-type";
-import { Budget } from "@/types/budget-type";
-import { Portfolio } from "@/types/portfolio-type";
 
 export function ExportTransactionDialog() {
   const [open, setOpen] = useState(false);
@@ -49,33 +43,11 @@ export function ExportTransactionDialog() {
     };
   });
 
-  const { data: walletData } = useWallet();
-  const { data: budgetData } = useBudget();
-  const { data: portfolioData } = usePortfolio();
-
-  const wallets = walletData?.data;
-  const budgets = budgetData?.data;
-  const portfolios = portfolioData?.data;
-
   const mutation = useMutation({
-    mutationFn: async ({
-      wallets,
-      budgets,
-      portfolios,
-      filters,
-    }: {
-      wallets: Wallet[];
-      budgets: Budget[];
-      portfolios: Portfolio[];
-      filters: { startDate?: string; endDate?: string };
-    }) =>
-      await transactionApi.exportExcel({
-        wallets,
-        budgets,
-        portfolios,
-        filters,
-      }),
-    onSuccess: (data) => {
+    mutationFn: async ({ month, year }: { month: string; year: string }) =>
+      await transactionApi.exportExcel(month, year),
+    onSuccess: (response) => {
+      const data = response.data;
       if (data.length === 0) {
         toast.info("No transactions found for the selected period.");
         return;
@@ -86,8 +58,11 @@ export function ExportTransactionDialog() {
         Date: format(new Date(t.date), "dd-MM-yyyy"),
         Amount: t.amount,
         Type: t.type,
+        AdminFee: t.admin_fee,
         Budget: t.budget?.name || "-",
         Wallet: t.wallet?.name || "-",
+        Transfer: t.transfer?.name || "-",
+        Portfolio: t.portfolio?.name || "-",
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -114,20 +89,8 @@ export function ExportTransactionDialog() {
       return;
     }
 
-    if (!wallets || !budgets || !portfolios) {
-      toast.error("Data is still loading, please wait.");
-      return;
-    }
-
-    mutation.mutate({
-      wallets,
-      budgets,
-      portfolios,
-      filters: {
-        startDate: monthData.startDate,
-        endDate: monthData.endDate,
-      },
-    });
+    const [year, month] = selectedMonth.split("-");
+    mutation.mutate({ month, year });
   };
 
   return (
@@ -169,7 +132,7 @@ export function ExportTransactionDialog() {
           </AlertDialogCancel>
           <Button
             onClick={handleExport}
-            disabled={mutation.isPending || !wallets || !budgets || !portfolios}
+            disabled={mutation.isPending}
             className="cursor-pointer"
           >
             {mutation.isPending ? "Exporting..." : "Export to Excel"}
