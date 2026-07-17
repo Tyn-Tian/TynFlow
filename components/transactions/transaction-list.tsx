@@ -42,7 +42,7 @@ export function TransactionList() {
   const [budgetId, setBudgetId] = useState<string>("all");
 
   const { data: walletData } = useWallet();
-  const { data: budgetData } = useBudget(true);
+  const { data: budgetData } = useBudget();
 
   const wallets = walletData?.data;
   const budgets = budgetData?.data;

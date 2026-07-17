@@ -45,7 +45,7 @@ export function EditBudgetDialog({
   budget,
   onSuccess,
 }: {
-  budget: Budget;
+  budget: Omit<Budget, "daily_spending" | "total_spending">;
   onSuccess?: () => void;
 }) {
   const queryClient = useQueryClient();

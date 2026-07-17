@@ -17,7 +17,6 @@ import {
 import { EditBudgetDialog } from "@/components/budgets/edit-budget-dialog"
 import { DeleteBudgetDialog } from "@/components/budgets/delete-budget-dialog"
 import { formatRupiah } from "@/lib/utils"
-import useRange from "@/hooks/use-range"
 import { useQuery } from "@tanstack/react-query"
 import { budgetApi } from "@/lib/api/budget-api"
 import { Badge } from "../ui/badge"
@@ -25,15 +24,14 @@ import { Badge } from "../ui/badge"
 export function BudgetList() {
     const [openId, setOpenId] = useState<string | null>(null)
 
-    const { data: range } = useRange();
-    const { data: budgets, isLoading } = useQuery({
-        queryKey: ["enriched-budgets", range?.start_date, range?.end_date],
+    const { data, isLoading } = useQuery({
+        queryKey: ["enriched-budgets"],
         queryFn: async () => {
-            if (!range) return [];
-            return await budgetApi.getBudgets(range.start_date, range.end_date);
+            return await budgetApi.getAll();
         },
-        enabled: !!range,
     })
+
+    const budgets = data?.data;
 
     const monthYear = new Date().toLocaleString("en-US", { month: "long", year: "numeric" })
 
@@ -136,21 +134,21 @@ export function BudgetList() {
                                                         </p>
                                                     </div>
                                                     <Badge
-                                                        variant={b.totalRealization! <= b.total ? "default" : "destructive"}
-                                                        className={b.totalRealization! <= b.total ? "bg-emerald-500 hover:bg-emerald-600" : "bg-rose-500 hover:bg-rose-600"}
+                                                        variant={b.total_spending <= b.total ? "default" : "destructive"}
+                                                        className={b.total_spending <= b.total ? "bg-emerald-500 hover:bg-emerald-600" : "bg-rose-500 hover:bg-rose-600"}
                                                     >
-                                                        {b.totalRealization! <= b.total ? "Good" : "Bad"}
+                                                        {b.total_spending <= b.total ? "Good" : "Bad"}
                                                     </Badge>
                                                 </div>
 
                                                 <div className="space-y-3 text-sm">
                                                     <div className="flex items-center justify-between">
                                                         <span className="text-muted-foreground">Daily Spending</span>
-                                                        <span className="font-medium">{formatRupiah(b.dailySpending || 0)}</span>
+                                                        <span className="font-medium">{formatRupiah(b.daily_spending || 0)}</span>
                                                     </div>
                                                     <div className="flex items-center justify-between">
                                                         <span className="text-muted-foreground">Total Realization</span>
-                                                        <span className="font-medium">{formatRupiah(b.totalRealization || 0)}</span>
+                                                        <span className="font-medium">{formatRupiah(b.total_spending || 0)}</span>
                                                     </div>
                                                     <div className="flex items-center justify-between">
                                                         <span className="text-muted-foreground">Budget Limit</span>
