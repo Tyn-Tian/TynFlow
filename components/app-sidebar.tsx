@@ -27,16 +27,19 @@ const navData = {
       title: "Dashboard",
       url: "/",
       icon: "dashboard",
+      code: "Dashboard",
     },
     {
       title: "Wallet",
       url: "/wallet",
       icon: "wallet",
+      code: "Wallet"
     },
     {
       title: "Transaction",
       url: "#",
       icon: "transaction",
+      code: "Transaction",
       items: [
         {
           title: "List",
@@ -52,32 +55,35 @@ const navData = {
       title: "Budget",
       url: "/budget",
       icon: "budget",
+      code: "Budget"
     },
     {
       title: "Portfolio",
       url: "/portfolio",
       icon: "portfolio",
+      code: "Portfolio"
     },
     {
       title: "Live",
       url: "/live",
       icon: "live",
+      code: "Live"
     },
     {
       title: "Job",
       url: "/job",
       icon: "job",
+      code: "Job"
     },
     {
       title: "Wishlist",
       url: "/wishlist",
       icon: "wishlist",
+      code: "Wishlist"
     },
   ],
 };
 
-const LIVE_NAV_USER_ID = "8017eb2d-1c88-4e83-ba13-80ce15477154";
-const JOB_NAV_USER_ID = "8017eb2d-1c88-4e83-ba13-80ce15477154";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data, isLoading } = useProfile();
@@ -91,16 +97,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   };
 
   const navItems = navData.navMain.filter((item) => {
-    if (item.icon !== "live" && item.icon !== "job") {
+    if (profile?.menu.includes(item.code)) {
       return true;
-    }
-
-    if (item.icon === "live") {
-      return profile?.userId === LIVE_NAV_USER_ID;
-    }
-
-    if (item.icon === "job") {
-      return profile?.userId === JOB_NAV_USER_ID;
     }
   });
 

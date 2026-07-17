@@ -9,6 +9,7 @@ export interface Profile {
   name: string;
   start_date: string | null;
   end_date: string | null;
+  menu: string[]
 }
 
 export interface ProfileDto {
