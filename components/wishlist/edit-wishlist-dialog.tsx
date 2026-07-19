@@ -60,8 +60,8 @@ export function EditWishlistDialog({ wishlist, open, onOpenChange }: EditWishlis
         if (wishlist && open) {
             form.reset({
                 name: wishlist.name,
-                priority: wishlist.priority,
-                status: wishlist.status,
+                priority: (wishlist.priority.charAt(0).toUpperCase() + wishlist.priority.slice(1)) as "Low" | "Medium" | "High",
+                status: wishlist.status || "Active",
                 price: wishlist.price,
             });
         }
@@ -86,7 +86,7 @@ export function EditWishlistDialog({ wishlist, open, onOpenChange }: EditWishlis
             });
             handleOpenChange(false);
             queryClient.invalidateQueries({
-                queryKey: ["wishlists"],
+                queryKey: ["kanban-wishlists"],
             });
         },
         onError: (err: Error | unknown) => {
