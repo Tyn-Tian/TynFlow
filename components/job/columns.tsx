@@ -19,6 +19,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { formatDate } from "@/lib/utils"
 import { TableCellViewer } from "./table-cell-viewer"
 import { DragHandle } from "./draggable-row"
@@ -83,7 +89,20 @@ export const columns: ColumnDef<Job>[] = [
     accessorKey: "company",
     header: "Company",
     cell: ({ row }) => {
-      return <span>{row.original.company}</span>
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="block max-w-[150px] truncate cursor-default">
+                {row.original.company}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{row.original.company}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )
     },
   },
   {

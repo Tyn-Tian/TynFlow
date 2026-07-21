@@ -1,14 +1,15 @@
 import { jobApi } from "@/lib/api/job-api";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { JobDto } from "@/types/job-type";
 
-export function useJobs(page: number = 1, limit: number = 100) {
+export function useJobs(page: number = 1, limit: number = 100, search?: string) {
   return useQuery({
-    queryKey: ["jobs", page, limit],
+    queryKey: ["jobs", page, limit, search],
     queryFn: async () => {
-      const response = await jobApi.getAll(page, limit);
+      const response = await jobApi.getAll(page, limit, search);
       return response.data;
     },
+    placeholderData: keepPreviousData,
   });
 }
 

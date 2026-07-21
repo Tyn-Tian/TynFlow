@@ -23,6 +23,7 @@ import {
   IconChevronsLeft,
   IconChevronsRight,
   IconLayoutColumns,
+  IconSearch,
 } from "@tabler/icons-react"
 import {
   flexRender,
@@ -65,9 +66,20 @@ import { columns } from "./columns"
 import { DraggableRow } from "./draggable-row"
 import { AddJobDialog } from "./add-job-dialog"
 import { useJobs } from "@/hooks/use-job"
+import { InputGroup, InputGroupAddon, InputGroupInput } from "../ui/input-group"
 
 export function DataTable() {
-  const { data: response } = useJobs(1, 100)
+  const [searchQuery, setSearchQuery] = React.useState("")
+  const [debouncedSearch, setDebouncedSearch] = React.useState("")
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
+  const { data: response } = useJobs(1, 100, debouncedSearch)
   const initialData = React.useMemo(() => response?.jobs || [], [response?.jobs])
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
@@ -118,8 +130,19 @@ export function DataTable() {
   })
 
   return (
-    <div className="w-full flex flex-col justify-start gap-4">
-      <div className="flex items-center justify-end">
+    <div className="w-full flex flex-col justify-start gap-2 sm:gap-4">
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <InputGroup className="w-full sm:w-sm">
+          <InputGroupAddon align="inline-start">
+            <IconSearch className="text-muted-foreground" />
+          </InputGroupAddon>
+          <InputGroupInput
+            type="text"
+            placeholder="Search position or company..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </InputGroup>
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -175,9 +198,9 @@ export function DataTable() {
                           {header.isPlaceholder
                             ? null
                             : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
                         </TableHead>
                       )
                     })}
