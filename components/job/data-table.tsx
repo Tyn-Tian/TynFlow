@@ -49,6 +49,7 @@ import {
 } from "@/components/ui/table"
 import { columns } from "./columns"
 import { AddJobDialog } from "./add-job-dialog"
+import { JobTableSkeleton } from "./skeleton/job-table-skeleton"
 import { useJobs } from "@/hooks/use-job"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "../ui/input-group"
 
@@ -63,7 +64,7 @@ export function DataTable() {
     return () => clearTimeout(timer)
   }, [searchQuery])
 
-  const { data: response } = useJobs(1, 100, debouncedSearch)
+  const { data: response, isLoading } = useJobs(1, 100, debouncedSearch)
   const initialData = React.useMemo(() => response?.jobs || [], [response?.jobs])
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
@@ -101,6 +102,10 @@ export function DataTable() {
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
   })
+
+  if (isLoading) {
+    return <JobTableSkeleton />
+  }
 
   return (
     <div className="w-full flex flex-col justify-start gap-2 sm:gap-4">
