@@ -136,9 +136,9 @@ export function WishlistKanban() {
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
             >
-            <KanbanBoard className="grid items-start gap-4 sm:grid-cols-3">
+            <KanbanBoard className="flex-col sm:flex-row items-start">
                 {Object.entries(initialColumns).map(([columnValue, tasks]) => (
-                    <KanbanColumn key={columnValue} value={columnValue} className="h-auto min-h-[200px]">
+                    <KanbanColumn key={columnValue} value={columnValue} className="h-auto min-h-[200px] flex-1 w-full">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <span className="font-semibold">

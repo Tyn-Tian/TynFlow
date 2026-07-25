@@ -1,22 +1,21 @@
-"use client";
-
 import { SiteHeader } from "@/components/site-header";
-
 import { AddWishlistDialog } from "@/components/wishlist/add-wishlist-dialog";
 import { WishlistKanban } from "@/components/wishlist/wishlist-kanban";
+import { Suspense } from "react";
+import { KanbanSkeleton } from "@/components/wishlist/skeleton/wishlist-kanban-skeleton";
 
-export default function Page() {
+export default async function Page() {
     return (
         <>
             <SiteHeader title="Wishlist" />
             <section className="p-4 md:p-6">
-                <div className="mx-auto max-w-7xl">
-                    <div className="flex flex-wrap md:flex-nowrap items-center gap-2 mb-4 w-full">
-                        <div className="order-2 md:order-3 md:ml-auto">
-                            <AddWishlistDialog />
-                        </div>
+                <div className="mx-auto max-w-7xl space-y-4">
+                    <div className="flex justify-end">
+                        <AddWishlistDialog />
                     </div>
-                    <WishlistKanban />
+                    <Suspense fallback={<KanbanSkeleton />}>
+                        <WishlistKanban />
+                    </Suspense>
                 </div>
             </section>
         </>
