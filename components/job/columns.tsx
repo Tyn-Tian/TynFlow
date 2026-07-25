@@ -27,7 +27,6 @@ import {
 } from "@/components/ui/tooltip"
 import { formatDate } from "@/lib/utils"
 import { TableCellViewer } from "./table-cell-viewer"
-import { DragHandle } from "./draggable-row"
 import { DeleteJobDialog } from "./delete-job-dialog"
 import { Job } from "@/types/job-type"
 
@@ -73,11 +72,6 @@ function ActionCell({ job }: { job: Job }) {
 
 export const columns: ColumnDef<Job>[] = [
   {
-    id: "drag",
-    header: () => null,
-    cell: ({ row }) => <DragHandle id={row.original.id} />,
-  },
-  {
     accessorKey: "position",
     header: "Position",
     cell: ({ row }) => {
@@ -93,7 +87,7 @@ export const columns: ColumnDef<Job>[] = [
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="block max-w-[150px] truncate cursor-default">
+              <span className="block max-w-37.5 truncate cursor-default">
                 {row.original.company}
               </span>
             </TooltipTrigger>

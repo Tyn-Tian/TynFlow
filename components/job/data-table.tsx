@@ -2,21 +2,6 @@
 
 import * as React from "react"
 import {
-  closestCenter,
-  DndContext,
-  KeyboardSensor,
-  MouseSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-  type UniqueIdentifier,
-} from "@dnd-kit/core"
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers"
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable"
-import {
   IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
@@ -63,7 +48,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { columns } from "./columns"
-import { DraggableRow } from "./draggable-row"
 import { AddJobDialog } from "./add-job-dialog"
 import { useJobs } from "@/hooks/use-job"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "../ui/input-group"
@@ -92,17 +76,6 @@ export function DataTable() {
     pageIndex: 0,
     pageSize: 10,
   })
-  const sortableId = React.useId()
-  const sensors = useSensors(
-    useSensor(MouseSensor, {}),
-    useSensor(TouchSensor, {}),
-    useSensor(KeyboardSensor, {})
-  )
-
-  const dataIds = React.useMemo<UniqueIdentifier[]>(
-    () => initialData?.map(({ id }) => id) || [],
-    [initialData]
-  )
 
   const table = useReactTable({
     data: initialData,
@@ -182,60 +155,56 @@ export function DataTable() {
       </div>
       <div className="relative flex flex-col gap-4 overflow-auto">
         <div className="overflow-hidden rounded-lg border">
-          <DndContext
-            collisionDetection={closestCenter}
-            modifiers={[restrictToVerticalAxis]}
-            sensors={sensors}
-            id={sortableId}
-          >
-            <Table>
-              <TableHeader className="sticky top-0 z-10 bg-muted">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => {
-                      return (
-                        <TableHead key={header.id} colSpan={header.colSpan}>
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
+          <Table>
+            <TableHeader className="sticky top-0 z-10 bg-muted">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id} colSpan={header.colSpan}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
                               header.column.columnDef.header,
                               header.getContext()
                             )}
-                        </TableHead>
-                      )
-                    })}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody className="**:data-[slot=table-cell]:first:w-8">
-                {table.getRowModel().rows?.length ? (
-                  <SortableContext
-                    items={dataIds}
-                    strategy={verticalListSortingStrategy}
+                      </TableHead>
+                    )
+                  })}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
                   >
-                    {table.getRowModel().rows.map((row) => (
-                      <DraggableRow key={row.id} row={row} />
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
                     ))}
-                  </SortableContext>
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length}
-                      className="h-24 text-center"
-                    >
-                      No results.
-                    </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </DndContext>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
-        <div className="flex items-center justify-between px-4">
-          <div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
-          </div>
+        <div className="flex items-center justify-end px-4">
           <div className="flex w-full items-center gap-8 lg:w-fit">
             <div className="hidden items-center gap-2 lg:flex">
               <Label htmlFor="rows-per-page" className="text-sm font-medium">
