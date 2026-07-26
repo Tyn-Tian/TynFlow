@@ -86,7 +86,7 @@ export function EditWishlistDialog({ wishlist, open, onOpenChange }: EditWishlis
             });
             handleOpenChange(false);
             queryClient.invalidateQueries({
-                queryKey: ["kanban-wishlists"],
+                queryKey: ["wishlists"],
             });
         },
         onError: (err: Error | unknown) => {

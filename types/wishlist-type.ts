@@ -1,4 +1,4 @@
-export type Priority = "Low" | "Medium" | "High";
+export type Priority = "low" | "medium" | "high";
 export type Status = "Active" | "Achieved" | "Cancelled";
 
 export interface Wishlist {
@@ -9,6 +9,8 @@ export interface Wishlist {
     priority: Priority;
     status: Status;
     price: number;
+    assignee?: string;
+    is_disabled?: boolean;
 }
 
 export type WishlistDto = {
@@ -18,26 +20,16 @@ export type WishlistDto = {
     price: number;
 };
 
-export interface WishlistKanbanItem {
-    id: string;
-    name: string;
-    priority: string;
-    price: number;
-    assignee: string;
-    created_at: string;
-    is_disabled: boolean;
-}
-
-export interface WishlistKanbanResponse {
-    active: WishlistKanbanItem[];
-    achieved: WishlistKanbanItem[];
-    cancelled: WishlistKanbanItem[];
+export interface WishlistResponse {
+    wishlists: Wishlist[];
+    count: number;
 }
 
 export interface WishlistParams {
     page?: number;
     limit?: number;
     search?: string;
-    priority?: "Low" | "Medium" | "High";
-    status?: "Active" | "Achieved" | "Cancelled";
+    priority?: "low" | "medium" | "high" | "Low" | "Medium" | "High";
+    status?: "Active" | "Achieved" | "Cancelled" | "active" | "achieved" | "cancelled";
+    assignee?: string;
 }

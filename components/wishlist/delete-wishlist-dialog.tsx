@@ -37,7 +37,7 @@ export function DeleteWishlistDialog({
             });
             onOpenChange(false);
             queryClient.invalidateQueries({
-                queryKey: ["kanban-wishlists"],
+                queryKey: ["wishlists"],
             });
         },
         onError: (err: Error | unknown) => {
