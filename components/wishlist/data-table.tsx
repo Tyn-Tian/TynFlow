@@ -112,9 +112,9 @@ export function DataTable() {
 
   return (
     <div className="w-full flex flex-col justify-start gap-2 sm:gap-4">
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center w-full md:w-auto">
-          <InputGroup className="w-full sm:w-sm">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center w-full sm:w-auto flex-1">
+          <InputGroup className="w-full sm:w-72">
             <InputGroupAddon align="inline-start">
               <IconSearch className="text-muted-foreground" />
             </InputGroupAddon>
@@ -126,9 +126,9 @@ export function DataTable() {
             />
           </InputGroup>
 
-          <div className="flex items-center gap-2">
+          <div className="grid grid-cols-3 gap-2 w-full sm:flex sm:w-auto">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-full sm:w-32">
                 <SelectValue placeholder="All Status" />
               </SelectTrigger>
               <SelectContentSideWrapper>
@@ -140,7 +140,7 @@ export function DataTable() {
             </Select>
 
             <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-full sm:w-32">
                 <SelectValue placeholder="All Priority" />
               </SelectTrigger>
               <SelectContentSideWrapper>
@@ -152,7 +152,7 @@ export function DataTable() {
             </Select>
 
             <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-full sm:w-40">
                 <SelectValue placeholder="All Assignee" />
               </SelectTrigger>
               <SelectContentSideWrapper>
@@ -164,7 +164,7 @@ export function DataTable() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-end w-full sm:w-auto">
           <AddWishlistDialog />
         </div>
       </div>
