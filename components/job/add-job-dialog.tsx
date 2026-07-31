@@ -44,7 +44,7 @@ const SOURCES = [
 const STATUSES = [
     "Screening",
     "Fill in Information",
-    "Pychotest",
+    "Psychotes",
     "Technical Test",
     "HR Interview",
     "User Interview",
@@ -187,7 +187,7 @@ export function AddJobDialog() {
                     <span className="hidden sm:block">Add Job</span>
                 </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+            <AlertDialogContent className="sm:max-w-125 max-h-[90vh] overflow-y-auto">
                 <AlertDialogHeader>
                     <AlertDialogTitle>Add Job</AlertDialogTitle>
                 </AlertDialogHeader>

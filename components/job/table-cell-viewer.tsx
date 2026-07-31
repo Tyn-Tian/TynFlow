@@ -29,16 +29,6 @@ import {
 } from "@/components/ui/select"
 import { IconCalendar } from "@tabler/icons-react"
 import { Calendar } from "@/components/ui/calendar"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 
 import { useUpdateJob } from "@/hooks/use-job"
@@ -93,9 +83,7 @@ const toDisplayDate = (isoDate: string) => {
 export function TableCellViewer({ item }: { item: Job }) {
   const isMobile = useIsMobile()
   const [open, setOpen] = React.useState(false)
-  const [confirmOpen, setConfirmOpen] = React.useState(false)
-  const [loading, setLoading] = React.useState(false)
-  const { mutateAsync: updateJob } = useUpdateJob()
+  const { mutate: updateJob, isPending } = useUpdateJob()
 
   const [showAppliedDatePicker, setShowAppliedDatePicker] = React.useState(false)
   const [showUpdatedDatePicker, setShowUpdatedDatePicker] = React.useState(false)
@@ -158,15 +146,14 @@ export function TableCellViewer({ item }: { item: Job }) {
     })
   }, [item, form])
 
-  async function handleSave(values: FormValues) {
-    setLoading(true)
-    try {
-      const toIsoDate = (d: string) => {
-        const [dd, mm, yyyy] = d.split("/")
-        return `${yyyy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`
-      }
+  function handleSave(values: FormValues) {
+    const toIsoDate = (d: string) => {
+      const [dd, mm, yyyy] = d.split("/")
+      return `${yyyy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`
+    }
 
-      await updateJob({
+    updateJob(
+      {
         id: item.id.toString(),
         data: {
           position: values.position,
@@ -176,17 +163,18 @@ export function TableCellViewer({ item }: { item: Job }) {
           applied_at: toIsoDate(values.applied_at),
           updated_at: toIsoDate(values.updated_at),
           deadline_at: values.deadline_at ? toIsoDate(values.deadline_at) : null,
-        }
-      })
-
-      toast.success("Success", { description: "Job updated successfully." })
-      setOpen(false)
-    } catch (err) {
-      toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
-    } finally {
-      setLoading(false)
-      setConfirmOpen(false)
-    }
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success("Success", { description: "Job updated successfully." })
+          setOpen(false)
+        },
+        onError: (err) => {
+          toast.error("Failed", { description: err instanceof Error ? err.message : "Unexpected error." })
+        },
+      }
+    )
   }
 
   const formatDatePickerValue = (v: string) => {
@@ -221,7 +209,7 @@ export function TableCellViewer({ item }: { item: Job }) {
           </DrawerDescription>
         </DrawerHeader>
         <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
-          <form className="flex flex-col gap-4" id="edit-job-form" onSubmit={form.handleSubmit(() => setConfirmOpen(true))}>
+          <form className="flex flex-col gap-4" id="edit-job-form" onSubmit={form.handleSubmit(handleSave)}>
             <FieldGroup className="gap-4">
               <Controller
                 name="position"
@@ -451,29 +439,14 @@ export function TableCellViewer({ item }: { item: Job }) {
           </form>
         </div>
         <DrawerFooter>
-          <Button type="submit" form="edit-job-form" className="cursor-pointer">Submit</Button>
+          <Button type="submit" form="edit-job-form" className="cursor-pointer" disabled={isPending}>
+            {isPending ? "Saving..." : "Submit"}
+          </Button>
           <DrawerClose asChild>
             <Button variant="outline">Done</Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>
-
-      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Changes</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to save the changes to this job data?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={form.handleSubmit(handleSave)} disabled={loading} className="cursor-pointer">
-              {loading ? "Saving..." : "Save"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </Drawer>
   )
 }
