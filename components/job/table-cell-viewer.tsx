@@ -57,7 +57,7 @@ const SOURCES = [
 const STATUSES = [
   "Screening",
   "Fill in Information",
-  "Pychotest",
+  "Psychotes",
   "Technical Test",
   "HR Interview",
   "User Interview",
