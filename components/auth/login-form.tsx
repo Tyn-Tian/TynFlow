@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -11,6 +11,12 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group"
 import { toast } from 'sonner'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldSeparator } from "@/components/ui/field"
@@ -21,6 +27,7 @@ import { useMutation } from "@tanstack/react-query"
 import { LoginDto } from "@/types/auth-type"
 import { authApi } from "@/lib/api/auth-api"
 import Link from "next/link"
+import { EyeIcon, EyeOffIcon } from "lucide-react"
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -34,6 +41,7 @@ export function LoginForm({
   const router = useRouter()
   const searchParams = useSearchParams()
   const pathname = usePathname()
+  const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
     const error = searchParams.get('error')
@@ -159,15 +167,30 @@ export function LoginForm({
                         Forgot your password?
                       </Link>
                     </div>
-                    <Input
-                      {...field}
-                      aria-invalid={fieldState.invalid}
-                      id="password"
-                      type="password"
-                      placeholder="••••••••"
-                      autoComplete="off"
-                      required
-                    />
+                    <InputGroup>
+                      <InputGroupInput
+                        {...field}
+                        aria-invalid={fieldState.invalid}
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        autoComplete="off"
+                        required
+                      />
+                      <InputGroupAddon align="inline-end">
+                        <InputGroupButton
+                          size="icon-xs"
+                          onClick={() => setShowPassword(!showPassword)}
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                        >
+                          {showPassword ? (
+                            <EyeOffIcon className="h-4 w-4" />
+                          ) : (
+                            <EyeIcon className="h-4 w-4" />
+                          )}
+                        </InputGroupButton>
+                      </InputGroupAddon>
+                    </InputGroup>
                     {fieldState.error && (
                       <FieldError errors={[fieldState.error]} />
                     )}
